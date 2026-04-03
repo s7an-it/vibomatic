@@ -1,0 +1,35 @@
+{
+  "skill_name": "framework-test",
+  "evals": [
+    {
+      "id": 1,
+      "suite": "pipeline-integrity",
+      "prompt": "Run the pipeline integrity validation on the todo-api example",
+      "expected_output": "All checks pass: vision, personas, feature specs (Feature + Enabler types), journeys with AC cross-references, UX/UI designs, design system, manifest",
+      "assertions": [
+        { "type": "exit_code", "value": 0, "description": "Validation script exits cleanly" },
+        { "type": "output_contains", "value": "0 failed", "description": "Zero failures in output" },
+        { "type": "output_contains", "value": "PASS", "description": "At least one PASS in output" }
+      ]
+    },
+    {
+      "id": 2,
+      "suite": "progressive-narrowing",
+      "prompt": "Generate a health check endpoint 3 times with no vibomatic phases (just a one-line prompt) and 3 times with full pipeline (spec → tech design → code). Measure pairwise diff variance between the 3 outputs in each group.",
+      "expected_output": "Full-pipeline group has lower pairwise diff variance than no-phases group, demonstrating that progressive narrowing reduces implementation variance",
+      "assertions": [
+        { "type": "metric_comparison", "metric": "variance_lines", "condition": "full_pipeline < no_phases", "description": "Full pipeline produces less variance" }
+      ]
+    },
+    {
+      "id": 3,
+      "suite": "review-protocol",
+      "prompt": "Take the todo-api feature spec and plant 5 known errors (contradicting AC, nonexistent file reference, ungrounded precondition, compound story, untestable AC). Run single-pass review and full review protocol. Count how many errors each approach finds.",
+      "expected_output": "Full review protocol finds more planted errors than single-pass review",
+      "assertions": [
+        { "type": "metric_comparison", "metric": "errors_found", "condition": "full_protocol >= single_pass", "description": "Protocol finds at least as many errors" },
+        { "type": "metric_threshold", "metric": "full_protocol_errors_found", "condition": ">= 4", "description": "Protocol finds at least 4 of 5 planted errors" }
+      ]
+    }
+  ]
+}
