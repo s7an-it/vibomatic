@@ -17,7 +17,8 @@
     "writing-change-set",
     "review-protocol",
     "promoting-change-set",
-    "verifying-promotion"
+    "verifying-promotion",
+    "framework-test"
   ],
   "corePackForRouting": [
     "vision-sync",
