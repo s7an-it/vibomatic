@@ -1,0 +1,91 @@
+Business Source License 1.1
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+-----------------------------------------------------------------------------
+
+Parameters
+
+Licensor:             s7an-it
+Licensed Work:        vibomatic
+                      The Licensed Work is (c) 2026 s7an-it.
+Additional Use Grant: You may use the Licensed Work for any purpose,
+                      including production use, personal projects, internal
+                      business operations, education, and research.
+
+                      You may NOT do any of the following without prior
+                      written approval from the Licensor:
+
+                      1. Offer the Licensed Work, or a substantial portion
+                         of it, as a commercial product or paid service
+                         (e.g., selling skill packs, SaaS platforms, or
+                         consulting packages built primarily from this work).
+
+                      2. Redistribute, republish, or rebrand the Licensed
+                         Work (or a derivative containing a substantial
+                         portion of it) under a different name, project, or
+                         identity — whether for profit or not.
+
+                      3. Sublicense the Licensed Work to third parties.
+
+                      For clarity, the following are always permitted without
+                      approval:
+
+                      - Using the Licensed Work to build and ship your own
+                        products, apps, and businesses.
+                      - Forking for personal use or contributing back via
+                        pull request.
+                      - Referencing, linking to, or recommending the
+                        Licensed Work publicly.
+
+Change Date:          2027-04-03
+
+Change License:       Apache License, Version 2.0
+
+Early Release:        If the Licensed Work reaches 50,000 GitHub stars on
+                      the repository github.com/s7an-it/vibomatic before
+                      the Change Date, the Change License takes effect
+                      immediately upon reaching that milestone.
+
+-----------------------------------------------------------------------------
+
+Notice
+
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may make an Additional Use Grant, above, permitting limited
+production use.
+
+Effective on the Change Date, or the date specified in the Early Release
+clause (whichever is earlier), the Licensor hereby grants you rights under
+the terms of the Change License, and the rights granted in the paragraph
+above terminate.
+
+If your use of the Licensed Work does not comply with the requirements
+currently in effect as described in this License, you must purchase a
+commercial license from the Licensor, its affiliated entities, or authorized
+resellers, or you must refrain from using the Licensed Work.
+
+All copies of the Licensed Work in any form must include this License. This
+License does not grant you any right in any trademark or logo of Licensor or
+its affiliates (provided that you may use a trademark or logo of Licensor as
+expressly required by this License).
+
+THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+LICENSED WORK.
+
+ANY USE OF THE LICENSED WORK IN VIOLATION OF THIS LICENSE WILL AUTOMATICALLY
+TERMINATE YOUR RIGHTS UNDER THIS LICENSE FOR THE CURRENT AND ALL OTHER
+VERSIONS OF THE LICENSED WORK.
+
+THIS LICENSE DOES NOT GRANT YOU ANY RIGHT IN ANY TRADEMARK OR LOGO OF
+LICENSOR OR ITS AFFILIATES.
+
+FOR INQUIRIES AND APPROVAL REQUESTS, CONTACT THE LICENSOR VIA THE
+REPOSITORY AT github.com/s7an-it/vibomatic.
