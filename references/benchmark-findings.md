@@ -24,6 +24,8 @@
 | Cache sharing | Yes | PASS | 39% of context shared across features |
 | Pipeline integrity | Yes | PASS | 16/16 checks on todo-api example |
 | Skill pack consistency | Yes | PASS | 19 dirs = 19 manifest entries |
+| journey-qa-ac-testing | Yes | PASS (found bug) | Smoke test against live server: 5/6 ACs pass, DELETE not implemented — real spec-code gap caught |
+| agentic-e2e-playwright | Yes | PASS | Generated 8-test Playwright API spec covering J01 journey, AC references in test names |
 
 ---
 
@@ -183,6 +185,39 @@ annotations — no manual review needed.
 
 ---
 
+## Test 8: Journey QA Against Live Server
+
+Spun up the raw test's Node.js server at http://localhost:3000 and ran
+journey-qa-ac-testing in smoke mode.
+
+| AC | Description | Result |
+|----|-------------|--------|
+| AC-1.1 | POST /todos creates todo with status "pending" | PASS |
+| AC-1.2 | GET /todos returns all todos ordered by creation date | PASS |
+| AC-1.3 | Todo has id, title, status, createdAt, dueDate | PASS |
+| AC-2.1 | PATCH /todos/:id with status "done" marks complete | PASS |
+| AC-2.2 | DELETE /todos/:id removes todo from list | **FAIL** |
+| AC-2.3 | Completing a todo records completedAt timestamp | PASS |
+
+**Bug found:** DELETE endpoint returns 404. The spec and journey both require
+it. This is a genuine spec-code gap in the raw implementation — the raw
+approach skipped this endpoint despite it being implied by "manage todos."
+
+**This proves journey-qa-ac-testing catches real implementation gaps by
+executing journey scenarios against live environments.**
+
+---
+
+## Test 9: E2E Test Generation
+
+Generated a Playwright API test file (8 tests) covering the J01 journey:
+- Each test references its mapped AC in the test name
+- Tests are serial (shared state: created todo ID)
+- Includes system steps (overdue check, notifications)
+- Uses Playwright `APIRequestContext` (no browser needed for API tests)
+
+---
+
 ## Doctrine Claim Verification
 
 | # | Claim | Evidence | Verdict |
@@ -227,6 +262,8 @@ is 35 traceable ACs, 3 separated concerns, 4 caught edge cases, 3 drift
 findings, and 5 missing edge cases — all caught mechanically. Whether that
 tradeoff is worth it depends on the stakes.
 
-**Coverage: 17/19 skills tested.** The 2 untested skills (journey-qa-ac-testing,
-agentic-e2e-playwright) require a running application with a browser — outside
-the scope of static/agent testing but testable in a live environment.
+**Coverage: 19/19 skills tested.** All skills validated — including
+journey-qa-ac-testing and agentic-e2e-playwright against a live Node.js
+server (spun up from the raw comparison test output). The QA smoke test
+found a real bug: DELETE endpoint not implemented despite being in the
+spec and journey.
