@@ -1,46 +1,50 @@
 ---
 name: writing-technical-design
-description: Use when you have a DRAFT feature spec and need to define architecture, tech choices, and component design before implementation
+description: Use when you have a DESIGNED feature spec (after UX and UI design) and need to define architecture, tech choices, and component design before implementation
 ---
 
 # Writing Technical Design
 
 ## Overview
 
-Technical design answers HOW to build what the spec defines. It takes a DRAFT feature spec (user stories, ACs, journeys) and produces the architecture, component design, data model, and technology decisions needed to implement it.
+Technical design answers HOW to build what the spec defines. It takes a DESIGNED feature spec (after UX and UI design) and produces the architecture, component design, data model, and technology decisions needed to implement it.
 
-This skill transitions a feature spec from DRAFT → BASELINED.
+This skill transitions a feature spec from DESIGNED → BASELINED.
 
 ```
 writing-spec              → DRAFT (WHAT: stories, ACs, journeys)
-writing-technical-design  → BASELINED (HOW: architecture, components, data model)
-writing-implementation-plan → code tasks (DO: TDD, exact bytes)
+writing-ux-design         → UX-REVIEWED (HOW users experience it: flows, states)
+writing-ui-design         → DESIGNED (HOW it looks: components, visual language)
+writing-technical-design  → BASELINED (HOW to build it: architecture, data model)
+writing-change-set        → CHANGE-SET-APPROVED (DO: exact files, exact bytes)
+promoting-change-set      → PROMOTED (APPLY: change set to codebase)
+verifying-promotion       → VERIFIED (PROVE: tests pass, QA complete)
 ```
 
 **Announce at start:** "I'm using the writing-technical-design skill to define the technical approach."
 
 ## When To Use
 
-- After writing-spec produces a DRAFT feature spec
+- After writing-ui-design produces a DESIGNED feature spec
 - When a feature's requirements are clear but the technical approach isn't
 - When the team needs to evaluate feasibility before committing to implementation
-- Before invoking writing-implementation-plan
+- Before invoking writing-change-set
 
 ## Prerequisites
 
 | Artifact | Where | Required? |
 |----------|-------|-----------|
-| Feature spec (DRAFT) | `docs/specs/features/<feature>.md` | Yes — must have user stories + ACs |
+| Feature spec (DESIGNED) | `docs/specs/features/<feature>.md` | Yes — must have user stories + ACs + UX and UI design |
 | Journey doc(s) | `docs/specs/journeys/J*.feature.md` | Yes — must reference the feature's ACs |
 | Existing codebase | Project root | Read to understand current patterns |
 
-**Gate:** Do not start technical design without a DRAFT spec. If the spec doesn't exist or lacks user stories and ACs, route to `writing-spec` first.
+**Gate:** Do not start technical design without a DESIGNED spec (after UX and UI design). If the spec doesn't exist or lacks user stories and ACs, route to `writing-spec` first. If UX/UI design hasn't been done, route to `writing-ux-design` first.
 
 ## Process
 
 ### Step 1: Read The Spec And Journeys
 
-Read the DRAFT feature spec and all referenced journey docs. Understand:
+Read the DESIGNED feature spec and all referenced journey docs. Understand:
 - What user stories need to be satisfied
 - What ACs define "done"
 - What journey flows exercise this feature
@@ -186,11 +190,11 @@ Data model changes: [yes/no — summary]
 Feasibility: [all ACs feasible / N ACs need spec revision]
 Risks: [count]
 
-Ready for implementation planning. Next step:
-  "Run writing-implementation-plan against docs/specs/features/<feature-name>.md"
+Ready for change set authoring. Next step:
+  "Run writing-change-set against docs/specs/features/<feature-name>.md"
 ```
 
-**The terminal state is invoking writing-implementation-plan.**
+**The terminal state is invoking writing-change-set.**
 
 ## Feedback Loops
 
@@ -210,7 +214,7 @@ Technical design often reveals problems upstream. Handle them:
 
 | Don't | Why | Instead |
 |-------|-----|---------|
-| Write code or exact file contents | That's writing-implementation-plan's job | Define components and responsibilities, not code |
+| Write code or exact file contents | That's writing-change-set's job | Define components and responsibilities, not code |
 | Invent new patterns when existing ones work | Increases codebase complexity | Follow established project patterns unless they're clearly broken |
 | Ignore existing tech stack | Creates maintenance burden | Use what's already there unless there's a strong reason not to |
 | Design without reading ACs | Design may not satisfy requirements | Walk through every AC in the feasibility check |
@@ -221,8 +225,8 @@ Technical design often reveals problems upstream. Handle them:
 
 | Situation | Route to |
 |-----------|----------|
-| Design complete, spec BASELINED | `writing-implementation-plan` |
+| Design complete, spec BASELINED | `writing-change-set` |
 | AC not feasible, spec needs revision | `writing-spec` (feedback loop) |
 | Missing dependency discovered | `feature-discovery` |
 | Design reveals persona gap | `persona-builder` (then return) |
-| No DRAFT spec exists | `writing-spec` (prerequisite) |
+| No DESIGNED spec exists | `writing-ux-design` (prerequisite, or `writing-spec` if no spec at all) |

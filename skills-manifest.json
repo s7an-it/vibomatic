@@ -16,7 +16,8 @@
     "writing-technical-design",
     "writing-change-set",
     "review-protocol",
-    "promoting-change-set"
+    "promoting-change-set",
+    "verifying-promotion"
   ],
   "corePackForRouting": [
     "vision-sync",
@@ -36,16 +37,17 @@
     "writing-ui-design",
     "writing-technical-design",
     "writing-change-set",
-    "promoting-change-set"
+    "promoting-change-set",
+    "verifying-promotion"
   ],
   "reviewGates": {
-    "G1": { "after": "writing-spec", "transition": "DRAFT → UX-REVIEWED" },
-    "G2": { "after": "writing-ux-design", "transition": "UX-REVIEWED → DESIGNED" },
-    "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED" },
-    "G4": { "after": "writing-technical-design", "transition": "BASELINED → CHANGE-SET-APPROVED" },
-    "G5": { "after": "writing-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED" },
-    "G6": { "after": "promoting-change-set", "transition": "PROMOTED → VERIFIED" },
-    "G7": { "after": "verification", "transition": "final" }
+    "G1": { "after": "writing-spec", "transition": "DRAFT → UX-REVIEWED", "checks": "Stories testable? ACs specific? Layer 3 clean? Dependencies identified?" },
+    "G2": { "after": "writing-ux-design", "transition": "UX-REVIEWED → DESIGNED", "checks": "Flows cover all stories? States complete? Error handling? Accessibility?" },
+    "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED", "checks": "Design system consistency? Responsive? Dark mode? Component reuse?" },
+    "G4": { "after": "writing-technical-design", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
+    "G5": { "after": "writing-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Code matches design? Tests cover ACs? Cross-file consistency? No placeholders?" },
+    "G6": { "after": "promoting-change-set", "transition": "PROMOTED → VERIFIED", "checks": "Applied code matches change set? No deviations? No unplanned changes?" },
+    "G7": { "after": "verifying-promotion", "transition": "final", "checks": "Tests pass? QA complete? E2E complete? Spec annotations updated?" }
   },
   "externalAddOns": {
     "coreyhaines-marketing-pack": [

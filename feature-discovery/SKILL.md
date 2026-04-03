@@ -63,9 +63,10 @@ If the context scan (Step 0) reveals any of these, skip the business questions e
 - **Missing journey for existing functionality** — the code works, it just has no journey or spec
 
 In these cases, this is a fix/consolidation task, not a new feature. Present your Step 0
-findings directly and route to the appropriate skill (writing-plans for a fix, journey-sync
-for a missing journey, spec-ac-sync for missing ACs). Don't force 8 business questions on
-a problem the codebase already fully defines.
+findings directly and route to the appropriate skill (writing-change-set for a fix — or
+writing-plans if external add-on, journey-sync for a missing journey, spec-ac-sync for
+missing ACs). Don't force 8 business questions on a problem the codebase already fully
+defines.
 </HARD-GATE>
 
 ---
@@ -85,10 +86,10 @@ digraph feature_discovery {
     crossval [label="Step 3: Cross-validate\n(persona match, journey fit,\nspec conflicts)"];
     route [label="Step 4: Route to\ndownstream skill" shape=diamond];
 
-    brainstorm [label="/brainstorming\n(standard feature)"];
+    brainstorm [label="/brainstorming\n→ writing-spec in vibomatic\n(standard feature)"];
     officehours [label="/office-hours\n(big strategic bet)"];
     explorer [label="/solution-explorer\n(architecture decision)"];
-    plans [label="/writing-plans\n(small, skip design)"];
+    plans [label="/writing-change-set\n(small, skip design;\nexternal: /writing-plans)"];
 
     scan -> existing;
     existing -> surface [label="yes"];
@@ -354,13 +355,13 @@ Based on what the discovery learned, recommend the best next step:
 
 | Signal | Recommendation |
 |--------|---------------|
-| Standard product feature, clear scope, personas exist | **/brainstorming** — "The business case is solid. Let me invoke brainstorming with this brief as context for technical design." |
+| Standard product feature, clear scope, personas exist | **/brainstorming** (or **writing-spec** in vibomatic) — "The business case is solid. Let me invoke brainstorming with this brief as context for technical design." |
 | Big strategic bet, uncertain market, startup-level risk | **/office-hours** — "This is a significant bet. I'd recommend a deeper diagnostic with /office-hours before designing. The brief gives it a head start." |
 | Multiple viable architectures, unclear technical approach | **/solution-explorer** — "The what is clear but the how has multiple paradigms. Let me invoke /solution-explorer to map the technical options." |
-| Small scope, obvious implementation, no design needed | **/writing-plans** — "This is small enough to plan directly. Want me to invoke /writing-plans with the brief as input?" |
+| Small scope, obvious implementation, no design needed | **writing-change-set** (or **/writing-plans** if external add-on) — "This is small enough to plan directly. Want me to invoke writing-change-set with the brief as input?" |
 | Brief has gaps, persona doesn't exist yet | **Pause** — "Before design, I'd suggest: (1) /persona-builder to create a persona for [user type], (2) then come back to route to brainstorming." |
 | Feature has UI components, needs visual exploration | **/design-shotgun** — "This has significant UI work. Before the full design, want to explore visual directions with /design-shotgun?" |
-| Concept fragmentation or pipeline break — not a new feature | **/writing-plans** — "This isn't a new feature. It's a broken pipeline / naming mess. Skip the brief, go straight to a fix plan." |
+| Concept fragmentation or pipeline break — not a new feature | **writing-change-set** (or **/writing-plans** if external add-on) — "This isn't a new feature. It's a broken pipeline / naming mess. Skip the brief, go straight to a fix plan." |
 | Consumer journey exists but producer journey is missing | **/journey-sync** (Mode 2: Expand) — "The consumer flow is covered but no journey describes how the producer creates this data. Route to journey-sync to add the producer journey, then come back for any remaining gaps." |
 | Feature touches multiple personas across roles | **/journey-sync** then back here — "This crosses role boundaries. Run journey-sync to map the full lifecycle across personas first — it'll surface which side is missing. Then come back to brief the gap." |
 
@@ -391,7 +392,7 @@ When invoking the downstream skill, pass:
 The Feature Ship Brief (business layer only). It does NOT contain:
 - Schema or data model (comes from brainstorming / solution-explorer)
 - Architecture decisions (comes from brainstorming / solution-explorer)
-- Implementation plan (comes from writing-plans)
+- Implementation plan (comes from writing-change-set or external writing-plans)
 - Technical risks (comes from brainstorming / plan-eng-review)
 
 The brief is permanent and lives in the project's spec directory. It gets updated as the feature

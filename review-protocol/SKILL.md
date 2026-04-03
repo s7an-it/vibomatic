@@ -29,13 +29,13 @@ Invoke this skill at every gate in the pipeline:
 
 | Gate | After Skill | Artifact Under Review | State Transition |
 |------|-------------|----------------------|-----------------|
-| G1 | `writing-spec` | Feature Spec | DRAFT ready for UX |
-| G2 | `writing-ux-design` | UX Design | DRAFT to UX-REVIEWED |
-| G3 | `writing-ui-design` | UI Design | DRAFT to DESIGNED |
-| G4 | `writing-technical-design` | Technical Design | DESIGNED to BASELINED |
-| G5 | `writing-change-set` | Change Set | BASELINED to CHANGE-SET-APPROVED |
-| G6 | `promoting-change-set` | Promoted Code | CHANGE-SET-APPROVED to PROMOTED |
-| G7 | `verifying-promotion` | Verification Results | PROMOTED to VERIFIED |
+| G1 | `writing-spec` | Feature Spec | DRAFT → ready for UX |
+| G2 | `writing-ux-design` | UX Design | DRAFT → UX-REVIEWED |
+| G3 | `writing-ui-design` | UI Design | DRAFT → DESIGNED |
+| G4 | `writing-technical-design` | Technical Design | DESIGNED → BASELINED |
+| G5 | `writing-change-set` | Change Set | BASELINED → CHANGE-SET-APPROVED |
+| G6 | `promoting-change-set` | Promotion | CHANGE-SET-APPROVED → PROMOTED |
+| G7 | `verifying-promotion` | Verification | PROMOTED → VERIFIED |
 
 ## Prerequisites
 

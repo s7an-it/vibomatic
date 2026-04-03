@@ -749,7 +749,7 @@ on what was found:
 | Finding type | Route to | Why |
 |-------------|----------|-----|
 | Ungrounded precondition (no producer journey, no UI) | `/feature-discovery` | The missing producer side is a product gap that needs business validation before building. Feature-discovery determines if it's a real need, a pipeline fix, or concept fragmentation. |
-| Ungrounded precondition (UI exists, bypasses validation) | `/writing-plans` | The feature exists but the pipeline is broken. This is a fix, not a new feature — go straight to planning. |
+| Ungrounded precondition (UI exists, bypasses validation) | `writing-change-set` (or `/writing-plans` if external add-on) | The feature exists but the pipeline is broken. This is a fix, not a new feature — go straight to planning. |
 | Concept fragmentation (two names, one entity) | `/feature-discovery` | Feature-discovery resolves naming, identifies the industry pattern, and produces a consolidated brief. |
 | Missing persona (journey needs a user type with no persona file) | `/persona-builder` | Can't write a proper journey without understanding who the user is. |
 | Missing transition (gap between two features) | `/spec-ac-sync` | The transition needs ACs before it can be journeyed. |

@@ -10,12 +10,16 @@ description: Use when defining a new feature or change — produces a DRAFT feat
 A feature spec is the single source of truth for everything a feature is — whether that feature serves a human user or another system. It starts as a DRAFT and matures through its lifecycle:
 
 ```
-DRAFT      → user stories + ACs + journeys defined, no technical design
-BASELINED  → technical design added by writing-technical-design, approved for implementation
-VERIFIED   → implemented, tested, synced (RESOLVED annotations, QA ✅, E2E ✅)
+DRAFT               → user stories + ACs + journeys defined, no technical design
+UX-REVIEWED         → UX design approved (screen flows, states)
+DESIGNED            → UI design approved (visual, components)
+BASELINED           → technical design approved (architecture, data model)
+CHANGE-SET-APPROVED → implementation plan reviewed and approved
+PROMOTED            → change set applied to codebase
+VERIFIED            → implemented, tested, synced (RESOLVED annotations, QA ✅, E2E ✅)
 ```
 
-This skill produces DRAFT specs. It defines WHAT we're building and HOW it's experienced — never HOW to implement it. Technical design comes later in writing-technical-design.
+This skill produces DRAFT specs. It defines WHAT we're building and HOW it's experienced — never HOW to implement it. UX design comes next in writing-ux-design.
 
 **Announce at start:** "I'm using the writing-spec skill to define the feature requirements."
 
@@ -37,7 +41,7 @@ Every feature spec carries a `Type` tag that identifies its consumer:
 | `Enabler` | Other service/feature | "As [service], I need..." | System journey with service interactions | Score recalculation cron, event pipeline, email service |
 | `Integration` | External system boundary | "When [external event], the system must..." | Contract journey with request/response | Stripe webhooks, OAuth provider, third-party API |
 
-**The type determines the persona, not the process.** All types go through the same pipeline: writing-spec → writing-technical-design → writing-implementation-plan.
+**The type determines the persona, not the process.** All types go through the same pipeline: writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → promoting-change-set → verifying-promotion.
 
 ### How Types Relate
 
@@ -111,7 +115,7 @@ Every system step (`←`) is a dependency on an Enabler or Integration. Layer 3 
 - When a feature idea needs to be formalized before implementation
 - When existing specs need new user stories or ACs added
 - When Layer 3 flags an ungrounded precondition (create the enabler spec)
-- Before invoking writing-technical-design (requires a DRAFT or higher spec)
+- Before invoking writing-ux-design (requires a DRAFT or higher spec)
 
 ## Prerequisites
 
@@ -305,7 +309,7 @@ _To be added by writing-technical-design._
 
 ## Implementation Notes
 
-_To be added by writing-implementation-plan._
+_To be added by writing-change-set._
 
 ---
 
@@ -358,7 +362,7 @@ Missing dependency specs to create:
   1. feature-email-service.md (Enabler) — needed by: MATCH-03, J05 step 3
   2. feature-stripe-integration.md (Integration) — needed by: US-3, J05 step 7
 
-Create these now? (Each goes through writing-spec → writing-technical-design → writing-implementation-plan)
+Create these now? (Each goes through writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → promoting-change-set → verifying-promotion)
 ```
 
 This is how a single feature request cascades into the full system specification. The user approves which dependencies to spec now vs defer.
@@ -376,11 +380,11 @@ Journeys: [list of journey files created/updated]
 Layer 3 issues: [resolved count] resolved, [open count] flagged as dependencies
 Dependency queue: [count] enabler/integration specs to create
 
-Ready for technical design. Next step:
-  "Run writing-technical-design against docs/specs/features/<feature-name>.md"
+Ready for UX design. Next step:
+  "Run writing-ux-design against docs/specs/features/<feature-name>.md"
 ```
 
-**The terminal state is invoking writing-technical-design.** This skill does not write code, choose technologies, or make architecture decisions.
+**The terminal state is invoking writing-ux-design.** This skill does not write code, choose technologies, or make architecture decisions.
 
 ## The Cascade Effect
 
@@ -408,12 +412,12 @@ Each spec is its own file (agent-friendly: parallel processing, clean diffs, tar
 | Don't | Why | Instead |
 |-------|-----|---------|
 | Skip enabler specs ("it's just a cron") | Unspecified plumbing is where production breaks | Every shipping component gets a feature spec |
-| Write implementation details in stories | Couples requirements to a solution | Describe consumer intent, let writing-technical-design choose the how |
+| Write implementation details in stories | Couples requirements to a solution | Describe consumer intent, let downstream design skills choose the how |
 | Skip personas for Features | Stories become generic, untestable | Reference P*.md personas or flag their absence |
 | Write ACs as steps | Steps describe procedure, not criteria | Write assertions: "User sees X" not "User clicks Y then sees X" |
 | Create one giant story | Untestable, no granularity | Split by consumer goal — one goal per story |
 | Skip journey-sync | Miss hidden dependencies between features | Always run it — Layer 3 finds what humans miss |
-| Add technical design | Not this skill's job | Leave Technical Design empty for writing-technical-design |
+| Add technical design | Not this skill's job | Leave Technical Design empty for writing-ux-design and beyond |
 | Hand-wave dependencies | "We'll figure out the email service later" | Create the enabler spec now or explicitly defer with reasoning |
 | Put everything in one spec file | Agents work better with focused files | One spec per feature, cross-reference by ID |
 
@@ -421,7 +425,7 @@ Each spec is its own file (agent-friendly: parallel processing, clean diffs, tar
 
 | Situation | Route to |
 |-----------|----------|
-| Spec complete, ready for technical design | `writing-technical-design` |
+| Spec complete, ready for UX design | `writing-ux-design` |
 | Layer 3 reveals missing persona | `persona-builder` (then return) |
 | Layer 3 reveals concept fragmentation | Fix in spec, then re-run `journey-sync` |
 | Layer 3 reveals dependency on unbuilt feature | Create enabler spec (this skill, recursive) |

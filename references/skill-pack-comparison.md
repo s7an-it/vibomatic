@@ -33,7 +33,7 @@
 | **Technical Design** | `writing-technical-design` (feasibility matrix) | `/plan-eng-review` (ASCII diagrams, state machines) | `brainstorming` (design doc) |
 | **CEO/Scope Review** | — gap — | `/plan-ceo-review` (4 scope modes) | — |
 | **Auto-Review Pipeline** | — gap — | `/autoplan` (CEO→design→eng automatic) | — |
-| **Implementation Plan** | `writing-implementation-plan` (YAML tasks, spec chain) | — | `writing-plans` (bite-sized tasks, zero-context) |
+| **Change Set** | `writing-change-set` (multi-part exact bytes, spec chain) | — | `writing-plans` (bite-sized tasks, zero-context) |
 | **Plan Execution** | via superpowers | — | `executing-plans` (batch + architect review) |
 | **Subagent Dispatch** | via superpowers | — | `subagent-driven-development` (2-stage review) |
 | **TDD** | referenced in plan metadata | "Boil the Lake" philosophy | `test-driven-development` (Iron Law) |
@@ -88,7 +88,7 @@
 | **Feature spec authoring** | `writing-spec` — DRAFT specs with user stories, ACs, system dependencies. Consumer-first stories (human/service/external). Triggers journey-sync. Cascade creates enabler specs | None — design doc from `/office-hours` serves as loose spec | None — `brainstorming` produces design doc, not formal spec |
 | **Acceptance criteria** | `spec-ac-sync` — shared AC table contract (`\| AC \| Description \| QA \| E2E \| Test \|`). Converts old formats. 4 skills read/write the same table | None — no AC traceability | None — no AC format |
 | **Spec-code drift detection** | `spec-code-sync` — PLANNED/RESOLVED/DRIFT/UPDATED/REVERTED annotations with file:line proof. Bidirectional audit | None | None |
-| **Spec lifecycle** | DRAFT → BASELINED → VERIFIED. Status tracked in spec file header. Each phase has a dedicated skill | None — design docs are one-shot | None — design docs saved but no lifecycle |
+| **Spec lifecycle** | DRAFT → UX-REVIEWED → DESIGNED → BASELINED → CHANGE-SET-APPROVED → PROMOTED → VERIFIED. Status tracked in spec file header. Each phase has a dedicated skill | None — design docs are one-shot | None — design docs saved but no lifecycle |
 
 ### BDD / Journey Layer
 
@@ -114,12 +114,12 @@
 
 | Capability | vibomatic | gstack | superpowers (obra) |
 |---|---|---|---|
-| **Technical design** | `writing-technical-design` — architecture, components, data model, feasibility matrix against ACs, risks, trade-offs. DRAFT → BASELINED | `/plan-eng-review` — ASCII diagrams, data flow, state machines, edge cases, test matrix, error paths. Forces hidden assumptions visible | `brainstorming` — covers architecture/components in design doc |
+| **Technical design** | `writing-technical-design` — architecture, components, data model, feasibility matrix against ACs, risks, trade-offs. DESIGNED → BASELINED | `/plan-eng-review` — ASCII diagrams, data flow, state machines, edge cases, test matrix, error paths. Forces hidden assumptions visible | `brainstorming` — covers architecture/components in design doc |
 | **CEO/scope review** | Gap | `/plan-ceo-review` — 4 modes: expansion, selective expansion, hold scope, reduction. Challenges premises, rethinks scope | None |
 | **Auto-review pipeline** | Gap | `/autoplan` — runs CEO → design → eng review automatically with encoded decision principles | None |
-| **Implementation planning** | `writing-implementation-plan` — YAML task metadata (id, blockedBy, parallelGroup, context, tdd, validation). Spec chain tasks. Test enforcement audit. Plan review loop | Part of the plan output from eng review, but no structured task metadata format | `writing-plans` — bite-sized tasks, zero-context assumption. DRY/YAGNI/TDD. No YAML metadata, no parallel groups, no spec chain |
-| **Dependency analysis** | Built into `writing-implementation-plan` — `blockedBy` fields, parallel groups, context types (fresh/reuse/validate) | Not formalized | Not formalized |
-| **Mandatory spec chain** | `writing-implementation-plan` — post-implementation tasks for spec-ac-sync, spec-code-sync, journey-sync, persona-builder, e2e, feature-insights | None | None |
+| **Change set authoring** | `writing-change-set` — multi-part change set with exact file contents (manifest + parts by concern). Spec chain tasks. Test enforcement audit. Plan review loop | Part of the plan output from eng review, but no structured task metadata format | `writing-plans` — bite-sized tasks, zero-context assumption. DRY/YAGNI/TDD. No YAML metadata, no parallel groups, no spec chain |
+| **Dependency analysis** | Built into `writing-change-set` — manifest apply order, part dependencies, cross-file consistency | Not formalized | Not formalized |
+| **Mandatory spec chain** | `writing-change-set` — post-implementation tasks for spec-ac-sync, spec-code-sync, journey-sync, persona-builder, e2e, feature-insights | None | None |
 
 ### Implementation & Execution
 
@@ -127,7 +127,7 @@
 |---|---|---|---|
 | **Plan execution** | Uses superpowers' execution model (subagent-driven-development or executing-plans) | Claude Code does the coding, fed by plan artifacts. No formalized execution skill | `executing-plans` — batch execution (3 tasks default) with architect review between batches. Load → Review → Execute → Report |
 | **Subagent-per-task** | Uses superpowers' model | No subagent dispatch system | `subagent-driven-development` — fresh subagent per task + two-stage review (spec compliance then code quality). 4 prompt templates |
-| **TDD enforcement** | Referenced in `writing-implementation-plan` task metadata (`tdd: true/false`) | "Boil the Lake" philosophy — tests are the cheapest lake, never defer | `test-driven-development` — Iron Law: "NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST." Red-Green-Refactor. Delete code written before tests |
+| **TDD enforcement** | Built into `writing-change-set` — tests written before implementation in dedicated parts (part-05-tests-unit, part-06-tests-e2e) | "Boil the Lake" philosophy — tests are the cheapest lake, never defer | `test-driven-development` — Iron Law: "NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST." Red-Green-Refactor. Delete code written before tests |
 | **Parallel agents** | Uses superpowers' model | Conductor supports 10-15 simultaneous branches. Random port browser daemon | `dispatching-parallel-agents` — one agent per independent problem domain. Decision flowchart for when to parallelize |
 | **Git worktrees** | Uses superpowers' model | Not formalized (uses Conductor workspaces instead) | `using-git-worktrees` — systematic directory selection, safety verification, .gitignore enforcement |
 
@@ -150,7 +150,7 @@
 | **Cookie management** | Gap | `/setup-browser-cookies` — import cookies from Chrome/Arc/Brave/Edge. Interactive picker | None |
 | **Live browser view** | Gap | `/connect-chrome` — Side Panel extension, watch every action live, headed/headless toggle | None |
 | **Performance benchmarks** | Gap | `/benchmark` — baseline Core Web Vitals, resource sizes. Before/after on every PR. Trend tracking | None |
-| **Test enforcement** | `writing-implementation-plan` — 6-tier test enforcement audit (typecheck, lint, E2E, unit, migration safety, coverage) | "Boil the Lake" — completeness is near-free, never defer tests | `test-driven-development` — Iron Law, but no tiered enforcement system |
+| **Test enforcement** | `writing-change-set` — tests are part of the change set (written before implementation code), validated at G5 review | "Boil the Lake" — completeness is near-free, never defer tests | `test-driven-development` — Iron Law, but no tiered enforcement system |
 
 ### Marketing & Content
 
@@ -215,7 +215,7 @@
 | **Target user** | Technical founders, product engineers, teams with product/QA workflow | Solo technical founders shipping at scale (10K-20K LOC/day) | Developers using Claude Code who need process guardrails |
 | **Key principle** | Every shipping component gets a spec. Cascade discovery. Consistency enforced automatically | "Boil the Lake" — completeness is near-free with AI, always do the complete thing | Iron Laws — no code without tests, no fixes without root cause, no claims without evidence |
 | **Voice** | Structured, methodical, process-oriented | Direct, punchy, builder ethos. Anti-AI-slop. "Wild." Incomplete sentences | Principled, disciplined, gate-oriented |
-| **Artifact philosophy** | Living documents that mature (DRAFT→BASELINED→VERIFIED) | Design docs → plans → code → ship. One-directional | Plans saved to docs/, reviewed in batches |
+| **Artifact philosophy** | Living documents that mature (DRAFT→UX-REVIEWED→DESIGNED→BASELINED→CHANGE-SET-APPROVED→PROMOTED→VERIFIED) | Design docs → plans → code → ship. One-directional | Plans saved to docs/, reviewed in batches |
 | **Completeness model** | Full product lifecycle (vision→code→marketing) | Full engineering lifecycle (idea→production→monitoring) | Development discipline only (plan→code→review→merge) |
 | **Scalability** | Scales by feature type (Feature/Enabler/Integration cascade) | Scales by parallelism (Conductor, 10-15 branches) | Scales by subagent dispatch (parallel agents, worktrees) |
 
@@ -224,7 +224,7 @@
 ## Complementarity Map
 
 ### vibomatic + superpowers (current integration)
-vibomatic handles product definition and verification. superpowers handles implementation discipline. Already integrated: `writing-implementation-plan` derived from superpowers' `writing-plans` with YAML task metadata additions.
+vibomatic handles product definition and verification. superpowers handles implementation discipline. Already integrated: `writing-change-set` derived from superpowers' `writing-plans`, evolved from task descriptions to exact-bytes change sets.
 
 ### vibomatic + gstack (potential integration)
 | vibomatic provides | gstack provides | Together |

@@ -2,9 +2,11 @@
 name: workflow-compass
 description: >
   Know which product development skill to use next based on what exists in the project
-  and what was just done. Maps the 9 core skills (vision-sync, persona-builder, journey-sync,
+  and what was just done. Maps the core skills (vision-sync, persona-builder, journey-sync,
   journey-qa-ac-testing, feature-discovery, spec-ac-sync, spec-code-sync,
-  agentic-e2e-playwright, feature-marketing-insights),
+  agentic-e2e-playwright, feature-marketing-insights) and the pipeline skills
+  (writing-spec, writing-ux-design, writing-ui-design, writing-technical-design,
+  writing-change-set, review-protocol, promoting-change-set),
   their relationships, inputs, outputs, and handoff points. Use when: "what should I do next",
   "which skill do I run", "what's the right order", "product workflow", "skill map",
   "where do I start", "what comes after journey-sync", "I just ran spec-ac-sync now what",
@@ -14,7 +16,7 @@ description: >
 
 # Workflow Compass
 
-You have 9 core product development skills. Each one produces artifacts that other
+You have core product development skills and pipeline skills. Each one produces artifacts that other
 skills consume. Running them in the wrong order wastes work — running them in the
 right order compounds value. This skill knows the graph.
 
@@ -38,6 +40,7 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 
 ### Core Pack (always available in vibomatic)
 
+- `workflow-compass`
 - `vision-sync`
 - `persona-builder`
 - `journey-sync`
@@ -47,6 +50,13 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 - `spec-code-sync`
 - `agentic-e2e-playwright`
 - `feature-marketing-insights`
+- `writing-spec`
+- `writing-ux-design`
+- `writing-ui-design`
+- `writing-technical-design`
+- `writing-change-set`
+- `review-protocol`
+- `promoting-change-set`
 
 ### External Add-On Packs (optional)
 
@@ -58,7 +68,7 @@ Only route to external skills when explicitly installed/confirmed.
   `market-ads`, `market-emails`, `signup-flow-cro`, `onboarding-cro`
 
 - **planning add-on (optional):**
-  `writing-plans` (or repo-equivalent implementation planning skill)
+  `writing-plans` (external add-on; for vibomatic repos, use core `writing-change-set` instead)
 
 If an external skill is not confirmed, provide a core-pack fallback route.
 External pack definitions live in `EXTERNAL_ADDONS.md`.
@@ -102,7 +112,7 @@ External pack definitions live in `EXTERNAL_ADDONS.md`.
 
 **6 modes:** Bootstrap, Expand, Refresh, Migrate legacy, Auto (full sync), Tiered auto-discovery
 
-**Key detail:** Layer 3 analysis finds problems invisible to individual specs — contradictions, dead ends, persona mismatches, ungrounded preconditions (supply-side gaps), concept fragmentation. Layer 3 findings route to other skills (feature-discovery, implementation planning, persona-builder, spec-ac-sync).
+**Key detail:** Layer 3 analysis finds problems invisible to individual specs — contradictions, dead ends, persona mismatches, ungrounded preconditions (supply-side gaps), concept fragmentation. Layer 3 findings route to other skills (feature-discovery, writing-change-set, persona-builder, spec-ac-sync).
 
 **Cross-journey dependency graph:** Phase 4 traces every Background precondition back to its producing role, checks if a producer journey exists, if the UI exists, and if validation is intact.
 
@@ -222,7 +232,7 @@ feature-discovery ◄────► journey-sync ──────► journey-
 | spec-ac-sync | AC tables in feature specs | journey-qa-ac-testing (manual QA status), agentic-e2e (maps tests to AC IDs), spec-code-sync (reads for drift) |
 | spec-code-sync | Status annotations (`RESOLVED`/`FIXED`/`UPDATED`/`DRIFT`/`REVERTED`) | spec-ac-sync (stale ACs need rewriting) |
 | journey-qa-ac-testing | Journey runtime verification + evidence + QA status updates | spec-ac-sync (missing/weak AC fixes), journey-sync (flow gap fixes), agentic-e2e (automation follow-up) |
-| feature-discovery | Feature Ship Brief | journey-sync (input for new journeys), implementation planning (repo-specific; optional `writing-plans` add-on) |
+| feature-discovery | Feature Ship Brief | journey-sync (input for new journeys), `writing-change-set` (core; or `writing-plans` if external add-on installed) |
 | agentic-e2e | E2E test results | spec-ac-sync (E2E column gets filled) |
 | feature-marketing-insights | Marketing context doc + tracker | Downstream marketing skills (core-pack outputs + optional external add-ons) |
 | feature-marketing-insights | Mode 8 persona validation gaps | persona-builder (buyer personas may reveal missing product personas) |
@@ -235,12 +245,12 @@ feature-discovery ◄────► journey-sync ──────► journey-
 | vision-sync | Evidence conflict or unresolved scope drift | spec-code-sync for drift check, then rerun vision-sync grounded |
 | journey-sync | Journey set finalized for release validation | journey-qa-ac-testing (smoke/regression) |
 | journey-sync | Ungrounded precondition — no producer journey, no UI | feature-discovery |
-| journey-sync | Ungrounded precondition — UI exists but bypasses validation | implementation planning (repo-specific; `writing-plans` if add-on installed) |
+| journey-sync | Ungrounded precondition — UI exists but bypasses validation | `writing-change-set` (core; or `writing-plans` if external add-on installed) |
 | journey-sync | Missing persona for a role | persona-builder |
 | journey-sync | Missing transition needs ACs | spec-ac-sync |
 | journey-sync | Concept fragmentation (two names, one entity) | feature-discovery |
 | feature-discovery | Consumer journey exists, producer missing | journey-sync (Mode 2: Expand) |
-| feature-discovery | Not a new feature — pipeline fix | implementation planning (repo-specific; `writing-plans` if add-on installed) |
+| feature-discovery | Not a new feature — pipeline fix | `writing-change-set` (core; or `writing-plans` if external add-on installed) |
 | feature-discovery | Feature crosses role boundaries | journey-sync first, then back |
 | feature-discovery | Persona doesn't exist for this user type | persona-builder |
 | spec-code-sync | DRIFT found — spec says X, code does Y | Developer decides: fix code or update spec |
@@ -309,7 +319,7 @@ feature-discovery ◄────► journey-sync ──────► journey-
    journeys, and specs. Is this already built? Is it concept fragmentation?
    Does a journey already cover it? Or is it genuinely new?
 4. Route each validated idea to the right next step (journey-sync for new
-   journeys, implementation planning for quick fixes, persona-builder if it reveals
+   journeys, writing-change-set for quick fixes, persona-builder if it reveals
    a new user type)
 
 ### "Time to start marketing / prepare for launch"
