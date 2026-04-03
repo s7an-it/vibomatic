@@ -40,20 +40,87 @@ against a baseline (raw approach with no methodology).
 Run framework-test autopilot on scenario S1
 ```
 
-The autopilot will:
-1. Read the scenario from `references/autopilot-protocol.md`
-2. Create a worktree for the test
-3. Run each vibomatic skill in pipeline order
-4. Simulate user responses when skills ask questions
-5. Collect metrics after each phase (tokens, time, artifacts)
-6. Run the same scenario as raw baseline
-7. Produce comparison report
-8. Identify gaps and recommendations
-9. Move to next scenario or stop if budget exhausted
+The autopilot is a **continuous self-healing loop**, not a one-shot runner.
+
+```
+LOOP:
+  1. PICK scenario (start with S1, or auto-suggest based on gaps)
+  2. RUN all 19 skills in pipeline order on the scenario
+     - Play the user when skills ask questions
+     - Record metrics at every phase boundary
+  3. CHECK every skill-to-skill handoff (glue check)
+     - Does writing-spec output what writing-ux-design expects?
+     - Does each skill reference the previous skill's artifacts?
+     - Are all AC IDs traceable from spec → journey → E2E?
+  4. FIND gaps
+     - Missing artifacts? Broken cross-references? Skill produced nothing?
+     - Skill asked a question the user-simulator couldn't answer?
+     - Doctrine claim unsupported by this run's data?
+  5. FIX gaps
+     - If a skill's SKILL.md has a gap → suggest the edit, apply it, re-run THAT skill
+     - If glue is broken between skill A → B → update A's routing or B's prerequisites
+     - If a doctrine claim fails → flag it honestly, don't paper over it
+  6. VERIFY fixes
+     - Re-run the specific skill that was fixed
+     - Re-check the glue at that boundary
+     - Confirm the gap is closed
+  7. COMPARE against raw baseline
+     - Same scenario, single prompt, no methodology
+     - Measure: ACs, enablers, tokens, edge cases, structure
+  8. ANALYZE
+     - What worked, what didn't, token cost at each phase
+     - Which skills are strong, which are weak
+     - What the doctrine gets right, what needs revision
+  9. SUGGEST next scenario
+     - If a skill was never tested → suggest scenario that exercises it
+     - If a glue boundary failed → suggest scenario that stresses it
+     - If all skills passed → suggest adversarial scenario
+  10. CONTINUE or STOP
+     - Continue if: uncovered skills, unverified claims, or fixes to verify
+     - Stop if: all 19 skills tested + all glue checks pass + all claims verified
+       OR token budget exhausted
+     - On stop: produce final comprehensive report
+```
+
+The loop is the skill. It doesn't report findings and wait — it finds, fixes,
+verifies, and moves on. The agent IS the QA team running continuously.
 
 **No CI, no API tokens needed.** Everything runs locally through Claude Code
 sub-agents. The LLM IS the test runner — it reads skills, executes them,
-observes outputs, and measures results.
+observes outputs, fixes problems, and measures results.
+
+### What "fix" means
+
+The autopilot can fix three categories of issues:
+
+| Category | Example | Fix Action |
+|----------|---------|------------|
+| Skill gap | writing-ux-design doesn't check for Enabler type (skips it wrongly) | Edit SKILL.md to handle Enabler UX (admin/monitoring screens) |
+| Glue gap | writing-spec outputs AC IDs as `AC-1.1` but journey-sync expects `FEAT-01` format | Update writing-spec's AC prefix convention or journey-sync's parser |
+| Doctrine gap | Claim C3 (cache optimization) can't be verified from this run | Add a measurement step to the protocol, or flag claim as unverifiable locally |
+
+For skill and glue fixes: the autopilot edits the SKILL.md, re-runs the
+affected phase, and verifies the fix. For doctrine gaps: it updates the
+findings document honestly.
+
+### What "suggest next scenario" means
+
+After each scenario, the autopilot looks at skill coverage:
+
+```
+Skills exercised this run: 15/19
+Missing: journey-qa-ac-testing, agentic-e2e-playwright, feature-marketing-insights, promoting-change-set
+→ Suggest: scenario that produces runnable code (so QA and E2E can execute against live server)
+→ Suggest: scenario with marketing angle (so feature-marketing-insights runs)
+```
+
+It also looks at boundary coverage:
+
+```
+Glue boundaries tested: 8/11
+Missing: writing-change-set → promoting-change-set, promoting → verifying, review-protocol at G5
+→ Suggest: scenario that goes all the way to implementation + promotion
+```
 
 ## What This Tests
 

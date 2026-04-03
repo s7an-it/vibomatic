@@ -7,15 +7,28 @@ and comparing against baselines (raw, obra, gstack).
 ## How It Works
 
 ```
-Loop:
-  1. SCENARIO     → pick or generate a scenario
-  2. EXECUTE      → run full vibomatic pipeline (auto-responding as user)
-  3. MEASURE      → collect tokens, time, artifacts, coverage per skill
-  4. COMPARE      → run same scenario without vibomatic (baseline)
-  5. ANALYZE      → what worked, what didn't, what's missing, what drifted
-  6. EVOLVE       → update skill findings, identify improvements
-  7. NEXT         → pick next scenario (new feature, iteration, or adversarial)
-  → repeat until token budget exhausted or all scenarios covered
+OUTER LOOP (per scenario):
+  1. PICK         → choose scenario (built-in or auto-suggested from gaps)
+  2. EXECUTE      → run ALL 19 skills in pipeline order (simulate user for questions)
+  3. MEASURE      → collect per-skill metrics (tokens, time, artifacts, ACs)
+  4. GLUE CHECK   → verify every skill-to-skill handoff (references, formats, IDs)
+  5. FIND GAPS    → missing artifacts, broken references, unsupported claims
+
+  INNER LOOP (per gap found):
+    5a. DIAGNOSE  → which skill has the problem? What's wrong?
+    5b. FIX       → edit the SKILL.md to close the gap
+    5c. RE-RUN    → re-execute the fixed skill on this scenario
+    5d. VERIFY    → did the fix close the gap? If not, back to 5a (max 3 attempts)
+
+  6. COMPARE      → run same scenario as raw baseline, measure delta
+  7. ANALYZE      → comprehensive report: what works, what's weak, token costs
+  8. SUGGEST NEXT → auto-pick next scenario based on coverage gaps
+  → repeat OUTER LOOP until:
+     - ALL 19 skills tested with at least 1 scenario each
+     - ALL 11 glue boundaries verified (skill A → skill B handoffs)
+     - ALL 7 doctrine claims have supporting evidence
+     - OR token budget exhausted
+     - OR 3 consecutive scenarios with zero new findings
 ```
 
 ## Scenarios
@@ -192,16 +205,66 @@ framework-test/results/YYYY-MM-DD-HHMMSS/
     recommendations.md        ← improvements to make based on findings
 ```
 
+## Full Skill Invocation Order
+
+When running a scenario, execute ALL 19 skills in this order:
+
+| # | Skill | Phase | Input | Output |
+|---|-------|-------|-------|--------|
+| 1 | `vision-sync` | Foundational | Scenario prompt | `docs/specs/vision.md` |
+| 2 | `persona-builder` | Foundational | Vision | `docs/specs/personas/P*.md` |
+| 3 | `workflow-compass` | Routing | Project state | Confirms next skill |
+| 4 | `feature-discovery` | Discovery | Vision + personas + prompt | Feature Ship Brief |
+| 5 | `writing-spec` | Phase 3 | Ship Brief | Feature spec (DRAFT) + cascade specs |
+| 6 | `spec-ac-sync` | Phase 3 | Feature specs | Audited AC tables |
+| 7 | `journey-sync` | Phase 3 | Specs + personas | Journey docs (J*.feature.md) |
+| 8 | `writing-ux-design` | Phase 4 | DRAFT spec + personas + journeys | UX design doc |
+| 9 | `writing-ui-design` | Phase 5 | UX design + spec | UI design doc + design-system.md |
+| 10 | `writing-technical-design` | Phase 6 | DESIGNED spec + all designs | BASELINED spec |
+| 11 | `review-protocol` | Gate G4 | BASELINED spec | Findings (self + cross) |
+| 12 | `writing-change-set` | Phase 7 | BASELINED spec + designs | Code in worktree + manifest |
+| 13 | `promoting-change-set` | Phase 8 | Change set | Promoted code on branch |
+| 14 | `verifying-promotion` | Phase 9 | Promoted code + specs | Verification report |
+| 15 | `spec-code-sync` | Verification | Specs + code | RESOLVED/DRIFT annotations |
+| 16 | `journey-qa-ac-testing` | Verification | Journeys + live server | QA column updates |
+| 17 | `agentic-e2e-playwright` | Verification | Journeys + ACs | E2E test files |
+| 18 | `feature-marketing-insights` | Marketing | Feature specs | Marketing context doc |
+| 19 | `framework-test` | Meta | All outputs | Coverage + metrics report |
+
+For skills 16 (journey-qa-ac-testing): spin up the server from Phase 7 code first.
+For skill 18 (feature-marketing-insights): run Mode 4 (Foundation) then Mode 2 (Single Feature).
+After skill 18: document how the coreyhaines external marketing pack would consume the output.
+
+## Completion Criteria
+
+The autopilot is DONE when ALL of these are true:
+
+```
+□ All 19 skills invoked at least once with real output
+□ All 11 glue boundaries verified (skill A → B handoffs)
+□ All 7 doctrine claims have evidence (SUPPORTED or REFUTED — honest either way)
+□ At least 2 different scenarios completed (exercises different feature types)
+□ At least 1 iteration scenario (adding to existing project)
+□ Marketing interop documented (how external packs consume vibomatic output)
+□ Raw baseline comparison completed for at least 1 scenario
+□ Zero critical glue gaps remaining (all fixed or flagged with justification)
+□ Comprehensive analysis.md produced
+```
+
+If a criterion cannot be met (e.g., live server QA needs a framework the
+scenario doesn't use), document WHY and count it as a justified skip.
+
 ## Loop Control
 
-The autopilot runs until one of:
-- Token budget exhausted (configurable, default: 500K)
-- All scenarios covered
-- User interrupts with Ctrl+C
-- 3 consecutive scenarios with no new findings
+The autopilot runs until completion criteria are met or:
+- Token budget exhausted (report what was achieved and what remains)
+- User interrupts (save state, report progress)
+- 3 consecutive scenarios with zero new findings (satisfied — stop)
 
-After each scenario, the autopilot decides what to run next:
-1. If a skill failed → run skill-isolation for that skill
-2. If glue check failed → run the two adjacent skills in sequence
-3. If all scenarios passed → generate an adversarial scenario
-4. If token budget is low → run only static checks
+After each scenario, decide what to run next:
+1. If a skill was never tested → pick scenario that exercises it
+2. If a glue boundary failed → re-run the two adjacent skills after fix
+3. If all skills passed → generate adversarial scenario (ambiguous prompt, edge case)
+4. If iteration mode untested → run scenario S3 (add feature to existing project)
+5. If marketing untested → run scenario with B2B angle (exercises marketing insights)
+6. If token budget is low → run only static checks + report remaining gaps
