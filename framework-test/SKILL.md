@@ -301,3 +301,198 @@ can be refined based on evidence rather than assertion.
 | Cherry-pick passing results | Undermines the methodology's credibility | Report all results including failures |
 | Skip the self-review section | The point is intellectual honesty | Always produce the claim verification table |
 | Test only the happy path | Failures teach more than successes | Include adversarial tests (Suite 4) |
+
+## Automated Test Runner
+
+The full test suite runs end-to-end without manual intervention. The runner:
+1. Spins up a test server from generated code
+2. Runs all static suites
+3. Runs generative suites via sub-agents
+4. Runs live QA against the server
+5. Aggregates results
+6. Shuts down the server
+
+```bash
+bash framework-test/scripts/run-all.sh [--static-only] [--include-live] [--runs N]
+```
+
+### Server Lifecycle
+
+The runner auto-generates a test server if none exists:
+
+```bash
+# 1. Check if a server exists from previous test runs
+if [ -d /tmp/vibomatic-test-server ]; then
+  cd /tmp/vibomatic-test-server && node src/index.js &
+else
+  # 2. Use vibomatic's own pipeline to generate one
+  #    (or use the raw comparison output if available)
+  cp -r /tmp/vibomatic-test-raw /tmp/vibomatic-test-server 2>/dev/null || \
+  cp -r examples/todo-api /tmp/vibomatic-test-server
+  cd /tmp/vibomatic-test-server && node src/index.js &
+fi
+SERVER_PID=$!
+
+# 3. Wait for server ready
+for i in $(seq 1 10); do
+  curl -s http://localhost:3000/todos > /dev/null 2>&1 && break
+  sleep 1
+done
+
+# 4. Run tests...
+
+# 5. Cleanup
+kill $SERVER_PID 2>/dev/null
+```
+
+## Statistical Rigor
+
+Single runs prove nothing — they might be lucky. Statistical claims require
+multiple runs with variance reporting.
+
+### Multiple-Run Protocol
+
+For any generative suite (2-7), run N times (default N=3) and report:
+
+```json
+{
+  "suite": "progressive-narrowing",
+  "runs": 3,
+  "results": [
+    { "run": 1, "variance_reduction": 78.2 },
+    { "run": 2, "variance_reduction": 85.1 },
+    { "run": 3, "variance_reduction": 81.5 }
+  ],
+  "statistics": {
+    "mean": 81.6,
+    "std_dev": 3.5,
+    "confidence_interval_95": [74.9, 88.3],
+    "min": 78.2,
+    "max": 85.1,
+    "n": 3
+  },
+  "pass": true,
+  "pass_criteria": "lower bound of 95% CI > 0 (variance reduction is positive)"
+}
+```
+
+### Confidence Intervals
+
+For claims to be SUPPORTED, the 95% confidence interval must not cross the
+null hypothesis:
+
+| Claim | Null Hypothesis | CI Must Not Cross |
+|-------|----------------|-------------------|
+| C1: Narrowing reduces variance | variance_reduction = 0 | CI lower bound > 0% |
+| C2: Spec-as-index saves tokens | token_ratio = 1.0 | CI upper bound < 1.0 |
+| C4: Protocol catches more | detection_delta = 0 | CI lower bound > 0 |
+| C5: Checkpoints prevent drift | ac_delta = 0 | CI lower bound > 0 |
+
+For N=3, confidence intervals are wide. The runner recommends increasing N
+when CI crosses the null: "Result is inconclusive at N=3. Run with --runs 5
+for tighter bounds."
+
+### Effect Size
+
+Raw numbers can be misleading. Report Cohen's d for each comparison:
+
+```
+d = (mean_vibomatic - mean_baseline) / pooled_std_dev
+
+d < 0.2  → negligible effect (claim is weak)
+d 0.2-0.5 → small effect (claim is marginal)
+d 0.5-0.8 → medium effect (claim is supported)
+d > 0.8  → large effect (claim is strongly supported)
+```
+
+## Self-Evolving Test Coverage
+
+The framework-test skill uses vibomatic's own pipeline to evolve its test
+coverage. This is self-referential by design — the system tests itself using
+its own methodology.
+
+### How It Works
+
+1. **After each test run**, the framework-test skill reads the results and
+   identifies gaps:
+   - Claims with wide confidence intervals → need more runs
+   - Claims with UNTESTED status → need new test scenarios
+   - Suites that always pass → might be too easy (non-discriminating)
+   - Suites that always fail → might have bugs in the test itself
+
+2. **To generate new test scenarios**, the skill invokes writing-spec:
+   ```
+   "Using writing-spec, define a feature that would stress-test [weak claim].
+   The feature should exercise [specific aspect] in a way that could
+   falsify the claim if it's wrong."
+   ```
+
+3. **The new scenario becomes a test case.** The writing-spec output is a
+   feature spec. The test runner uses it as input for the relevant suite.
+
+4. **Results feed back** into the findings document and the doctrine's
+   claim verification table.
+
+### Evolution Triggers
+
+| Trigger | Action |
+|---------|--------|
+| New skill added to vibomatic | Generate test scenario for the new skill |
+| Doctrine claim modified | Re-run relevant suite with increased N |
+| Test suite always passes (>5 runs) | Generate adversarial scenario designed to fail |
+| CI crosses null hypothesis | Increase N or generate discriminating scenario |
+| New feature type discovered | Add cascade test for that type |
+
+### Self-Test Integrity
+
+The evolution process itself must be trustworthy:
+
+1. **New scenarios are reviewed** before being added to the test suite
+   (using the review-protocol skill).
+2. **Results are append-only** — previous results are never modified,
+   only new results are added. Historical comparison shows trends.
+3. **The framework-test skill's own SKILL.md is versioned** with the
+   same checkpoint system. Changes to the test skill require their own
+   review gate.
+
+## Integration with CI
+
+For projects using vibomatic in CI/CD:
+
+```yaml
+# .github/workflows/vibomatic-test.yml
+name: Vibomatic Pipeline Validation
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static validation
+        run: bash framework-test/scripts/validate-pipeline-integrity.sh .
+      - name: Skill pack consistency
+        run: |
+          DIRS=$(find . -name "SKILL.md" -not -path "./.git/*" | wc -l)
+          MANIFEST=$(python3 -c "import json; print(len(json.load(open('skills-manifest.json'))['includedSkills']))")
+          [ "$DIRS" -eq "$MANIFEST" ] || exit 1
+```
+
+Static validation runs in CI without tokens. Generative tests run on-demand
+or on a schedule (they cost tokens).
+
+## Bootstrapping From Zero
+
+If no test infrastructure exists, the framework-test skill bootstraps itself:
+
+```
+1. Read DOCTRINE.md → extract claims
+2. For each claim → generate minimal test scenario using writing-spec
+3. Run static validation on the generated artifacts
+4. Run one generative suite (Suite 2: narrowing — the core claim)
+5. Report results
+6. Recommend which suites to run next based on findings
+```
+
+This means framework-test works on ANY project using vibomatic — not just
+the todo-api example. It generates its own test scenarios from the project's
+actual specs and code.
