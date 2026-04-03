@@ -1,35 +1,77 @@
 # Autopilot Protocol
 
 The autopilot is a continuous loop that runs vibomatic end-to-end on real
-scenarios, playing the user when questions arise, measuring every metric,
-and comparing against baselines (raw, obra, gstack).
+scenarios, producing running applications. Every scenario opens worktrees,
+executes all 19 skills, starts a live server, runs E2E tests, compares
+against obra and raw baselines, fixes gaps in SKILL.md files, and cleans
+up. No simulations. No hedging. Real output or a bug to fix.
 
-## How It Works
+## Outer Loop
 
 ```
 OUTER LOOP (per scenario):
-  1. PICK         → choose scenario (built-in or auto-suggested from gaps)
-  2. EXECUTE      → run ALL 19 skills in pipeline order (simulate user for questions)
-  3. MEASURE      → collect per-skill metrics (tokens, time, artifacts, ACs)
-  4. GLUE CHECK   → verify every skill-to-skill handoff (references, formats, IDs)
-  5. FIND GAPS    → missing artifacts, broken references, unsupported claims
+  1. PICK         -> choose scenario (built-in or auto-suggested from gaps)
+  2. OPEN         -> git worktree add /tmp/vibomatic-test-{scenario-id} main
+  3. EXECUTE      -> run ALL 19 skills in pipeline order inside the worktree
+                     Phase 7 produces FULL runnable code (all 8 parts)
+                     promoting-change-set writes files into the worktree
+  4. START SERVER -> cd into worktree, npm install, npm start
+                     Wait for http://localhost:3000 to respond (max 15 retries, 2s apart)
+                     If server fails: fix Phase 7 output, try again (max 3 fix attempts)
+  5. TEST LIVE    -> spec-code-sync against source files in the worktree
+                     journey-qa-ac-testing against the live server
+                     agentic-e2e-playwright generates AND RUNS tests against localhost
+  6. COMPARE OBRA -> open second worktree (/tmp/vibomatic-test-{id}-obra)
+                     brainstorm -> plan -> execute (parallel agents) -> running app on port 3001
+                     Same scenario, same ACs to measure against
+  7. COMPARE RAW  -> open third worktree (/tmp/vibomatic-test-{id}-raw)
+                     Single prompt -> code -> running app on port 3002
+                     Same scenario, same ACs to measure against
+  8. MEASURE      -> three-way delta (ACs, edge cases, tokens, coverage, time)
+  9. FIND GAPS    -> which skills produced weak output? which handoffs lost info?
 
   INNER LOOP (per gap found):
-    5a. DIAGNOSE  → which skill has the problem? What's wrong?
-    5b. FIX       → edit the SKILL.md to close the gap
-    5c. RE-RUN    → re-execute the fixed skill on this scenario
-    5d. VERIFY    → did the fix close the gap? If not, back to 5a (max 3 attempts)
+    9a. DIAGNOSE  -> which skill's SKILL.md has the deficiency?
+    9b. FIX       -> edit the SKILL.md to close the gap
+    9c. RE-RUN    -> re-execute the fixed skill on this scenario
+    9d. VERIFY    -> did the fix close the gap? If not, back to 9a (max 3 attempts)
+    9e. COMMIT    -> fix({skill-name}): {what was wrong and how it's fixed}
 
-  6. COMPARE      → run same scenario as raw baseline, measure delta
-  7. ANALYZE      → comprehensive report: what works, what's weak, token costs
-  8. SUGGEST NEXT → auto-pick next scenario based on coverage gaps
-  → repeat OUTER LOOP until:
-     - ALL 19 skills tested with at least 1 scenario each
-     - ALL 11 glue boundaries verified (skill A → skill B handoffs)
-     - ALL 7 doctrine claims have supporting evidence
-     - OR token budget exhausted
-     - OR 3 consecutive scenarios with zero new findings
+  10. CLOSE       -> merge worktrees to main or create PR with findings
+                     git worktree remove for ALL three worktrees
+                     Never leave orphaned worktrees
+  11. SUGGEST     -> auto-pick next scenario based on coverage gaps
+  -> repeat OUTER LOOP until completion criteria met or token budget exhausted
 ```
+
+## Worktree Lifecycle
+
+Every scenario runs inside git worktrees. No exceptions.
+
+### Single-Approach Worktree
+
+```bash
+git worktree add /tmp/vibomatic-test-{scenario-id} main
+# ... all 19 skills execute inside this worktree ...
+# ... server starts from this worktree ...
+git worktree remove /tmp/vibomatic-test-{scenario-id}
+```
+
+### Three-Way Comparison Worktrees
+
+```bash
+git worktree add /tmp/vibomatic-test-{id}-vibomatic main
+git worktree add /tmp/vibomatic-test-{id}-obra main
+git worktree add /tmp/vibomatic-test-{id}-raw main
+```
+
+Each worktree gets its own server on a different port:
+- Vibomatic: port 3000
+- Obra: port 3001
+- Raw: port 3002
+
+Clean up ALL worktrees when the scenario completes. If a worktree fails to
+remove (uncommitted changes), force-remove it. Orphaned worktrees are bugs.
 
 ## Scenarios
 
@@ -40,7 +82,7 @@ OUTER LOOP (per scenario):
 | `greenfield` | Start from zero, user gives high-level goal | Full pipeline, cascade, all phases |
 | `iteration` | Add feature to existing project | Convert mode, preserve existing |
 | `adversarial` | Intentionally ambiguous/complex request | Edge cases, error handling |
-| `comparison` | Same feature via vibomatic vs raw vs obra | Quality/cost tradeoff |
+| `comparison` | Same feature via vibomatic vs obra vs raw | Quality/cost tradeoff |
 | `skill-isolation` | Test one specific skill deeply | Skill-specific edge cases |
 
 ### Built-in Scenarios
@@ -50,7 +92,7 @@ OUTER LOOP (per scenario):
   {
     "id": "S1",
     "type": "greenfield",
-    "prompt": "I want to make an app that suggests what to learn for AI based on what is trendy in social platforms today. Three deployment modes: (1) self-hosted free — anyone can run it themselves at no cost, (2) hosted for profit — someone hosts it and charges their users a subscription to use the tool, (3) self-hosted private — a company hosts it internally for their own team's use.",
+    "prompt": "I want to make an app that suggests what to learn for AI based on what is trendy in social platforms today. Three deployment modes: (1) self-hosted free -- anyone can run it themselves at no cost, (2) hosted for profit -- someone hosts it and charges their users a subscription to use the tool, (3) self-hosted private -- a company hosts it internally for their own team's use.",
     "complexity": "high",
     "expected_features": ["trend scraping", "content recommendation", "user profiles", "skill tracking", "learning paths"],
     "expected_enablers": ["scraping service", "recommendation engine", "content aggregator", "trend analyzer"],
@@ -69,7 +111,7 @@ OUTER LOOP (per scenario):
   {
     "id": "S3",
     "type": "iteration",
-    "prompt": "Add real-time collaboration to the existing todo-api — multiple users can see each other's changes live.",
+    "prompt": "Add real-time collaboration to the existing todo-api -- multiple users can see each other's changes live.",
     "complexity": "medium",
     "base_project": "examples/todo-api",
     "expected_enablers": ["websocket service", "presence tracking"]
@@ -105,17 +147,63 @@ reasonable user responses:
 ```
 Skill asks: "What personas will use this feature?"
 Scenario context: AI learning app, self-hostable
-Autopilot responds: "Two main users — individual learners who self-host 
+Autopilot responds: "Two main users -- individual learners who self-host
 for free, and teams/companies who pay for hosted version."
 ```
 
 ### Response Rules
 
-1. Stay consistent with the scenario prompt — don't invent new requirements
+1. Stay consistent with the scenario prompt -- do not invent new requirements
 2. When asked for preferences, choose the simpler option (faster testing)
 3. When asked for approval, approve if the output looks reasonable
-4. When asked to clarify ambiguity, provide ONE clear answer (don't ramble)
+4. When asked to clarify ambiguity, provide ONE clear answer (do not ramble)
 5. Log every simulated response for review
+
+## Three-Way Comparison Protocol
+
+Every scenario produces THREE running applications from THREE approaches.
+
+### Approach 1 -- Vibomatic (full 19-skill pipeline)
+
+1. Open worktree: `/tmp/vibomatic-test-{id}-vibomatic`
+2. Run all 19 skills in pipeline order (see Full Skill Invocation Order)
+3. Phase 7 produces full code (all 8 parts)
+4. `npm install && npm start` on port 3000
+5. Run E2E tests against localhost:3000
+
+### Approach 2 -- Obra/Superpowers (brainstorm-plan-execute)
+
+1. Open worktree: `/tmp/vibomatic-test-{id}-obra`
+2. Invoke `superpowers:brainstorming` with the scenario prompt
+3. Invoke `superpowers:writing-plans` with the brainstorm output
+4. Invoke `superpowers:executing-plans` with the plan
+5. Use `superpowers:dispatching-parallel-agents` for independent tasks
+6. `npm install && npm start` on port 3001
+7. Run same E2E tests against localhost:3001
+
+### Approach 3 -- Raw (single prompt)
+
+1. Open worktree: `/tmp/vibomatic-test-{id}-raw`
+2. One prompt: "Build [scenario description]. Produce a complete, runnable Node.js application."
+3. No methodology, no phases, no review
+4. `npm install && npm start` on port 3002
+5. Run same E2E tests against localhost:3002
+
+### Measurements (per approach)
+
+| Metric | How to measure |
+|--------|---------------|
+| ACs satisfied | Check each AC from the vibomatic spec against the running server |
+| Edge cases handled | Count error handlers, validation, boundary checks in code |
+| Token cost | Sum total_tokens from all sub-agent task notifications |
+| Test coverage | Run unit tests, report pass/fail counts |
+| Time to running server | Wall clock from first prompt to server responding |
+| Code structure | Count files, modules, separation of concerns |
+| E2E pass rate | Run Playwright tests against each server |
+
+Report format: side-by-side table in `comparison.json` and `comparison.md`.
+The comparison is the core value proposition -- it proves (or disproves)
+that vibomatic produces better output.
 
 ## KPIs and Metrics
 
@@ -127,7 +215,7 @@ for free, and teams/companies who pay for hosted version."
 | `wall_time_ms` | Task notification duration_ms | Latency per skill |
 | `artifacts_produced` | Count output files | Productivity measure |
 | `ac_count` | Count AC rows in produced specs | Specificity measure |
-| `cascade_depth` | Count Feature→Enabler→Integration chain | Dependency discovery depth |
+| `cascade_depth` | Count Feature->Enabler->Integration chain | Dependency discovery depth |
 | `cross_references` | Count links between artifacts | Glue quality |
 | `errors_in_output` | Review-protocol findings on output | Quality measure |
 
@@ -142,15 +230,15 @@ for free, and teams/companies who pay for hosted version."
 
 ### Comparison Metrics
 
-| Metric | Vibomatic | Baseline | Delta |
-|--------|-----------|----------|-------|
-| `total_tokens` | N | N | ratio |
-| `total_time` | N | N | ratio |
-| `ac_count` | N | 0 | absolute |
-| `enabler_separation` | yes/no | yes/no | boolean |
-| `cascade_discovered` | N specs | 0 | absolute |
-| `edge_cases_caught` | N | N | delta |
-| `drift_findings` | N | N/A | absolute |
+| Metric | Vibomatic | Obra | Raw | Unit |
+|--------|-----------|------|-----|------|
+| `total_tokens` | N | N | N | tokens |
+| `total_time` | N | N | N | ms |
+| `ac_count` | N | N | N | count |
+| `edge_cases_caught` | N | N | N | count |
+| `e2e_pass_rate` | N | N | N | percentage |
+| `test_coverage` | N | N | N | percentage |
+| `time_to_server` | N | N | N | seconds |
 
 ### Glue Metrics (Skill-to-Skill)
 
@@ -158,53 +246,28 @@ These verify the pipeline has no holes:
 
 | Transition | Check |
 |------------|-------|
-| writing-spec → writing-ux-design | UX design references spec AC IDs |
-| writing-ux-design → writing-ui-design | UI design references UX screens |
-| writing-ui-design → writing-technical-design | Tech design references UI components |
-| writing-technical-design → writing-change-set | Change set covers all tech design components |
-| writing-change-set → promoting-change-set | Manifest lists all changed files |
-| promoting-change-set → verifying-promotion | spec-code-sync finds the RESOLVED items |
+| writing-spec -> writing-ux-design | UX design references spec AC IDs |
+| writing-ux-design -> writing-ui-design | UI design references UX screens |
+| writing-ui-design -> writing-technical-design | Tech design references UI components |
+| writing-technical-design -> writing-change-set | Change set covers all tech design components |
+| writing-change-set -> promoting-change-set | Manifest lists all changed files |
+| promoting-change-set -> verifying-promotion | spec-code-sync finds the RESOLVED items |
 | review-protocol at each gate | Findings are actionable, not theater |
 
 ### Doctrine Verification
 
 | Claim | Metric | Pass Criteria |
 |-------|--------|--------------|
-| C1: Progressive narrowing | variance across 2 runs | vibomatic variance < raw variance |
-| C2: Spec-as-index | phase 3-6 code loading | zero code files loaded before Phase 7 |
-| C3: Cache optimization | shared prefix length | > 60% prefix overlap across tasks |
-| C4: Review catches more | findings count | protocol > single-pass |
-| C5: Checkpoints prevent drift | AC match rate | with-checkpoint >= without |
-| C6: Cascade discovery | enabler count | >= 1 enabler auto-discovered |
-| C7: Worktree isolation | shared file changes | zero cross-contamination |
+| C1: Progressive narrowing | variance across 3 runs | vibomatic pairwise diffs < raw pairwise diffs |
+| C2: Spec-as-index | token ratio: spec-indexed vs full-codebase | spec-indexed tokens < 50% of full-codebase |
+| C3: Cache optimization | total_tokens across sequential tasks | prescribed-order < random-order on runs 2-3 |
+| C4: Review catches more | error detection count | full protocol > single-pass |
+| C5: Checkpoints prevent drift | AC match rate | with-checkpoint > without |
+| C6: Cascade discovery | enabler count | >= 2 enablers auto-discovered |
+| C7: Worktree isolation | shared file changes in parallel worktrees | zero cross-contamination |
 
-## Output Structure
-
-```
-framework-test/results/YYYY-MM-DD-HHMMSS/
-  scenario-S1/
-    vibomatic/
-      phase-3-spec/           ← artifacts from each phase
-      phase-4-ux/
-      phase-5-ui/
-      phase-6-tech/
-      phase-7-code/
-      metrics.json            ← per-skill token/time/artifact counts
-      glue-check.json         ← skill-to-skill handoff verification
-      user-responses.json     ← simulated user responses logged
-    baseline/
-      raw-output/             ← same scenario without vibomatic
-      metrics.json
-    comparison.json           ← side-by-side metrics
-    analysis.md               ← what worked, what didn't, recommendations
-  scenario-S2/
-    ...
-  aggregate/
-    all-scenarios.json        ← combined metrics across all scenarios
-    doctrine-verification.json ← claim-by-claim evidence
-    skill-coverage.json       ← which skills tested, which gaps remain
-    recommendations.md        ← improvements to make based on findings
-```
+All 7 claims are testable. If a claim cannot be tested, downgrade or remove
+it from the doctrine. Do not report anything as "structurally untestable."
 
 ## Full Skill Invocation Order
 
@@ -232,67 +295,133 @@ When running a scenario, execute ALL 19 skills in this order:
 | 18 | `feature-marketing-insights` | Marketing | Feature specs | Marketing context doc |
 | 19 | `framework-test` | Meta | All outputs | Coverage + metrics report |
 
-For skills 16 (journey-qa-ac-testing): spin up the server from Phase 7 code first.
-For skill 18 (feature-marketing-insights): run Mode 4 (Foundation) then Mode 2 (Single Feature).
-After skill 18: document how the coreyhaines external marketing pack would consume the output.
+For skill 16 (journey-qa-ac-testing): the server MUST be running. Start it
+from Phase 7 code before invoking this skill.
+
+For skill 17 (agentic-e2e-playwright): generates AND RUNS Playwright tests
+against the live server.
+
+For skill 18 (feature-marketing-insights): run Mode 4 (Foundation) then
+Mode 2 (Single Feature).
+
+## Self-Improvement Protocol
+
+When the autopilot finds a gap:
+
+1. **Identify** which skill's SKILL.md has the deficiency
+2. **Edit** the SKILL.md file directly (use the Edit tool)
+3. **Re-run** that specific skill on the current scenario
+4. **Verify** the gap is closed (the output now handles the case)
+5. **Commit** with message: `fix({skill-name}): {what was wrong and how it's fixed}`
+6. **If the fix breaks a downstream skill:** revert the edit, analyze why, try a different approach
+7. **If 3 attempts fail:** log the gap as `NEEDS-HUMAN-REVIEW` with full context
+
+Fixes are real commits, not documentation. The autopilot improves vibomatic's
+skills as it tests them.
+
+## Output Structure
+
+```
+framework-test/results/YYYY-MM-DD-HHMMSS/
+  scenario-{id}/
+    vibomatic/
+      worktree-path.txt       <- path to worktree used
+      phase-*/                <- artifacts from each phase
+      server-log.txt          <- stdout/stderr from npm start
+      metrics.json            <- per-skill token/time/artifact counts
+      glue-check.json         <- skill-to-skill handoff verification
+      user-responses.json     <- simulated user responses logged
+    obra/
+      worktree-path.txt
+      server-log.txt
+      metrics.json
+    raw/
+      worktree-path.txt
+      server-log.txt
+      metrics.json
+    comparison.json           <- three-way metrics
+    comparison.md             <- human-readable comparison
+    e2e-results.json          <- Playwright test results per approach
+  aggregate/
+    all-scenarios.json        <- combined metrics across all scenarios
+    doctrine-evidence.json    <- claim-by-claim numerical evidence
+    skill-coverage.json       <- 19/19 must be REAL, not simulated
+    improvements.json         <- SKILL.md edits made during this run
+```
 
 ## Completion Criteria
 
 The autopilot is DONE when ALL of these are true:
 
-```
-□ All 19 skills invoked at least once (Full, Interface, or Outline tier — see SKILL.md)
-□ All 11 glue boundaries verified (skill A → B handoffs)
-□ All locally-testable doctrine claims have evidence (SUPPORTED or REFUTED)
-□ Structurally-untestable claims (C3, C7) documented with what WAS verified
-□ At least 2 different scenarios completed (exercises different feature types)
-□ At least 1 iteration scenario (convert mode, adding to existing project)
-□ Marketing interop documented (how external packs consume vibomatic output)
-□ Raw baseline comparison completed for at least 1 scenario
-□ Zero critical glue gaps remaining (all fixed or flagged with justification)
-□ Comprehensive analysis.md produced
-```
+- [ ] All 19 skills produced REAL output (no simulations, no outlines, no hedging)
+- [ ] Server runs and responds to HTTP requests from generated code
+- [ ] E2E tests execute against the live server (pass or fail -- but they RUN)
+- [ ] Three-way comparison completed (vibomatic vs obra vs raw) with numerical results
+- [ ] At least 1 SKILL.md improvement committed (a real fix, not a formatting change)
+- [ ] All 7 doctrine claims tested with numerical evidence
+- [ ] Worktree opened and closed cleanly for every scenario
+- [ ] At least 2 scenarios completed (1 greenfield, 1 iteration)
+- [ ] Results written to `framework-test/results/` with timestamps
+- [ ] Comprehensive comparison report produced
 
-### Skill testing tiers
+## Statistical Rigor
 
-Not all skills can be tested at the Full tier in every scenario. Skills that
-operate on a running codebase or live server (promoting-change-set,
-verifying-promotion, journey-qa-ac-testing, agentic-e2e-playwright) require
-actual compiled code and a running process. When the autopilot scenario does
-not produce runnable code, test these at the Interface tier:
+Single runs prove nothing. For any generative suite, run N times (default
+N=3) and report:
 
-| Skill | Full tier requires | Interface tier verifies |
-|-------|-------------------|----------------------|
-| promoting-change-set | Real files to copy into a codebase | Manifest parsing, file list extraction, deviation check format |
-| verifying-promotion | Promoted code on a branch | 4-pass orchestration structure, spec-code-sync annotation format |
-| spec-code-sync | Real source code files | Annotation format (PLANNED/RESOLVED/DRIFT), cross-spec consistency |
-| journey-qa-ac-testing | Live server at a URL | QA procedure mapping, AC-to-scenario traceability |
-| agentic-e2e-playwright | Live server + browser | Test case outline, AC-to-test traceability, page object structure |
+- Mean, standard deviation, 95% confidence interval
+- Effect size (Cohen's d): < 0.2 negligible, 0.2-0.5 small, 0.5-0.8 medium, > 0.8 large
+- If CI crosses the null hypothesis, increase N and re-run
 
-Interface-tier results are valid — they prove the pipeline's glue works.
-They do not prove the skill's runtime behavior. Report the tier honestly.
+A claim is SUPPORTED only when the 95% CI lower bound is on the correct
+side of the null hypothesis. Otherwise the result is INCONCLUSIVE and
+requires more runs.
 
-### Doctrine claim testability
+## Convert Mode Testing
 
-| Claim | Testability | What the autopilot can verify |
-|-------|-------------|------------------------------|
-| C3 (cache optimization) | Architectural principle | Artifacts loaded in stable order. Cache performance requires API-level `usage.cache_creation_input_tokens` telemetry, unavailable in Claude Code sub-agents. |
-| C7 (worktree isolation) | Requires infrastructure | Single-feature scenarios cannot test cross-contamination. Would need parallel worktree orchestration within one session, or a CI environment that runs two features simultaneously. |
+Bootstrap (greenfield) and convert (iteration) exercise different skill
+behaviors. Test both.
 
-Do not report these as "NOT TESTED" — report them as "STRUCTURALLY UNTESTABLE
-(locally)" with a description of what was verified at the discipline level.
+| Skill | Bootstrap | Convert | Key difference |
+|-------|-----------|---------|----------------|
+| vision-sync | Create from scratch | Proposal with Evidence Table + Approval Gate | Never overwrites existing |
+| persona-builder | Mode 7 (Auto-Discovery) | Mode 3 (Add New) or Mode 4 (Expand) | Incremental |
+| feature-discovery | No existing specs | Cross-validates against existing ACs | Validates before creating |
+| writing-spec | Clean slate | References existing ACs across features | Cross-feature references |
+| spec-code-sync | Nothing to sync | Checks existing VERIFIED specs for drift | Finds real inconsistencies |
+| journey-sync | Mode 1 (Bootstrap) | Mode 2 (Expand) with prerequisite chaining | Extends, does not replace |
+
+Run at least one convert-mode scenario (S3: add real-time collab to
+todo-api) to cover these behaviors.
 
 ## Loop Control
 
 The autopilot runs until completion criteria are met or:
 - Token budget exhausted (report what was achieved and what remains)
 - User interrupts (save state, report progress)
-- 3 consecutive scenarios with zero new findings (satisfied — stop)
+- 3 consecutive scenarios with zero new findings (satisfied -- stop)
 
 After each scenario, decide what to run next:
-1. If a skill was never tested → pick scenario that exercises it
-2. If a glue boundary failed → re-run the two adjacent skills after fix
-3. If all skills passed → generate adversarial scenario (ambiguous prompt, edge case)
-4. If iteration mode untested → run scenario S3 (add feature to existing project)
-5. If marketing untested → run scenario with B2B angle (exercises marketing insights)
-6. If token budget is low → run only static checks + report remaining gaps
+1. If a skill was never tested -> pick scenario that exercises it
+2. If a glue boundary failed -> re-run the two adjacent skills after fix
+3. If all skills passed -> generate adversarial scenario (ambiguous prompt, edge case)
+4. If iteration mode untested -> run scenario S3 (add feature to existing project)
+5. If marketing untested -> run scenario with B2B angle (exercises marketing insights)
+6. If token budget is low -> run only the highest-priority uncovered skill + report gaps
+
+If a skill cannot produce real output, that is a pipeline bug. Fix the
+pipeline. Do not downgrade the skill to "interface-tested" and move on.
+
+## Anti-Patterns
+
+| Do NOT | Instead |
+|--------|---------|
+| Call a skill "simulated" or "interface-tested" | Fix the pipeline so the skill runs for real |
+| Produce specs without code | Phase 7 must generate all 8 code parts |
+| Document gaps instead of fixing them | Edit the SKILL.md, re-run, verify |
+| Skip the three-way comparison | Always run vibomatic vs obra vs raw |
+| Leave worktrees unclosed | Always clean up: merge, PR, or remove |
+| Hedge with "may," "could consider," "if possible" | State what MUST happen, then do it |
+| Report "STRUCTURALLY UNTESTABLE" | Build the infrastructure or downgrade the claim |
+| Run only static checks and call it "tested" | Run live tests against running code |
+| Accept zero SKILL.md fixes as a valid run | At least 1 real improvement per autopilot run |
