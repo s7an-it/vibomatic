@@ -498,51 +498,253 @@ features demand new patterns.
 **Influenced by:** Google Material Design, Stitch, Tailwind — but adapted
 to the project's specific brand. Not a copy of any framework.
 
-## Token Cost Considerations
+## Cache-Optimized Execution
 
-This methodology is more expensive per feature than "give the agent a ticket
-and let it code." That is the point. The cost of fixing a bad implementation
-exceeds the cost of preventing it.
+### The Spec as Codebase Index
 
-### Cost Model
+In a mature project, the feature spec IS the codebase index. spec-code-sync
+annotations tell you where everything is:
 
-| Phase | Estimated Tokens | Parallelizable? |
-|-------|-----------------|-----------------|
-| Feature Spec (writing-spec) | 10K-30K | No (sequential) |
-| UX Design (writing-ux-design) | 15K-40K | No (needs spec) |
-| UI Design (writing-ui-design) | 15K-40K | No (needs UX) |
-| Technical Design (writing-technical-design) | 20K-50K | No (needs designs) |
-| Change Set (writing-change-set) | 50K-200K | Parts are parallelizable |
-| Review Protocol per gate (x7 gates) | 10K-30K each | Steps 1-2 and Step 3 are parallelizable |
-| Promotion | 20K-50K | Parts are parallelizable |
-| Verification | 10K-30K | Tests are parallelizable |
+```markdown
+- RESOLVED 2026-03-15 src/services/matchScore.ts:42 — score calculation
+- RESOLVED 2026-03-15 src/routes/matches.ts:18 — API endpoint
+- PLANNED — real-time score updates
+- DRIFT 2026-03-20 — timezone filter uses different column
+```
 
-**Total per feature:** 150K-600K tokens (varies by feature size)
+This eliminates the need to grep during Phases 3-6. The spec already did the
+search. During spec writing, UX design, UI design, and technical design, the
+agent reads SPECS, not SOURCE CODE. Source code is loaded only in Phase 7
+(implementation), and only the files the spec points to — not the entire
+codebase.
 
-**Compare to "ticket → code":** 20K-50K tokens, but with:
-- 3-5 fix cycles averaging 15K tokens each = 75K-125K additional
-- Spec drift requiring manual detection and correction
-- Integration bugs found in QA, not in review
-- Actual total: often exceeds the structured approach
+```
+Phases 3-6 context: specs + designs only (~30-50K tokens)
+Phase 7 context:    specs + designs + targeted code files (~50-100K tokens)
+Naive approach:     entire codebase every phase (~200-500K tokens)
+```
 
-### Optimization Strategies
+The more mature your specs (more RESOLVED annotations with file:line), the
+fewer tokens you spend loading code. spec-code-sync is not just a consistency
+tool — it is a cache optimization tool.
 
-1. **Skip phases for small changes.** A one-line bug fix doesn't need UX design.
-   The doctrine defines phase gates — but the first gate is "does this phase
-   apply?" A change with no user-facing impact skips Phases 4-5.
+### The Four-Layer Cache Architecture
 
-2. **Parallelize change set parts.** Parts with no dependencies can be written
-   by parallel agents. Types + data model first, then services + components in
-   parallel.
+LLM providers cache the KV pairs (key-value attention states) of prompt
+prefixes. When a request starts with the same tokens as a previous request,
+the cached computation is loaded at ~90% discount. The cache matches on
+EXACT PREFIX — same tokens, same order, from the start.
 
-3. **Parallelize review steps.** Self-review (Steps 1-2) and cross-review
-   (Step 3) can run in parallel when reviewing different parts.
+Vibomatic exploits this by loading artifacts in a stable order, most stable
+first:
 
-4. **Reuse foundational artifacts.** Vision, personas, and design system are
-   written once. Each new feature reads them but doesn't recreate them.
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Layer 1: Project (cached across ALL features, ALL tasks)      │
+│   Skill instructions + vision + personas + design system      │
+│   ~15K tokens. Changes rarely. Cache hit rate: ~95%           │
+├──────────────────────────────────────────────────────────────┤
+│ Layer 2: Feature (cached across all tasks of one feature)     │
+│   Feature spec + UX design + UI design + tech design          │
+│   ~20K tokens. Changes at phase boundaries. Hit rate: ~80%    │
+├──────────────────────────────────────────────────────────────┤
+│ Layer 3: Code (cached across parallel sub-agents in Phase 7)  │
+│   ONLY files referenced by spec annotations                   │
+│   ~30K tokens. Empty during Phases 3-6. Hit rate: ~70%        │
+├──────────────────────────────────────────────────────────────┤
+│ Layer 4: Task (unique per task, always computed fresh)         │
+│   Task instructions + task-specific code segments             │
+│   ~10K tokens. Never cached.                                  │
+└──────────────────────────────────────────────────────────────┘
+```
 
-5. **Batch features.** Multiple small features can share a single change set
-   if they don't conflict.
+**Rules:**
+- NEVER reorder layers (breaks cache prefix match)
+- NEVER insert content between cached layers
+- Layer 3 is EMPTY during Phases 3-6 (no code loaded until Phase 7)
+- Parallel sub-agents in Phase 7 load the same code files in the same
+  order to share Layer 3 cache
+
+### Token Cost With Caching
+
+```
+Naive (load everything every time):
+  10 tasks × 200K context = 2M input tokens at full price
+
+Cache-optimized:
+  Phases 3-6 (no code, Layer 1+2 only):
+    Phase 3: 35K (full price, first load)
+    Phases 4-6: 15K cached (90% off) + 20K feature = ~23K each × 3 = 69K
+    Subtotal: 104K equivalent
+
+  Phase 7 (code loaded, 6 tasks):
+    Task 1: 35K (L1+2 cached) + 30K (L3 fresh) + 10K (L4) = 75K
+    Tasks 2-6: 35K + 30K (both cached) = ~17K + 10K = 27K × 5 = 135K
+    Subtotal: 210K equivalent
+
+  Reviews (7 gates × ~20K each):
+    140K (Layer 1+2 cached for most)
+    Subtotal: ~80K equivalent
+
+  Total: ~394K equivalent
+  Savings vs naive: ~80%
+  Realistic (accounting for TTL misses): ~50-60% savings
+```
+
+### Execution Model: Sequential Phases, Parallel Tasks
+
+**Phases are sequential.** Phase 4 (UX) needs Phase 3 (spec) output. Phase 5
+(UI) needs Phase 4 output. There is no shortcut — each phase reads the previous
+phase's artifact. This is the progressive narrowing chain.
+
+**Tasks within Phase 7 can be parallel.** Independent tasks (different files,
+no shared state) run as parallel sub-agents. Dependent tasks run sequentially.
+This matches the `blockedBy` and `parallelGroup` metadata from the plan.
+
+**How this differs from obra (superpowers):**
+
+Obra's subagent-driven-development dispatches one agent per task with a
+two-stage review (spec compliance, then code quality). The tasks come from a
+plan with dependency metadata. This is sound for execution.
+
+Where obra falls short:
+
+1. **No phase separation.** Obra goes brainstorm → plan → execute. There is no
+   spec phase, no UX phase, no UI phase. The plan tries to capture everything.
+   When the executing agent hits an ambiguity, it pattern-matches instead of
+   consulting a reviewed spec.
+
+2. **The plan describes, it doesn't determine.** Obra's plan says "create a
+   function that does X." The executor generates that function from scratch.
+   If the plan had the spec's ACs, the journey's scenarios, and the tech
+   design's component table loaded in context, the generation would be far
+   more constrained.
+
+3. **No checkpoint-as-attention-reset.** Obra's executor runs tasks
+   sequentially in one session or dispatches sub-agents. Neither model
+   explicitly re-reads prior artifacts at task boundaries. The spec fades from
+   attention as code accumulates.
+
+4. **No cache-aware loading.** Obra doesn't specify artifact loading order.
+   Each sub-agent loads what it needs in whatever order. Cache prefix overlap
+   is accidental, not designed.
+
+**What vibomatic adds:**
+
+1. **Phase separation** ensures each class of uncertainty is resolved in the
+   right order, with a review gate before the next phase begins.
+
+2. **Spec-as-index** means Phase 7 loads only referenced code, not the entire
+   codebase.
+
+3. **Checkpoints at phase boundaries** reset attention — the agent re-reads
+   artifacts fresh, preventing positional decay.
+
+4. **Cache-optimized loading order** ensures Layer 1-2 tokens are cached across
+   all tasks, reducing cost by 50-60%.
+
+5. **The worktree** is the consistent state — all artifacts from all phases
+   are co-located and immutable until promotion.
+
+### Sequential vs Parallel: When Each Checkpoint Stacks
+
+Within Phase 7, tasks build on each other:
+
+```
+Task 1: Write types          → checkpoint (commit)
+Task 2: Write tests (TDD)    → checkpoint (depends on types)
+Task 3: Write service         → checkpoint (depends on types + tests)
+Task 4: Write component       → checkpoint (depends on types + service)
+```
+
+Each checkpoint IS a known-good state. If Task 3 drifts, you roll back to
+Task 2's checkpoint and retry. You don't redo Tasks 1-2.
+
+Independent tasks parallelize:
+
+```
+Task 1: Write types      → checkpoint
+                            ↓
+Task 2: Write service A   → checkpoint  }  parallel (same parallelGroup)
+Task 3: Write service B   → checkpoint  }
+                            ↓
+Task 4: Integration       → checkpoint (depends on 2 + 3)
+```
+
+**When stacking fails (and what to do):**
+
+If the agent writes 500 lines across 5 tasks and Task 5 reveals that Task 2
+was wrong, rolling back to Task 2 means redoing Tasks 3-5. This burns tokens.
+
+The mitigation is the review protocol at checkpoints. A lightweight review
+after each task catches drift early — before 3 more tasks build on it. The
+cost of reviewing each task (~10K tokens) is far less than the cost of
+redoing 3 tasks (~60K tokens).
+
+**The principle:** Review early, review each layer. The cost of a checkpoint
+review is always less than the cost of rolling back stacked work.
+
+### Feature-Level Dependencies and Parallel Features
+
+The cascade effect discovers feature dependencies. These create a
+feature-level execution graph:
+
+```yaml
+features:
+  - id: feature-matching
+    depends_on:
+      - id: enabler-score-recalc
+        needed_at: Phase 7    # needs code, not just spec
+    
+  - id: enabler-score-recalc
+    depends_on:
+      - id: integration-email
+        needed_at: Phase 7
+
+  - id: integration-email
+    depends_on: []
+```
+
+**Dependencies are phase-specific.** Feature A needs Enabler B's SPEC to
+write A's spec (Phase 3). It needs B's CODE to write A's code (Phase 7).
+So:
+
+```
+B: Phase 3 (spec) ──→ Phase 4-6 ──→ Phase 7 (code) ──→ merge
+                ↓
+A:              Phase 3 (references B's ACs) ──→ Phase 4-6 ──→ waits ──→ Phase 7
+```
+
+A can start its spec as soon as B's spec passes G1. A doesn't wait for B's
+full pipeline. But A's Phase 7 waits for B to merge — because A's code calls
+B's code.
+
+**Independent features** get their own worktrees from main and run the full
+pipeline in parallel:
+
+```
+main
+  ├── worktree: feature-chat       (Phases 3-9, independent)
+  ├── worktree: feature-payments   (Phases 3-9, independent)
+  └── worktree: feature-matching   (Phases 3-7, waits for enabler)
+```
+
+**Cross-feature cache sharing:** Independent features sharing the same vision,
+personas, and design system share Layer 1 cache. Tokens are computed once for
+the first feature, cached for all parallel features within the TTL window.
+
+### Token Budget Per Feature
+
+| Scenario | Estimated Cost | Notes |
+|----------|---------------|-------|
+| Full pipeline, cache-optimized | 300K-500K tokens | All 9 phases, 7 gates |
+| Skip UX/UI (backend-only Enabler) | 150K-300K tokens | Phases 4-5 skipped |
+| Bug fix (spec + change set only) | 50K-100K tokens | Phases 4-6 skipped |
+| "Ticket → code" (no vibomatic) | 20K-50K initial + 75K-150K fix cycles | Cheaper upfront, more expensive total |
+
+The structured approach costs more per feature but produces fewer fix cycles.
+For features that would have required 3+ fix cycles, vibomatic is cheaper
+in total tokens spent.
 
 ## Why This Is Necessary Now
 

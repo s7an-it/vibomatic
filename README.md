@@ -165,6 +165,25 @@ Each phase creates a checkpoint commit on the feature branch. The manifest
 describes what changed and why, preserving reviewability. Promotion is
 `git merge --squash` to main — one clean commit with the full context.
 
+## Token Efficiency
+
+Vibomatic uses a four-layer cache architecture that reduces token costs by
+50-60% compared to naive approaches:
+
+| Layer | Scope | Cached across | Tokens |
+|-------|-------|---------------|--------|
+| 1. Project | Vision, personas, design system | All features, all tasks | ~15K |
+| 2. Feature | Spec, UX, UI, tech design | All tasks of one feature | ~20K |
+| 3. Code | Only files referenced by spec annotations | Parallel sub-agents | ~30K |
+| 4. Task | Task instructions (unique) | Never cached | ~10K |
+
+Key optimizations:
+- **Phases 3-6 don't load source code.** The spec IS the codebase index
+  (RESOLVED annotations with file:line). Code is loaded only in Phase 7.
+- **Stable loading order** maximizes cache prefix matches across tasks.
+- **Parallel sub-agents** share Layer 1-3 cache when dispatched together.
+- **Phase-skipping** for non-UI features (Enablers skip Phases 4-5).
+
 ## Installation
 
 ```bash
