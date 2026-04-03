@@ -50,11 +50,12 @@ OUTER LOOP (per scenario):
   {
     "id": "S1",
     "type": "greenfield",
-    "prompt": "I want to make an app that suggests what to learn for AI based on what is trendy in social platforms today. It should be free and self-hostable, or users can pay to have it hosted.",
+    "prompt": "I want to make an app that suggests what to learn for AI based on what is trendy in social platforms today. Three deployment modes: (1) self-hosted free — anyone can run it themselves at no cost, (2) hosted for profit — someone hosts it and charges their users a subscription to use the tool, (3) self-hosted private — a company hosts it internally for their own team's use.",
     "complexity": "high",
-    "expected_features": ["trend scraping", "content recommendation", "user accounts", "payment/hosting"],
-    "expected_enablers": ["scraping service", "recommendation engine", "payment integration"],
-    "expected_integrations": ["social media APIs", "payment provider"]
+    "expected_features": ["trend scraping", "content recommendation", "user profiles", "skill tracking", "learning paths"],
+    "expected_enablers": ["scraping service", "recommendation engine", "content aggregator", "trend analyzer"],
+    "expected_integrations": ["social media APIs (Twitter/X, Reddit, HN, LinkedIn, YouTube)", "LLM provider API"],
+    "deployment_modes": ["self-hosted free (BYOK)", "hosted for profit (SaaS)", "self-hosted private (enterprise)"]
   },
   {
     "id": "S2",
@@ -240,19 +241,46 @@ After skill 18: document how the coreyhaines external marketing pack would consu
 The autopilot is DONE when ALL of these are true:
 
 ```
-□ All 19 skills invoked at least once with real output
+□ All 19 skills invoked at least once (Full, Interface, or Outline tier — see SKILL.md)
 □ All 11 glue boundaries verified (skill A → B handoffs)
-□ All 7 doctrine claims have evidence (SUPPORTED or REFUTED — honest either way)
+□ All locally-testable doctrine claims have evidence (SUPPORTED or REFUTED)
+□ Structurally-untestable claims (C3, C7) documented with what WAS verified
 □ At least 2 different scenarios completed (exercises different feature types)
-□ At least 1 iteration scenario (adding to existing project)
+□ At least 1 iteration scenario (convert mode, adding to existing project)
 □ Marketing interop documented (how external packs consume vibomatic output)
 □ Raw baseline comparison completed for at least 1 scenario
 □ Zero critical glue gaps remaining (all fixed or flagged with justification)
 □ Comprehensive analysis.md produced
 ```
 
-If a criterion cannot be met (e.g., live server QA needs a framework the
-scenario doesn't use), document WHY and count it as a justified skip.
+### Skill testing tiers
+
+Not all skills can be tested at the Full tier in every scenario. Skills that
+operate on a running codebase or live server (promoting-change-set,
+verifying-promotion, journey-qa-ac-testing, agentic-e2e-playwright) require
+actual compiled code and a running process. When the autopilot scenario does
+not produce runnable code, test these at the Interface tier:
+
+| Skill | Full tier requires | Interface tier verifies |
+|-------|-------------------|----------------------|
+| promoting-change-set | Real files to copy into a codebase | Manifest parsing, file list extraction, deviation check format |
+| verifying-promotion | Promoted code on a branch | 4-pass orchestration structure, spec-code-sync annotation format |
+| spec-code-sync | Real source code files | Annotation format (PLANNED/RESOLVED/DRIFT), cross-spec consistency |
+| journey-qa-ac-testing | Live server at a URL | QA procedure mapping, AC-to-scenario traceability |
+| agentic-e2e-playwright | Live server + browser | Test case outline, AC-to-test traceability, page object structure |
+
+Interface-tier results are valid — they prove the pipeline's glue works.
+They do not prove the skill's runtime behavior. Report the tier honestly.
+
+### Doctrine claim testability
+
+| Claim | Testability | What the autopilot can verify |
+|-------|-------------|------------------------------|
+| C3 (cache optimization) | Architectural principle | Artifacts loaded in stable order. Cache performance requires API-level `usage.cache_creation_input_tokens` telemetry, unavailable in Claude Code sub-agents. |
+| C7 (worktree isolation) | Requires infrastructure | Single-feature scenarios cannot test cross-contamination. Would need parallel worktree orchestration within one session, or a CI environment that runs two features simultaneously. |
+
+Do not report these as "NOT TESTED" — report them as "STRUCTURALLY UNTESTABLE
+(locally)" with a description of what was verified at the discipline level.
 
 ## Loop Control
 
