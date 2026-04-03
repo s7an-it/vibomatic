@@ -10,30 +10,36 @@ Parameters
 Licensor:             s7an-it
 Licensed Work:        vibomatic
                       The Licensed Work is (c) 2026 s7an-it.
-Additional Use Grant: You may use the Licensed Work for any purpose,
-                      including production use, personal projects, internal
-                      business operations, education, and research.
+Additional Use Grant: You may use the Licensed Work for development,
+                      testing, learning, education, research, personal
+                      projects, and marketing purposes — free of charge.
 
                       You may NOT do any of the following without prior
                       written approval from the Licensor:
 
-                      1. Offer the Licensed Work, or a substantial portion
+                      1. Run the Licensed Work (or agents powered by it)
+                         in production environments to generate revenue or
+                         other monetary gain.
+
+                      2. Offer the Licensed Work, or a substantial portion
                          of it, as a commercial product or paid service
                          (e.g., selling skill packs, SaaS platforms, or
                          consulting packages built primarily from this work).
 
-                      2. Redistribute, republish, or rebrand the Licensed
+                      3. Redistribute, republish, or rebrand the Licensed
                          Work (or a derivative containing a substantial
                          portion of it) under a different name, project, or
                          identity — whether for profit or not.
 
-                      3. Sublicense the Licensed Work to third parties.
+                      4. Sublicense the Licensed Work to third parties.
 
                       For clarity, the following are always permitted without
                       approval:
 
-                      - Using the Licensed Work to build and ship your own
-                        products, apps, and businesses.
+                      - Using the Licensed Work to develop, test, and
+                        iterate on your own code and products.
+                      - Using the Licensed Work for marketing, demos,
+                        showcases, and proof-of-concepts.
                       - Forking for personal use or contributing back via
                         pull request.
                       - Referencing, linking to, or recommending the
