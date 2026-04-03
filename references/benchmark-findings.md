@@ -9,8 +9,9 @@
 |---|---|---|---|
 | writing-spec | Yes | PASS | Cascade discovered Feature → Enabler → Integration (3 specs from 1 request) |
 | writing-spec (iteration) | Yes | PASS | New feature references existing specs, preserves journeys, identifies enablers |
-| writing-ux-design | Pending | — | Awaiting results |
-| writing-ui-design | Pending | — | Awaiting results |
+| writing-ux-design | Yes | PASS | 320 lines: 4 screens, state machines, flow diagrams, 8 error scenarios, a11y, AC traceability |
+| writing-ui-design | Yes | PASS | 533 lines: 40+ token refs, 7 component state tables, dark mode (17 elements), responsive layouts |
+| design-system (created by ui) | Yes | PASS | 207 lines: colors (light+dark), typography, spacing, breakpoints, shadows, motion, a11y |
 | writing-technical-design | Yes | PASS | Feasibility matrix produced, all ACs mapped |
 | writing-change-set | Yes | PASS | 10 code files, 31 tests, all passing |
 | review-protocol | Yes | PARTIAL | Catches more secondary findings (4 vs 2), self-corrects false positives, but obvious errors caught by both approaches |
@@ -199,24 +200,33 @@ annotations — no manual review needed.
 
 ### Honest Assessment
 
-**What's proven:**
+**What's proven (strong evidence):**
 - Progressive narrowing produces more structured, traceable output (35 ACs vs 0)
-- Cascade discovery works (auto-discovers system components)
+- Cascade discovery works (auto-discovers system components from a single request)
 - spec-code-sync catches real drift (off-by-one, wrong filter, missing timeout)
-- Checkpoints prevent at least one class of drift (training data bias)
-- Convert mode preserves existing artifacts
+- Checkpoints prevent at least one class of drift (training data bias on defaults)
+- Convert mode preserves existing artifacts while adding new features
+- UX design skill produces complete screen-level specifications (4 screens, state machines, a11y)
+- UI design skill produces detailed component specs with design system bootstrap (40+ tokens, 7 component types)
+- spec-ac-sync finds gaps even on vibomatic-generated specs (5 missing edge cases)
 
-**What's partially proven:**
-- Review protocol adds value for subtle errors but is overkill for obvious ones
-- Cache efficiency is measured statically but not verified with actual API token counts
+**What's partially proven (evidence with caveats):**
+- Review protocol adds value for subtle errors but is overkill for obvious ones (5.7x token cost)
+- Cache efficiency measured statically but not verified with actual API token counts
+- Checkpoint attention reset demonstrated but experimental design has limitations (same agent)
 
-**What's not proven:**
-- Worktree isolation (needs parallel feature test)
-- Actual API-level cache hit rates (needs token reporting)
+**What's not proven (needs more testing):**
+- Worktree isolation (needs parallel feature test with actual git worktrees)
+- Actual API-level cache hit rates (needs token reporting from provider)
 - Whether the 2.4x token cost is recovered in fewer fix cycles (needs longitudinal data)
+- journey-qa-ac-testing (needs live URL and browser)
+- agentic-e2e-playwright (needs running application and Playwright)
 
 **The cost is real:** Vibomatic costs 2.4x more tokens per feature. The value
-is 35 traceable ACs, 3 separated concerns, 4 caught edge cases, and 3 drift
-findings that would have become production bugs. Whether that tradeoff is
-worth it depends on the stakes: for a todo API, probably not. For a payment
-system, absolutely.
+is 35 traceable ACs, 3 separated concerns, 4 caught edge cases, 3 drift
+findings, and 5 missing edge cases — all caught mechanically. Whether that
+tradeoff is worth it depends on the stakes.
+
+**Coverage: 17/19 skills tested.** The 2 untested skills (journey-qa-ac-testing,
+agentic-e2e-playwright) require a running application with a browser — outside
+the scope of static/agent testing but testable in a live environment.
