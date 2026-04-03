@@ -9,7 +9,8 @@
     "spec-code-sync",
     "agentic-e2e-playwright",
     "feature-marketing-insights",
-    "workflow-compass"
+    "workflow-compass",
+    "writing-plans"
   ],
   "corePackForRouting": [
     "vision-sync",
@@ -37,9 +38,7 @@
       "signup-flow-cro",
       "onboarding-cro"
     ],
-    "implementation-planning": [
-      "writing-plans"
-    ]
+    "implementation-planning": []
   },
   "bootstrapStartSequence": [
     "vision-sync",
