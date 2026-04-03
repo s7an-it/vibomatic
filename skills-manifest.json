@@ -11,8 +11,12 @@
     "feature-marketing-insights",
     "workflow-compass",
     "writing-spec",
+    "writing-ux-design",
+    "writing-ui-design",
     "writing-technical-design",
-    "writing-implementation-plan"
+    "writing-change-set",
+    "review-protocol",
+    "promoting-change-set"
   ],
   "corePackForRouting": [
     "vision-sync",
@@ -23,8 +27,26 @@
     "spec-ac-sync",
     "spec-code-sync",
     "agentic-e2e-playwright",
-    "feature-marketing-insights"
+    "feature-marketing-insights",
+    "workflow-compass"
   ],
+  "pipeline": [
+    "writing-spec",
+    "writing-ux-design",
+    "writing-ui-design",
+    "writing-technical-design",
+    "writing-change-set",
+    "promoting-change-set"
+  ],
+  "reviewGates": {
+    "G1": { "after": "writing-spec", "transition": "DRAFT → UX-REVIEWED" },
+    "G2": { "after": "writing-ux-design", "transition": "UX-REVIEWED → DESIGNED" },
+    "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED" },
+    "G4": { "after": "writing-technical-design", "transition": "BASELINED → CHANGE-SET-APPROVED" },
+    "G5": { "after": "writing-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED" },
+    "G6": { "after": "promoting-change-set", "transition": "PROMOTED → VERIFIED" },
+    "G7": { "after": "verification", "transition": "final" }
+  },
   "externalAddOns": {
     "coreyhaines-marketing-pack": [
       "product-marketing-context",
@@ -39,8 +61,7 @@
       "market-emails",
       "signup-flow-cro",
       "onboarding-cro"
-    ],
-    "implementation-planning": []
+    ]
   },
   "bootstrapStartSequence": [
     "vision-sync",
