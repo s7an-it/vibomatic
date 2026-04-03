@@ -1,0 +1,125 @@
+{
+  "includedSkills": [
+    "vision-sync",
+    "persona-builder",
+    "journey-sync",
+    "journey-qa-ac-testing",
+    "feature-discovery",
+    "spec-ac-sync",
+    "spec-code-sync",
+    "spec-style-sync",
+    "agentic-e2e-playwright",
+    "feature-marketing-insights",
+    "workflow-compass",
+    "repo-conversion",
+    "bugfix-brief",
+    "work-item-sync",
+    "research",
+    "writing-spec",
+    "writing-ux-design",
+    "writing-ui-design",
+    "writing-technical-design",
+    "writing-change-set",
+    "executing-change-set",
+    "review-protocol",
+    "promoting-change-set",
+    "verifying-promotion",
+    "framework-test"
+  ],
+  "corePackForRouting": [
+    "vision-sync",
+    "persona-builder",
+    "journey-sync",
+    "journey-qa-ac-testing",
+    "feature-discovery",
+    "spec-ac-sync",
+    "spec-code-sync",
+    "spec-style-sync",
+    "agentic-e2e-playwright",
+    "feature-marketing-insights",
+    "workflow-compass",
+    "repo-conversion",
+    "bugfix-brief",
+    "work-item-sync",
+    "research",
+    "executing-change-set"
+  ],
+  "pipeline": [
+    "writing-spec",
+    "writing-ux-design",
+    "writing-ui-design",
+    "writing-technical-design",
+    "spec-style-sync",
+    "writing-change-set",
+    "executing-change-set",
+    "promoting-change-set",
+    "verifying-promotion"
+  ],
+  "reviewGates": {
+    "G1": { "after": "writing-spec", "transition": "DRAFT → UX-REVIEWED", "checks": "Stories testable? ACs specific? Layer 3 clean? Dependencies identified?" },
+    "G2": { "after": "writing-ux-design", "transition": "UX-REVIEWED → DESIGNED", "checks": "Flows cover all stories? States complete? Error handling? Accessibility?" },
+    "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED", "checks": "Design system consistency? Responsive? Dark mode? Component reuse?" },
+    "G4": { "after": "writing-technical-design", "transition": "DESIGNED → BASELINED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
+    "G5": { "after": "executing-change-set", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "Executed branch diff matches design? Tasks cover ACs? Cross-file consistency? No placeholders? Task checkpoints clean?" },
+    "G6": { "after": "promoting-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Squash diff matches manifest file set? No unplanned changes? Validation clean?" },
+    "G7": { "after": "verifying-promotion", "transition": "final", "checks": "Tests pass? QA complete? E2E complete? Spec annotations updated?" }
+  },
+  "externalAddOns": {
+    "coreyhaines-marketing-pack": [
+      "product-marketing-context",
+      "customer-research",
+      "market-competitors",
+      "competitor-alternatives",
+      "copywriting",
+      "page-cro",
+      "launch-strategy",
+      "market-social",
+      "market-ads",
+      "market-emails",
+      "signup-flow-cro",
+      "onboarding-cro"
+    ]
+  },
+  "bootstrapStartSequence": [
+    "vision-sync",
+    "persona-builder",
+    "feature-discovery",
+    "writing-spec",
+    "spec-ac-sync",
+    "journey-sync",
+    "writing-ux-design",
+    "writing-ui-design",
+    "writing-technical-design",
+    "spec-style-sync",
+    "writing-change-set",
+    "executing-change-set",
+    "promoting-change-set",
+    "verifying-promotion"
+  ],
+  "laneDefinitions": {
+    "greenfield": {
+      "skills": ["vision-sync", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "promoting-change-set", "verifying-promotion"],
+      "defaultSkips": []
+    },
+    "brownfield-conversion": {
+      "skills": ["repo-conversion", "work-item-sync"],
+      "defaultSkips": []
+    },
+    "brownfield-feature": {
+      "skills": ["spec-code-sync", "feature-discovery", "writing-spec", "journey-sync", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "defaultSkips": ["writing-ux-design", "writing-ui-design"]
+    },
+    "bugfix": {
+      "skills": ["bugfix-brief", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "defaultSkips": ["spec-style-sync"]
+    },
+    "drift": {
+      "skills": ["spec-code-sync", "journey-sync", "work-item-sync"],
+      "defaultSkips": []
+    },
+    "refactor": {
+      "skills": ["spec-code-sync", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "defaultSkips": []
+    }
+  }
+}
