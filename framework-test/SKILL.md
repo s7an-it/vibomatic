@@ -1,6 +1,6 @@
 ---
 name: framework-test
-description: Test and benchmark the vibomatic framework end-to-end. Use when you need to verify the pipeline works, prove doctrine claims, measure token efficiency, or validate that progressive narrowing actually reduces output variance. Triggers on "test the framework", "prove it works", "benchmark vibomatic", "validate the pipeline", or any request to verify vibomatic's claims.
+description: Test and benchmark the vibomatic framework end-to-end. Use when you need to verify the pipeline works, prove doctrine claims, measure token efficiency, validate progressive narrowing, or run the autopilot that continuously tests all skills against real scenarios. Triggers on "test the framework", "prove it works", "benchmark vibomatic", "validate the pipeline", "run autopilot", "test all skills", "check for holes", or any request to verify vibomatic's methodology. Also use when comparing vibomatic against obra/gstack/raw approaches.
 ---
 
 # Framework Test
@@ -10,6 +10,50 @@ verifies that the methodology works as claimed — not by assertion, but by
 measurement.
 
 **Announce at start:** "I'm using the framework-test skill to test and benchmark vibomatic."
+
+## Modes
+
+| Mode | Command | What it does |
+|------|---------|-------------|
+| `static` | `bash scripts/run-all.sh --static-only` | Pipeline integrity, cache measurements, doctrine checks. No LLM. |
+| `live` | `bash scripts/run-all.sh --include-live` | Static + spins up server + runs QA against it. |
+| `autopilot` | "Run framework-test autopilot on scenario S1" | Full loop: execute vibomatic pipeline, simulate user, measure, compare, analyze. Read `references/autopilot-protocol.md` for details. |
+| `comparison` | "Compare vibomatic vs raw on [feature]" | Same feature two ways, measure delta. |
+| `skill-test` | "Test [skill-name] in isolation" | Single skill, multiple variants (with/without agent). |
+
+### Autopilot Mode
+
+The autopilot runs vibomatic end-to-end on a real scenario, playing the user
+when skills ask questions, measuring every metric at every phase, then comparing
+against a baseline (raw approach with no methodology).
+
+**Read `references/autopilot-protocol.md`** for the full protocol including:
+- Built-in scenarios (5 ready to use)
+- User simulation rules
+- KPIs and metrics (per-skill, per-phase, comparison, glue, doctrine)
+- Output structure
+- Loop control (when to stop, what to run next)
+
+**To start autopilot:**
+
+```
+Run framework-test autopilot on scenario S1
+```
+
+The autopilot will:
+1. Read the scenario from `references/autopilot-protocol.md`
+2. Create a worktree for the test
+3. Run each vibomatic skill in pipeline order
+4. Simulate user responses when skills ask questions
+5. Collect metrics after each phase (tokens, time, artifacts)
+6. Run the same scenario as raw baseline
+7. Produce comparison report
+8. Identify gaps and recommendations
+9. Move to next scenario or stop if budget exhausted
+
+**No CI, no API tokens needed.** Everything runs locally through Claude Code
+sub-agents. The LLM IS the test runner — it reads skills, executes them,
+observes outputs, and measures results.
 
 ## What This Tests
 
