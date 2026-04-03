@@ -1,5 +1,7 @@
 # The Vibomatic Doctrine
 
+> Progressive Deterministic Development — a methodology for reliable agentic software engineering
+
 > A development methodology for the agentic era, grounded in the operational
 > limitations of large language models.
 
@@ -29,6 +31,76 @@ Traditional software development assumes the developer IS the context holder.
 The developer reads the ticket, remembers the architecture, understands the
 codebase, and produces coherent code. When the developer is an LLM, this
 assumption breaks. The methodology must compensate.
+
+## The Science
+
+The scientific foundation of why progressive narrowing works, based on LLM
+architecture.
+
+### Attention Decay and Drift
+
+LLMs use self-attention to relate every token to every other token in context.
+But attention is not uniform — positional encoding biases attention toward
+recent tokens. When generating line 400 of a service file, spec tokens loaded
+at the beginning of the context receive diminishing attention. The agent follows
+code-internal patterns instead of the spec. This is drift.
+
+### Checkpoints as Attention Resets
+
+Each task checkpoint forces a stop. The next task re-reads the spec (fresh,
+high attention) and the code so far (fresh, high attention). The positional
+bias resets. The spec is never more than one task's worth of tokens from the
+generation point.
+
+### The Worktree as External Memory
+
+An LLM has no long-term memory. Its context window IS its entire mind. When a
+session ends, everything is gone. The worktree is the agent's external brain —
+every artifact from every phase persists on disk, accessible by reading a file.
+The worktree guarantees that everything the agent reads is consistent with a
+single point in time (the base commit).
+
+### The Entropy Argument
+
+An LLM's output entropy (variance) is bounded by:
+`H(output) ≤ H(model) + H(context)`. We cannot control `H(model)`. We CAN
+minimize `H(context)` through progressive constraint accumulation. Each phase
+eliminates a specific class of uncertainty:
+
+| Phase | Uncertainty Eliminated |
+|-------|----------------------|
+| Vision | What product? What boundaries? |
+| Personas | Who uses it? What do they need? |
+| Spec | What features? What acceptance criteria? |
+| UX Design | How do users experience it? What states? |
+| UI Design | How does it look? What components? |
+| Tech Design | How to build it? What architecture? |
+| Code | Only remaining: exact syntax |
+
+Sequential narrowing compounds. Six small entropy reductions are more effective
+than one large reduction because each phase catches a DIFFERENT CLASS of
+uncertainty. A single "detailed ticket" tries to eliminate all uncertainty at
+once — it cannot, because the ticket author hasn't resolved UX states,
+component design, or data model implications.
+
+### Review Gates as Adversarial Debiasing
+
+During generation, attention is biased toward producing coherent output
+(generation mode). During self-review, attention shifts to finding errors
+(evaluation mode). Self-judgment forces a third pattern: evaluating the
+evaluation. Cross-review introduces a completely fresh attention state with
+no bias from the generation process. Each step creates a different attention
+pattern over the same content.
+
+### The Fundamental Claim
+
+For any LLM with fixed model entropy `H(model)`, output reliability is
+maximized by minimizing context entropy `H(context)` through sequential
+phase-gated constraint accumulation, where each phase: (a) reduces a specific
+class of uncertainty, (b) is reviewed before the next phase begins, (c)
+persists in a consistent accessible state (the worktree), and (d) is re-loaded
+into the attention window at each checkpoint to prevent positional attention
+decay.
 
 ## The Core Principle
 
@@ -147,13 +219,15 @@ discovery tool.
 
 ## The Change Set
 
-The implementation plan is not a description of changes. It IS the changes.
+The change set is the worktree branch itself. Code lives in actual files, not
+in markdown documents. The agent writes real code into real files during
+Phase 7, and those files are committed as checkpoints on the feature branch.
 
-### Why Full Change Sets, Not Constraints
+### Why the Branch IS the Change Set
 
 Traditional approach (superpowers/obra):
 ```
-Plan says: "Create src/services/matchScore.ts with a function that 
+Plan says: "Create src/services/matchScore.ts with a function that
            calculates compatibility scores"
 Executor: reads the plan, reads the codebase, GENERATES the code
 Problem:  the generation is probabilistic — different every time
@@ -161,76 +235,63 @@ Problem:  the generation is probabilistic — different every time
 
 Vibomatic approach:
 ```
-Plan contains: the exact content of src/services/matchScore.ts
-               the exact content of tests/matchScore.test.ts
-               the exact changes to src/routes/matches.ts
-               the exact changes to docs/specs/features/matching.md
-Executor: APPLIES the pre-written code to the files
-Result:   deterministic — the code was reviewed before it touched the codebase
+Agent writes: src/services/matchScore.ts directly in the worktree
+Agent writes: tests/matchScore.test.ts directly in the worktree
+Agent writes: src/routes/matches.ts changes directly in the worktree
+Each file:    committed as a checkpoint on the feature branch
+Review:       git diff main...feature-branch shows exactly what changed
+Promotion:    git merge --squash — deterministic, no re-generation
 ```
 
-The plan author has the full context — they just read every relevant file,
-every spec, every journey, every AC. They write the code while holding all of
-it. The executor doesn't need context — they copy.
+The agent writes code while holding full context — every spec, every journey,
+every AC is in the worktree. The code is reviewed on the branch before it
+touches main. Promotion is a mechanical merge, not a probabilistic generation.
 
-### Multi-Part Structure
+### The Manifest
 
-A full change set for a real feature can exceed 100K tokens. A single file
-that large is uneditable by an LLM (the Edit tool needs unique string matches,
-and in a huge file sections become ambiguous). The solution: split by concern.
-
-```
-docs/plans/2026-04-03-match-discovery/
-  manifest.md                    ← index, apply order, dependencies
-  part-01-types-and-contracts.md ← type definitions, interfaces, schemas
-  part-02-data-model.md          ← migrations, seed data
-  part-03-services.md            ← backend logic, API handlers
-  part-04-components.md          ← UI components, pages
-  part-05-tests-unit.md          ← unit tests (TDD — written before implementation)
-  part-06-tests-e2e.md           ← E2E tests (written after implementation, referencing ACs)
-  part-07-spec-updates.md        ← feature spec status changes, AC updates
-  part-08-journey-updates.md     ← journey doc changes
-```
-
-Each part is independently readable, editable, and reviewable. The manifest
-holds the full picture. Parts can be reviewed in parallel by different agents.
-
-### Manifest Structure
+The manifest still exists as a document (`docs/plans/<date>-<name>/manifest.md`)
+for reviewability. It describes what changed and why — a table of contents for
+the branch diff. But the actual code lives in the branch, not in the manifest.
 
 ```markdown
 # Change Set: Match Discovery
 
 **Feature Spec:** docs/specs/features/feature-matching.md
+**Branch:** feature-match-discovery
+**Base:** main @ <sha>
 **Status:** BASELINED → CHANGE-SET-APPROVED (pending review)
 **Created:** 2026-04-03
-**Parts:** 8
 
-## Apply Order
+## Files Changed
 
-| Order | Part | Creates/Modifies | Depends On |
-|-------|------|-----------------|------------|
-| 1 | part-01-types | src/types/match.ts (new) | — |
-| 2 | part-02-data-model | migrations/003-match-scores.sql (new) | — |
-| 3 | part-05-tests-unit | tests/matchScore.test.ts (new) | part-01 |
-| 4 | part-03-services | src/services/matchScore.ts (new) | part-01, part-02 |
-| 5 | part-04-components | src/components/MatchCard.tsx (new) | part-01, part-03 |
-| 6 | part-06-tests-e2e | e2e/specs/matching.spec.ts (new) | part-04 |
-| 7 | part-07-spec-updates | docs/specs/features/feature-matching.md (modify) | all above |
-| 8 | part-08-journey-updates | docs/specs/journeys/J05-matching.feature.md (modify) | part-07 |
+| File | Action | Task | Purpose |
+|------|--------|------|---------|
+| src/types/match.ts | CREATE | task-1-types | Type definitions, interfaces |
+| migrations/003-match-scores.sql | CREATE | task-2-data-model | Score table migration |
+| tests/matchScore.test.ts | CREATE | task-3-tests | Unit tests (TDD — written first) |
+| src/services/matchScore.ts | CREATE | task-4-services | Score calculation logic |
+| src/components/MatchCard.tsx | CREATE | task-5-components | Match display component |
+| e2e/specs/matching.spec.ts | CREATE | task-6-e2e | End-to-end test coverage |
+| docs/specs/features/feature-matching.md | MODIFY | task-7-spec | Status update, AC annotations |
 
-## Files Touched
+## Checkpoint History
 
-| File | Action | Part |
-|------|--------|------|
-| src/types/match.ts | CREATE | 01 |
-| migrations/003-match-scores.sql | CREATE | 02 |
-| tests/matchScore.test.ts | CREATE | 05 |
-| src/services/matchScore.ts | CREATE | 03 |
-| src/components/MatchCard.tsx | CREATE | 04 |
-| e2e/specs/matching.spec.ts | CREATE | 06 |
-| docs/specs/features/feature-matching.md | MODIFY | 07 |
-| docs/specs/journeys/J05-matching.feature.md | MODIFY | 08 |
+| Checkpoint | Commit | What It Contains |
+|------------|--------|-----------------|
+| checkpoint: phase-3-spec | abc1234 | Feature spec with stories, ACs |
+| checkpoint: phase-4-ux | def5678 | UX design with flows, states |
+| checkpoint: phase-5-ui | ghi9012 | UI design with components |
+| checkpoint: phase-6-tech | jkl3456 | Technical design, architecture |
+| checkpoint: task-1-types | mno7890 | Type definitions |
+| checkpoint: task-2-data-model | pqr1234 | Database migration |
+| checkpoint: task-3-tests | stu5678 | Unit tests |
+| checkpoint: task-4-services | vwx9012 | Service implementation |
+| checkpoint: task-5-components | yza3456 | UI components |
+| checkpoint: task-6-e2e | bcd7890 | E2E tests |
+| checkpoint: task-7-spec | efg1234 | Spec status updates |
 ```
+
+The manifest is the map. The branch is the territory.
 
 ## The Review Protocol
 
@@ -303,45 +364,71 @@ Step 5: GATE DECISION
 
 ## Promotion
 
-Promotion is the act of applying a reviewed change set to the actual codebase.
-It is a separate, auditable step — not "the agent writes code."
-
-### Why Promotion Is Separate
-
-When an agent applies pre-written code, it still does pattern matching:
-- It might "improve" a function while copying it
-- It might adjust an import path based on its own judgment
-- It might skip a file it considers unnecessary
-- It might reorder statements for "readability"
-
-Each of these is a deviation from the reviewed change set. The promotion review
-gate (G6) catches this by diffing the applied code against the plan.
+Promotion is `git merge --squash feature-branch` into main. The entire feature
+branch — specs, designs, code, tests — lands as a single atomic commit.
 
 ### Promotion Process
 
 ```
-1. Read the change set manifest
-2. For each part, in apply order:
-   a. Read the part document
-   b. Apply each file change (create or modify) exactly as written
-   c. Log: file path, action taken, bytes written
-3. After all parts applied:
-   a. Run: diff the applied codebase against the change set
-   b. Produce: deviation report (any differences = findings)
-   c. Enter Review Protocol at G6
-4. If G6 passes: run all validation commands from the manifest
-5. If validation passes: status → PROMOTED
+1. Ensure feature branch has passed G5 review (change set approved)
+2. git checkout main && git merge --squash feature-<name>
+3. Deviation check: git diff --staged should match expected changes
+   (compare against the manifest's file list)
+4. If deviations found → enter Review Protocol at G6
+5. If clean → commit, run validation commands, status → PROMOTED
 ```
 
-### Deviation Classes
+### Why Squash Merge
 
-| Class | Example | Severity |
-|-------|---------|----------|
-| Content deviation | Agent changed a variable name | Critical |
-| Omission | Agent skipped a file from the plan | Critical |
-| Addition | Agent created a file not in the plan | High |
-| Formatting deviation | Agent reformatted code (whitespace, line breaks) | Low |
-| Import reordering | Agent changed import order | Low |
+The feature branch contains many intermediate checkpoints — useful during
+development but noisy in main's history. The squash merge collapses them into
+a single commit that represents the complete, reviewed change set. The feature
+branch is preserved (not deleted) so checkpoint history remains available.
+
+## Checkpoints
+
+Every phase ends with a checkpoint — a commit on the feature branch. Checkpoints
+are the mechanism that makes the worktree model work.
+
+### Why Checkpoints Matter
+
+1. **Attention resets.** When the agent starts a new task, it re-reads the
+   relevant artifacts fresh. The checkpoint guarantees those artifacts are on
+   disk and consistent. The positional attention bias resets — the spec is at
+   the top of the context, not buried under 10K tokens of generated code.
+
+2. **Rollback to any phase.** If Phase 6 reveals that the spec is wrong, you
+   can roll back to the Phase 3 checkpoint and re-run from there. No
+   reconstructing state from memory. No hoping the agent remembers what the
+   spec said before you changed it.
+
+3. **Lightweight commits.** Checkpoints are ordinary git commits. They carry
+   no ceremony — no PR, no review, no CI. They exist for the agent's benefit.
+   All of them get squashed at promotion anyway.
+
+4. **Audit trail.** The checkpoint history tells the story of how the feature
+   was built: what was designed first, what changed during technical design,
+   which tasks were completed in what order.
+
+### Checkpoint Naming
+
+```
+checkpoint: phase-3-spec
+checkpoint: phase-4-ux
+checkpoint: phase-5-ui
+checkpoint: phase-6-tech
+checkpoint: task-1-types
+checkpoint: task-2-data-model
+checkpoint: task-3-tests
+checkpoint: task-4-services
+checkpoint: task-5-components
+checkpoint: task-6-e2e
+checkpoint: task-7-spec-updates
+```
+
+The prefix `checkpoint:` is mandatory. It distinguishes checkpoint commits from
+any other commits on the branch. Phase checkpoints use `phase-N-<name>`. Task
+checkpoints (within Phase 7) use `task-N-<name>`.
 
 ## UX Design vs UI Design
 
@@ -481,56 +568,20 @@ a feature. Vibomatic rejects that.
 
 ## The Complete Pipeline
 
+All phases happen in a single worktree branched from main. Each phase produces
+a checkpoint. The worktree is the time capsule — nothing changes under the
+agent between phases. Promotion is a squash merge to main.
+
 ```
-                                    FOUNDATIONAL (once)
-                                    ┌─────────────────┐
-                                    │  vision-sync     │
-                                    │  persona-builder │
-                                    │  design-system   │
-                                    └────────┬────────┘
-                                             │
-                              PER-FEATURE (each change)
-                                             │
-                         ┌───────────────────▼───────────────────┐
-                    Phase 3 │         writing-spec                │
-                         │  Stories, ACs, System Dependencies   │
-                         │  Triggers: journey-sync              │
-                         │  Cascade: creates enabler specs      │
-                         └───────────────────┬───────────────────┘
-                                          [G1 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 4 │       writing-ux-design              │
-                         │  Screen flows, states, interactions  │
-                         └───────────────────┬───────────────────┘
-                                          [G2 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 5 │       writing-ui-design               │
-                         │  Components, visual language, tokens │
-                         └───────────────────┬───────────────────┘
-                                          [G3 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 6 │    writing-technical-design           │
-                         │  Architecture, data model, feasibility│
-                         └───────────────────┬───────────────────┘
-                                          [G4 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 7 │      writing-change-set               │
-                         │  Multi-part: exact files, exact code │
-                         │  Tests written BEFORE implementation │
-                         └───────────────────┬───────────────────┘
-                                          [G5 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 8 │     promoting-change-set              │
-                         │  Apply to codebase, detect deviations│
-                         └───────────────────┬───────────────────┘
-                                          [G6 Review]
-                         ┌───────────────────▼───────────────────┐
-                    Phase 9 │     verifying-promotion               │
-                         │  Tests pass, QA, E2E, spec-code-sync│
-                         └───────────────────┬───────────────────┘
-                                          [G7 Review]
-                                             │
-                                         VERIFIED ✓
+main (frozen at SHA)
+  └── worktree: feature-<name>
+        Phase 3: writing-spec             → checkpoint → [G1 Review]
+        Phase 4: writing-ux-design        → checkpoint → [G2 Review]
+        Phase 5: writing-ui-design        → checkpoint → [G3 Review]
+        Phase 6: writing-technical-design → checkpoint → [G4 Review]
+        Phase 7: writing code + tests     → checkpoint per task → [G5 Review]
+        Phase 8: squash merge to main = promotion → [G6 Review]
+        Phase 9: verify on main           → [G7 Review]
 ```
 
 ## Feedback Loops

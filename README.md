@@ -1,5 +1,7 @@
 # vibomatic
 
+> Progressive Deterministic Development — a methodology for reliable agentic software engineering
+
 A development methodology for the agentic era.
 
 ## The Problem
@@ -31,14 +33,15 @@ Phase 3:  Feature Spec        → narrows WHAT (stories, acceptance criteria)
 Phase 4:  UX Design           → narrows HOW users experience it
 Phase 5:  UI Design           → narrows HOW it looks
 Phase 6:  Technical Design    → narrows HOW to build it
-Phase 7:  Change Set          → narrows to ONE implementation (exact files, exact code)
-Phase 8:  Promotion           → applies the change set to the codebase
-Phase 9:  Verification        → proves the promotion matches the change set
+Phase 7:  Implementation      → narrows to ONE implementation (exact files in worktree)
+Phase 8:  Promotion           → squash-merges the worktree to main
+Phase 9:  Verification        → proves the merge matches the manifest
 ```
 
-At Phase 1, the agent is generating. By Phase 7, the agent is transcribing.
-The creative work happens in Phases 1-6 where humans review each narrowing.
-Phase 7 is mechanical. Phase 8 is copying. Phase 9 is checking.
+At Phase 1, the agent is generating. By Phase 7, the agent is transcribing
+into actual files in a worktree branched from main. The creative work happens
+in Phases 1-6 where humans review each narrowing. Phase 7 is mechanical.
+Phase 8 is a squash merge. Phase 9 is checking.
 
 ## Why This Works (Technical Argument)
 
@@ -59,9 +62,15 @@ exploits this:
    agent copies reviewed intent into code. Reviewing intent is cheaper
    than reviewing implementation.
 
-4. **Deterministic promotion.** The change set IS the code. Promotion copies
-   it to the codebase. Deviations are detected by diffing the applied code
-   against the plan. Nothing is left to interpretation.
+4. **Deterministic promotion.** The worktree IS the code. Promotion is
+   `git merge --squash` to main. Deviations are detected by diffing the
+   merged result against the manifest. Nothing is left to interpretation.
+
+5. **Attention decay mitigation.** LLMs suffer from positional attention
+   decay — tokens loaded early in context receive less attention during
+   generation. Checkpoints (commits at each phase boundary) reset this by
+   forcing the agent to re-read artifacts fresh. The worktree keeps all
+   artifacts consistent and accessible as the agent's external memory.
 
 ## The Review Protocol
 
@@ -97,8 +106,8 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 | 4. UX Design | `writing-ux-design` | Screen flows, states, interactions | G2 |
 | 5. UI Design | `writing-ui-design` | Component specs, design tokens, visual hierarchy | G3 |
 | 6. Technical Design | `writing-technical-design` | Architecture, data model, feasibility | G4 |
-| 7. Change Set | `writing-change-set` | Multi-part exact code, tests, spec updates | G5 |
-| 8. Promotion | `promoting-change-set` | Applied code + deviation report | G6 |
+| 7. Implementation | `writing-change-set` | Code in worktree, manifest, tests | G5 |
+| 8. Promotion | `promoting-change-set` | Squash merge to main + deviation report | G6 |
 | 9. Verification | spec-code-sync + QA + E2E | VERIFIED status | G7 |
 
 ### Feature Spec Lifecycle
@@ -135,26 +144,26 @@ All types go through the same pipeline. The type changes the consumer, not the
 rigor. Specifying a Feature automatically reveals every Enabler and Integration
 it depends on (the cascade effect).
 
-## The Change Set Model
+## The Worktree Model
 
-The implementation plan is not a description of changes. It IS the changes.
+All phases happen in a single worktree branched from main. Code lives in
+actual files, not markdown documents.
 
 ```
-docs/plans/2026-04-03-match-discovery/
-  manifest.md              ← index, apply order, dependencies
-  part-01-types.md         ← type definitions, interfaces
-  part-02-data-model.md    ← migrations, schema
-  part-03-unit-tests.md    ← tests FIRST (TDD)
-  part-04-services.md      ← backend logic
-  part-05-components.md    ← UI components
-  part-06-e2e-tests.md     ← E2E tests (references ACs)
-  part-07-spec-updates.md  ← spec status changes
-  part-08-journeys.md      ← journey updates
+feature/match-discovery (worktree branch)
+  src/...                  ← real code, real tests, real files
+  docs/plans/manifest.md   ← what changed, why, apply order, dependencies
+  checkpoint commits:
+    phase-3-spec
+    phase-4-ux-design
+    phase-5-ui-design
+    phase-6-technical-design
+    phase-7-implementation
 ```
 
-Every file contains exact content. The promotion agent copies, it does not
-generate. Deviations between the plan and the applied code are detected and
-reported.
+Each phase creates a checkpoint commit on the feature branch. The manifest
+describes what changed and why, preserving reviewability. Promotion is
+`git merge --squash` to main — one clean commit with the full context.
 
 ## Installation
 
@@ -172,7 +181,7 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 ## Full Doctrine
 
 The complete methodology, including the technical argument for progressive
-narrowing, the review protocol specification, the change set format, the
+narrowing, the review protocol specification, the worktree model, the
 promotion process, and token cost analysis:
 
 [`DOCTRINE.md`](DOCTRINE.md)
