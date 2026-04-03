@@ -1,0 +1,55 @@
+{
+  "includedSkills": [
+    "vision-sync",
+    "persona-builder",
+    "journey-sync",
+    "journey-qa-ac-testing",
+    "feature-discovery",
+    "spec-ac-sync",
+    "spec-code-sync",
+    "agentic-e2e-playwright",
+    "feature-marketing-insights",
+    "workflow-compass"
+  ],
+  "corePackForRouting": [
+    "vision-sync",
+    "persona-builder",
+    "journey-sync",
+    "journey-qa-ac-testing",
+    "feature-discovery",
+    "spec-ac-sync",
+    "spec-code-sync",
+    "agentic-e2e-playwright",
+    "feature-marketing-insights"
+  ],
+  "externalAddOns": {
+    "coreyhaines-marketing-pack": [
+      "product-marketing-context",
+      "customer-research",
+      "market-competitors",
+      "competitor-alternatives",
+      "copywriting",
+      "page-cro",
+      "launch-strategy",
+      "market-social",
+      "market-ads",
+      "market-emails",
+      "signup-flow-cro",
+      "onboarding-cro"
+    ],
+    "implementation-planning": [
+      "writing-plans"
+    ]
+  },
+  "bootstrapStartSequence": [
+    "vision-sync",
+    "persona-builder",
+    "journey-sync",
+    "feature-discovery",
+    "spec-ac-sync",
+    "journey-qa-ac-testing",
+    "spec-code-sync",
+    "agentic-e2e-playwright",
+    "feature-marketing-insights"
+  ]
+}
