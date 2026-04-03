@@ -13,7 +13,63 @@
 
 ---
 
-## Capability Matrix
+## At A Glance
+
+| Area | vibomatic | gstack | superpowers |
+|------|-----------|--------|-------------|
+| **Vision & Strategy** | `vision-sync` (3 intents, evidence-backed) | — | — |
+| **Personas** | `persona-builder` (7 modes, trust tiers) | — | — |
+| **Feature Discovery** | `feature-discovery` (3-tier scan, Ship Brief) | `/office-hours` (6 forcing questions) | — |
+| **Feature Types** | Feature / Enabler / Integration cascade | — | — |
+| **Spec Authoring** | `writing-spec` (consumer-first stories, ACs) | — | — |
+| **AC Traceability** | `spec-ac-sync` (shared table, 4 skills R/W) | — | — |
+| **Spec-Code Drift** | `spec-code-sync` (PLANNED→RESOLVED→DRIFT) | — | — |
+| **BDD Journeys** | `journey-sync` (6 modes, Layer 3 analysis) | — | — |
+| **Journey QA** | `journey-qa-ac-testing` (4 modes, live URLs) | `/qa` (real browser, auto-fix, regression tests) | — |
+| **Design System** | — gap — | `/design-consultation` (DESIGN.md, full brand) | — |
+| **Design Exploration** | — gap — | `/design-shotgun` (variants, comparison board) | — |
+| **Design Review** | — gap — | `/plan-design-review` + `/design-review` (0-10 audit) | — |
+| **Design Production** | — gap — | `/design-html` (Pretext-native, framework-aware) | — |
+| **Technical Design** | `writing-technical-design` (feasibility matrix) | `/plan-eng-review` (ASCII diagrams, state machines) | `brainstorming` (design doc) |
+| **CEO/Scope Review** | — gap — | `/plan-ceo-review` (4 scope modes) | — |
+| **Auto-Review Pipeline** | — gap — | `/autoplan` (CEO→design→eng automatic) | — |
+| **Implementation Plan** | `writing-implementation-plan` (YAML tasks, spec chain) | — | `writing-plans` (bite-sized tasks, zero-context) |
+| **Plan Execution** | via superpowers | — | `executing-plans` (batch + architect review) |
+| **Subagent Dispatch** | via superpowers | — | `subagent-driven-development` (2-stage review) |
+| **TDD** | referenced in plan metadata | "Boil the Lake" philosophy | `test-driven-development` (Iron Law) |
+| **E2E Test Authoring** | `agentic-e2e-playwright` (a11y-first, journey-based) | regression tests from QA fixes | — |
+| **Real Browser** | — gap — | `/browse` (persistent daemon, ~100ms, ARIA refs) | — |
+| **Code Review** | via superpowers | `/review` (SQL safety, LLM trust boundaries) | `requesting-code-review` + `receiving-code-review` |
+| **Cross-Model Review** | — gap — | `/codex` (Claude + Codex, 3 modes) | — |
+| **Debugging** | — gap — | `/investigate` (auto-freeze, 3-attempt limit) | `systematic-debugging` (4-phase, 10 ref files) |
+| **Security Audit** | — gap — | `/cso` (OWASP, STRIDE, supply chain) | — |
+| **Safety Guardrails** | — gap — | `/careful` + `/freeze` + `/guard` | — |
+| **Marketing Pipeline** | `feature-marketing-insights` (8 modes, weights) | — | — |
+| **External Marketing** | coreyhaines interop (12 skills) | — | — |
+| **Release Engineering** | — gap — | `/ship` (version, changelog, test audit, PR) | `finishing-a-development-branch` (4 options) |
+| **Deploy & Verify** | — gap — | `/land-and-deploy` (merge→CI→canary) | — |
+| **Post-Deploy Monitor** | — gap — | `/canary` (screenshots, error watch, baselines) | — |
+| **Doc Sync** | — gap — | `/document-release` (README, ARCHITECTURE, CLAUDE.md) | — |
+| **Performance** | — gap — | `/benchmark` (Core Web Vitals, before/after) | — |
+| **Learning/Memory** | — gap — | `/learn` (JSONL per-project, compounds) | — |
+| **Retrospectives** | — gap — | `/retro` (commit analysis, per-person, streaks) | — |
+| **Health Dashboard** | — gap — | `/health` (weighted 0-10, trend tracking) | — |
+| **Progress Checkpoints** | — gap — | `/checkpoint` (save/resume state) | — |
+| **Skill Routing** | `workflow-compass` (dependency graph) | preamble-based proactive routing | `using-superpowers` (1% = must invoke) |
+| **Skill Creation** | — gap — | template auto-gen, CI validates | `writing-skills` (TDD for docs, pressure-test) |
+| **Repo Modes** | bootstrap / convert | — | — |
+| **Verification Gate** | built into skill handoffs | part of QA/review | `verification-before-completion` (dedicated) |
+| **Parallel Workflows** | via superpowers | Conductor (10-15 branches) | `dispatching-parallel-agents` + `using-git-worktrees` |
+| **Multi-Platform** | Claude Code | Claude Code + Codex CLI | Claude Code + Codex + OpenCode + Gemini |
+
+### Legend
+- **skill name** = has it, with the skill that provides it
+- **via superpowers** = uses superpowers' implementation
+- **— gap —** = doesn't have it yet
+
+---
+
+## Capability Matrix (Deep Reference)
 
 ### Product Discovery & Definition
 
