@@ -7,47 +7,118 @@ description: Use when defining a new feature or change — produces a DRAFT feat
 
 ## Overview
 
-A feature spec is the single source of truth for everything a feature is. It starts as a DRAFT (business requirements only) and matures through its lifecycle:
+A feature spec is the single source of truth for everything a feature is — whether that feature serves a human user or another system. It starts as a DRAFT and matures through its lifecycle:
 
 ```
 DRAFT      → user stories + ACs + journeys defined, no technical design
-BASELINED  → technical design added by writing-plans, approved for implementation
+BASELINED  → technical design added by writing-technical-design, approved for implementation
 VERIFIED   → implemented, tested, synced (RESOLVED annotations, QA ✅, E2E ✅)
 ```
 
-This skill produces DRAFT specs. It defines WHAT we're building and HOW users experience it — never HOW to implement it. Technical design comes later in writing-plans.
+This skill produces DRAFT specs. It defines WHAT we're building and HOW it's experienced — never HOW to implement it. Technical design comes later in writing-technical-design.
 
 **Announce at start:** "I'm using the writing-spec skill to define the feature requirements."
+
+## What Traditional Software Development Gets Wrong
+
+Traditional practice separates "real features" from "infrastructure work." User-facing features get specs, user stories, and acceptance criteria. Backend enablers get Jira tickets with a one-line description. This creates two classes of work — one rigorous, one not — and the unspecified plumbing is where production breaks.
+
+In the vibe code era, AI agents implement both. An agent doesn't care if the consumer is a human clicking a button or a service calling an API — it needs the same structured input: who consumes this, what do they need, how do we verify it works. The spec format is the agent's input contract.
+
+**Vibomatic principle:** Everything that ships gets a feature spec. The spec format is the same. The consumer type changes — not the rigor.
+
+## Feature Types
+
+Every feature spec carries a `Type` tag that identifies its consumer:
+
+| Type | Consumer | Story format | Journey type | Example |
+|------|----------|-------------|--------------|---------|
+| `Feature` | Human user (persona) | "As P1, I want..." | User journey with UI steps | Match discovery, chat, payments |
+| `Enabler` | Other service/feature | "As [service], I need..." | System journey with service interactions | Score recalculation cron, event pipeline, email service |
+| `Integration` | External system boundary | "When [external event], the system must..." | Contract journey with request/response | Stripe webhooks, OAuth provider, third-party API |
+
+**The type determines the persona, not the process.** All types go through the same pipeline: writing-spec → writing-technical-design → writing-implementation-plan.
+
+### How Types Relate
+
+Features depend on Enablers. Enablers depend on other Enablers. Integrations connect to the outside world. A monetizable user flow typically spans all three:
+
+```
+[Integration: Stripe webhook] 
+    → [Enabler: payment processing service]
+        → [Enabler: subscription state manager]
+            → [Feature: user sees premium content]
+```
+
+Each node is its own feature spec. The dependency chain is traced through System Dependencies tables and journey preconditions. Layer 3 analysis validates that every link in the chain exists.
+
+## Consumer-First Stories
+
+Traditional user stories assume a human. Vibomatic generalizes the pattern:
+
+**Feature (human consumer):**
+```markdown
+**As** P1 (Solo Builder),
+**I want** to filter matches by timezone,
+**So that** I find co-builders available during my working hours.
+```
+
+**Enabler (system consumer):**
+```markdown
+**As** the match-discovery-service,
+**I need** recalculated scores reflecting preference changes from the last 24h,
+**So that** users see current recommendations when they open the matches tab.
+```
+
+**Integration (external system boundary):**
+```markdown
+**When** Stripe sends a `checkout.session.completed` webhook,
+**The system must** activate the user's subscription within 30 seconds,
+**So that** the user can access premium features immediately after payment.
+```
+
+The format adapts to the consumer. The AC table format stays identical.
+
+## Journeys Are Wrappers
+
+A user journey includes system behavior as implicit steps. The user clicks a button — behind the scenes, 5 services coordinate. The journey documents all of it:
+
+```gherkin
+Scenario: User signs up and gets first matches
+
+  When user submits signup form
+  Then account is created                            ← system step
+  And welcome email is queued                        ← system step (enabler dependency)
+  And "user.created" event fires                     ← system step (enabler dependency)
+  And user sees confirmation screen                  ← user step
+
+  When matching preferences are saved
+  Then score calculation triggers                    ← system step (enabler dependency)
+  And user sees "Finding matches..." state           ← user step
+
+  When score calculation completes
+  Then user sees top 5 matches                       ← user step
+  And match notification sent to matched users       ← system step (enabler dependency)
+```
+
+Every system step (`←`) is a dependency on an Enabler or Integration. Layer 3 traces each one back to its feature spec. If the enabler spec doesn't exist, Layer 3 flags it as an **ungrounded precondition** — and writing-spec creates the enabler spec.
+
+**Standalone system journeys** only exist for enablers with no user trigger — cron jobs, scheduled pipelines, autonomous processes. These still get journey docs, but the "persona" is the scheduler or event source, and there are no UI steps.
 
 ## When To Use
 
 - After brainstorming or feature-discovery produces a direction/Ship Brief
 - When a feature idea needs to be formalized before implementation
 - When existing specs need new user stories or ACs added
-- Before invoking writing-plans (writing-plans requires a DRAFT or higher spec)
-
-## What A Feature Is
-
-A feature is a cohesive unit of user value. It contains one or more user stories that together deliver a capability. The feature spec is the complete record of that feature — from requirements through verification.
-
-A feature spec contains:
-- **Problem statement** — what breaks without this feature
-- **User stories** — "As [persona], I want [goal] so that [value]"
-- **Acceptance criteria** — testable conditions per story (shared AC table format)
-- **Journey references** — which journeys exercise this feature
-- **Implementation notes** — added later by writing-plans (PLANNED/RESOLVED)
-- **QA + E2E status** — added later by testing skills
-
-This skill writes the first three and triggers the fourth. The rest come later.
+- When Layer 3 flags an ungrounded precondition (create the enabler spec)
+- Before invoking writing-technical-design (requires a DRAFT or higher spec)
 
 ## Prerequisites
-
-Before writing a spec, these should exist (or be created as part of this process):
 
 | Artifact | Where | Required? | If missing |
 |----------|-------|-----------|------------|
 | Vision | `docs/specs/vision.md` | Recommended | Can proceed without, but stories may lack alignment |
-| Personas | `docs/specs/personas/P*.md` | Recommended | Stories will lack persona grounding — flag this |
+| Personas | `docs/specs/personas/P*.md` | Recommended for Features | Enablers/Integrations use system consumers instead |
 | Feature Ship Brief | From feature-discovery | Optional | Can work from brainstorming output or user description |
 | Existing specs | `docs/specs/features/` | Check | Read existing specs to learn format and avoid duplication |
 
@@ -57,6 +128,18 @@ Before writing a spec, these should exist (or be created as part of this process
 - **convert:** Read existing specs first. Match their format, header fields, and conventions. Don't force vibomatic conventions on first pass — adapt.
 
 ## Process
+
+### Step 0: Determine Feature Type
+
+Before writing anything, classify the work:
+
+| Signal | Type |
+|--------|------|
+| A human uses it directly (UI, CLI, notification) | `Feature` |
+| Other features/services depend on it, no direct user interaction | `Enabler` |
+| It handles communication with an external system | `Integration` |
+
+If unclear, ask: "Who breaks if this doesn't work?" If the answer is a user — Feature. If the answer is another service — Enabler. If the answer is "we can't talk to [external system]" — Integration.
 
 ### Step 1: Context Scan
 
@@ -72,45 +155,58 @@ cat docs/specs/vision.md 2>/dev/null | head -50
 
 If feature specs exist, read one to learn the project's format.
 
+**For Enablers/Integrations:** Also scan for which existing feature specs reference this capability as a dependency or ungrounded precondition.
+
 ### Step 2: Define The Problem
 
 Write a clear problem statement. This is NOT a solution description — it's what breaks or is missing without this feature.
 
-**Template:**
+**For Features:**
 ```markdown
 ## Problem Statement
 
-[Who] currently [pain point / gap]. This means [consequence].
+[Who — persona] currently [pain point / gap]. This means [consequence].
 [Evidence or context that validates this is worth solving.]
 ```
 
-**Gate:** If you cannot articulate the problem without referencing the solution, stop and ask the user what user pain this addresses.
-
-### Step 3: Write User Stories
-
-Each user story follows the standard format and maps to a persona:
-
+**For Enablers:**
 ```markdown
-## User Stories
+## Problem Statement
 
-### US-1: [Story title]
-
-**As** [persona from P*.md],
-**I want** [specific goal — what the user does],
-**So that** [value — why it matters to them].
+[Which features/services] currently [lack / cannot / must manually handle] [capability].
+Without this, [consequence — what breaks for end users or other services].
+[List dependent feature specs that need this.]
 ```
 
-**Rules:**
-- One goal per story. If a story has "and" in the goal, split it.
-- Reference real personas (P1, P2, etc.) when they exist.
-- Stories describe user intent, not UI elements. "I want to filter by timezone" not "I want a dropdown with timezone options."
-- Order stories by user flow — the sequence a user would naturally encounter them.
+**For Integrations:**
+```markdown
+## Problem Statement
 
-**How many stories?** A feature typically has 2-7 stories. If you have more than 10, the feature may need decomposition. If you have 1, it might be a task, not a feature.
+The system currently [has no way to / manually handles] [external interaction].
+This means [consequence — data staleness, manual work, broken flow].
+[External system: name, docs URL, API version.]
+```
+
+**Gate:** If you cannot articulate the problem without referencing the solution, stop and ask what breaks without this.
+
+### Step 3: Write Consumer Stories
+
+Each story maps to a consumer — human persona, system service, or external event.
+
+**Rules (all types):**
+- One goal per story. "and" in the goal → split it.
+- Order stories by flow — the sequence consumers encounter them.
+- 2-7 stories per feature. >10 → decompose. 1 → might be a task, not a feature.
+
+**Feature stories** reference personas (P1, P2) and describe user intent, not UI elements.
+
+**Enabler stories** name the consuming service and describe the contract it needs.
+
+**Integration stories** use "When [external event]" format and describe the system's obligation.
 
 ### Step 4: Write Acceptance Criteria
 
-Each user story gets an AC table in the shared contract format:
+Each story gets an AC table in the shared contract format:
 
 ```markdown
 ### Acceptance Criteria — US-1: [Story title]
@@ -122,15 +218,53 @@ Each user story gets an AC table in the shared contract format:
 ```
 
 **Rules:**
-- AC prefix derived from feature/story name (e.g., `MATCH-01`, `ONBOARD-01`)
-- Each AC is one testable behavior — no compound conditions ("X and Y" → two rows)
-- QA, E2E, and Test columns start empty (`—` / `🔲` / `—`) — other skills fill these
-- Include happy path, error cases, and edge cases
-- ACs are assertions, not steps: "User sees confirmation toast" not "User clicks submit and sees confirmation toast"
+- AC prefix derived from feature name (e.g., `MATCH-01`, `RECALC-01`, `STRIPE-01`)
+- Each AC is one testable behavior — no compound conditions
+- QA, E2E, and Test columns start empty — other skills fill these
+- Include happy path, error cases, edge cases, and **failure modes**
+
+**For Enablers, add SLA criteria:**
+```markdown
+| RECALC-05 | Recalculation completes within 30min SLA | — | 🔲 | — |
+| RECALC-06 | On failure, last good data preserved (no data loss) | — | 🔲 | — |
+| RECALC-07 | Failure emits alert event within 5min | — | 🔲 | — |
+```
+
+**For Integrations, add contract criteria:**
+```markdown
+| STRIPE-04 | Invalid webhook signature returns 401 | — | 🔲 | — |
+| STRIPE-05 | Duplicate event IDs are idempotent (no double-processing) | — | 🔲 | — |
+| STRIPE-06 | Webhook processing completes within 10s (Stripe timeout) | — | 🔲 | — |
+```
 
 **Gate:** Read each AC aloud. If you can't write a test for it, it's not specific enough. Rewrite.
 
-### Step 5: Assemble The Feature Spec
+### Step 5: Identify System Dependencies
+
+Map what this feature depends on and what depends on it.
+
+```markdown
+## System Dependencies
+
+### This feature depends on:
+
+| Dependency | Type | Spec exists? | What it provides |
+|-----------|------|-------------|-----------------|
+| User authentication | Enabler | ✅ feature-auth.md | Authenticated session |
+| Email service | Enabler | ❌ — needs spec | Transactional email delivery |
+| Stripe API | Integration | ❌ — needs spec | Payment processing |
+
+### Other features depend on this:
+
+| Consumer | Type | What it needs from us |
+|----------|------|----------------------|
+| Match discovery UI | Feature | Fresh scores via API |
+| Recommendation emails | Enabler | Top matches per user |
+```
+
+**When a dependency spec doesn't exist (❌):** Flag it. After this spec is complete, create the dependency spec. This is how the full chain gets built — each spec reveals what's missing below it.
+
+### Step 6: Assemble The Feature Spec
 
 Write the complete DRAFT spec to `docs/specs/features/<feature-name>.md`:
 
@@ -138,7 +272,8 @@ Write the complete DRAFT spec to `docs/specs/features/<feature-name>.md`:
 # Feature: [Feature Name]
 
 **Status:** DRAFT
-**Personas:** [P1, P3]
+**Type:** [Feature | Enabler | Integration]
+**Consumers:** [P1, P3 | service names | external system]
 **Priority:** [from Ship Brief or user input]
 **Created:** [YYYY-MM-DD]
 
@@ -156,56 +291,90 @@ Write the complete DRAFT spec to `docs/specs/features/<feature-name>.md`:
 
 ---
 
-## Implementation Notes
+## System Dependencies
+
+[From Step 5]
+
+---
+
+## Technical Design
 
 _To be added by writing-technical-design._
 
 ---
 
+## Implementation Notes
+
+_To be added by writing-implementation-plan._
+
+---
+
 ## Journey References
 
-_To be added in Step 6._
+_To be added in Step 7._
 ```
 
-### Step 6: Trigger Journey Sync
+### Step 7: Trigger Journey Sync
 
-After the spec is saved, invoke `journey-sync` to create or update journeys that exercise the new feature's user stories.
+After the spec is saved, invoke `journey-sync` to create or update journeys.
 
-**What to pass:** The new spec file path and the personas involved.
+**For Features:** User journeys with UI steps + system steps marked as dependencies.
+
+**For Enablers:** System journeys with service interactions, triggers, and SLA verification.
+
+**For Integrations:** Contract journeys with request/response flows, error handling, and timeout behavior.
 
 **What to expect back:**
 - Journey file(s) referencing the AC IDs from Step 4
 - Layer 3 analysis findings:
   - **Contradictions** → fix in spec
   - **Missing transitions** → add stories or ACs
-  - **Ungrounded preconditions** → flag dependency on other features
+  - **Ungrounded preconditions** → create enabler spec (recursive)
   - **Concept fragmentation** → consolidate naming in spec
 
 **Loop:** If Layer 3 reveals gaps, go back to Steps 3-4 and fix the stories/ACs. Re-run journey-sync. Repeat until Layer 3 is clean or remaining issues are flagged as known dependencies.
 
-### Step 7: Update Journey References
+**Recursive spec creation:** When Layer 3 flags an ungrounded precondition that needs its own enabler spec, queue it. Complete the current spec first, then create the enabler spec using this same skill. The dependency chain builds top-down — Features reveal Enablers, Enablers reveal other Enablers and Integrations.
+
+### Step 8: Update Journey References
 
 After journey-sync completes, update the spec's Journey References section:
 
 ```markdown
 ## Journey References
 
-| Journey | Scenarios | ACs Covered |
-|---------|-----------|-------------|
-| J05: [Journey name] | Scenario 1, Scenario 3 | MATCH-01, MATCH-02, MATCH-05 |
-| J02: [Journey name] | Scenario 4 | MATCH-03, MATCH-04 |
+| Journey | Scenarios | ACs Covered | Type |
+|---------|-----------|-------------|------|
+| J05: Match discovery flow | Scenario 1, 3 | MATCH-01, MATCH-02, MATCH-05 | User |
+| J12: Score recalculation | Scenario 1 | RECALC-01, RECALC-02 | System |
 ```
 
-### Step 8: Handoff
+### Step 9: Dependency Spec Queue
+
+If Steps 5 or 7 revealed missing dependency specs, present the queue:
+
+```
+Missing dependency specs to create:
+  1. feature-email-service.md (Enabler) — needed by: MATCH-03, J05 step 3
+  2. feature-stripe-integration.md (Integration) — needed by: US-3, J05 step 7
+
+Create these now? (Each goes through writing-spec → writing-technical-design → writing-implementation-plan)
+```
+
+This is how a single feature request cascades into the full system specification. The user approves which dependencies to spec now vs defer.
+
+### Step 10: Handoff
 
 The DRAFT spec is complete. Present a summary:
 
 ```
 Feature spec saved: docs/specs/features/<feature-name>.md
 Status: DRAFT
+Type: [Feature | Enabler | Integration]
 Stories: N user stories, M acceptance criteria
 Journeys: [list of journey files created/updated]
 Layer 3 issues: [resolved count] resolved, [open count] flagged as dependencies
+Dependency queue: [count] enabler/integration specs to create
 
 Ready for technical design. Next step:
   "Run writing-technical-design against docs/specs/features/<feature-name>.md"
@@ -213,16 +382,40 @@ Ready for technical design. Next step:
 
 **The terminal state is invoking writing-technical-design.** This skill does not write code, choose technologies, or make architecture decisions.
 
+## The Cascade Effect
+
+This is what makes vibomatic's approach different from traditional spec writing. In traditional development, you spec the feature and hand-wave the infrastructure. In vibomatic, specifying a feature **automatically reveals** every enabler and integration it depends on:
+
+```
+User says: "I want match recommendations"
+    ↓
+writing-spec creates: feature-match-discovery.md (Feature)
+    ↓ Layer 3 finds ungrounded preconditions:
+writing-spec creates: feature-score-recalculation.md (Enabler)
+writing-spec creates: feature-notification-service.md (Enabler)
+    ↓ Layer 3 finds more:
+writing-spec creates: feature-email-delivery.md (Integration)
+    ↓
+Full system specified. Nothing hand-waved.
+```
+
+Each spec is its own file (agent-friendly: parallel processing, clean diffs, targeted reads). Each links to the others through System Dependencies and Journey References. The chain is traceable end-to-end.
+
+**This is the vibe code era improvement:** The agent doesn't just implement what you ask — it discovers what you need. The spec process itself is the architecture discovery tool.
+
 ## Anti-Patterns
 
 | Don't | Why | Instead |
 |-------|-----|---------|
-| Write implementation details in stories | Couples requirements to a solution | Describe user intent, let writing-technical-design choose the how |
-| Skip personas | Stories become generic, untestable | Reference P*.md personas or flag their absence |
+| Skip enabler specs ("it's just a cron") | Unspecified plumbing is where production breaks | Every shipping component gets a feature spec |
+| Write implementation details in stories | Couples requirements to a solution | Describe consumer intent, let writing-technical-design choose the how |
+| Skip personas for Features | Stories become generic, untestable | Reference P*.md personas or flag their absence |
 | Write ACs as steps | Steps describe procedure, not criteria | Write assertions: "User sees X" not "User clicks Y then sees X" |
-| Create one giant story | Untestable, no granularity | Split by user goal — one goal per story |
-| Skip journey-sync | Miss hidden dependencies between features | Always run it — Layer 3 is where the real gaps surface |
-| Add technical design | Not this skill's job | Leave Implementation Notes empty for writing-technical-design |
+| Create one giant story | Untestable, no granularity | Split by consumer goal — one goal per story |
+| Skip journey-sync | Miss hidden dependencies between features | Always run it — Layer 3 finds what humans miss |
+| Add technical design | Not this skill's job | Leave Technical Design empty for writing-technical-design |
+| Hand-wave dependencies | "We'll figure out the email service later" | Create the enabler spec now or explicitly defer with reasoning |
+| Put everything in one spec file | Agents work better with focused files | One spec per feature, cross-reference by ID |
 
 ## Routing
 
@@ -231,6 +424,7 @@ Ready for technical design. Next step:
 | Spec complete, ready for technical design | `writing-technical-design` |
 | Layer 3 reveals missing persona | `persona-builder` (then return) |
 | Layer 3 reveals concept fragmentation | Fix in spec, then re-run `journey-sync` |
-| Layer 3 reveals dependency on unbuilt feature | `feature-discovery` for the dependency |
+| Layer 3 reveals dependency on unbuilt feature | Create enabler spec (this skill, recursive) |
 | User wants to validate the feature idea first | `feature-discovery` (then return here) |
 | Spec exists but ACs are weak/missing | `spec-ac-sync` (can run standalone) |
+| Dependency queue approved | Run this skill again for each queued spec |
