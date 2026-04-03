@@ -10,7 +10,9 @@
     "agentic-e2e-playwright",
     "feature-marketing-insights",
     "workflow-compass",
-    "writing-plans"
+    "writing-spec",
+    "writing-technical-design",
+    "writing-implementation-plan"
   ],
   "corePackForRouting": [
     "vision-sync",

@@ -1,6 +1,6 @@
 ---
-name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+name: writing-implementation-plan
+description: Use when you have a BASELINED feature spec with technical design and need to produce code tasks with TDD
 ---
 
 # Writing Plans
