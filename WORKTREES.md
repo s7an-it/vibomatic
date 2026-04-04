@@ -20,16 +20,18 @@ make promotion (squash-merge to main) clean.
 
 ## Per-Lane Worktree Map
 
-| Lane | On main (before worktree) | CREATE | In worktree | REMOVE | On main (after) |
-|------|---------------------------|--------|-------------|--------|-----------------|
-| **Greenfield** | vision-sync → writing-change-set | executing-change-set Step 0 | executing + promoting | promoting Step 7 | verifying-promotion |
-| **Brownfield Feature** | spec-code-sync → writing-change-set | executing-change-set Step 0 | executing + promoting | promoting Step 7 | review-protocol, verifying-promotion |
-| **Bugfix** | bugfix-brief, writing-change-set | executing-change-set Step 0 | executing + promoting | promoting Step 7 | review-protocol, verifying-promotion |
-| **Refactor** | spec-code-sync, writing-change-set | executing-change-set Step 0 | executing + promoting | promoting Step 7 | review-protocol, verifying-promotion |
-| **Brownfield Conversion** | entire lane on main | Never | — | — | — |
-| **Drift** | entire lane on main | Never | — | — | — |
+| Lane | On main (before worktree) | In worktree | On main (after worktree) |
+|------|---------------------------|-------------|-------------------------|
+| **Greenfield** | vision-sync → writing-change-set | executing-change-set | promoting, verifying-promotion |
+| **Brownfield Feature** | spec-code-sync → writing-change-set | executing-change-set | review-protocol, promoting, verifying-promotion |
+| **Bugfix** | bugfix-brief, writing-change-set | executing-change-set | review-protocol, promoting, verifying-promotion |
+| **Refactor** | spec-code-sync, writing-change-set | executing-change-set | review-protocol, promoting, verifying-promotion |
+| **Brownfield Conversion** | entire lane on main | — | — |
+| **Drift** | entire lane on main | — | — |
 
-**Key:** `review-protocol` always runs from main, reading branch diffs via `git diff main...<branch>`.
+**Only `executing-change-set` runs inside the worktree.** Everything else — review,
+promote, verify — runs on main. `promoting-change-set` squash-merges the branch
+from main, then removes the worktree.
 
 ## Branch Naming Convention
 
@@ -115,10 +117,13 @@ handles the transitions. Skills don't need to hard-code worktree logic — they
 call the guard and follow the action.
 
 **Key transitions the guard handles:**
-- `writing-change-set` → `executing-change-set`: guard detects NEED_WORKTREE, creates it
-- `executing-change-set` → `review-protocol`: guard detects LEAVE_WORKTREE (reviews on main)
-- `review-protocol` → `promoting-change-set`: guard detects IN_WORKTREE (enter for squash)
-- `promoting-change-set` → `verifying-promotion`: guard detects STAY_MAIN (worktree removed)
+- `writing-change-set` → `executing-change-set`: NEED_WORKTREE — creates it
+- `executing-change-set` → `review-protocol`: LEAVE_WORKTREE — reviews read diffs from main
+- `review-protocol` → `promoting-change-set`: STAY_MAIN — promote runs from main, squash-merges the branch
+- `promoting-change-set` → `verifying-promotion`: STAY_MAIN — worktree already removed
+
+The flow is: **main → worktree (execute) → main (review, promote, verify)**. Only
+`executing-change-set` runs inside the worktree. Everything else runs on main.
 
 ## Lifecycle
 
@@ -130,17 +135,19 @@ main ─────────────────────────
    .worktrees/feature-x ─── work ─── promote ────┘
 ```
 
-1. **Create** — `executing-change-set` Step 0 runs `worktree.sh create <branch>`.
-   Runs preflight, creates worktree, installs deps, checks baseline tests.
-   If worktree already exists (interrupted chain), resumes idempotently.
+1. **Create** — `executing-change-set` Step 0 calls the guard, which creates the
+   worktree, runs project setup, and checks baseline tests. Idempotent for resume.
 
 2. **Work** — `executing-change-set` runs inside the worktree. Each task is TDD:
    write test → fail → implement → pass → checkpoint commit.
 
-3. **Promote** — `promoting-change-set` Step 5 runs `worktree.sh promote <branch>`.
-   Squash-merges to main, stages the diff for review. After G6 pass, commit.
+3. **Leave** — after execution completes, switch back to main (`cd` to repo root).
+   `review-protocol` and `promoting-change-set` both run from main.
 
-4. **Remove** — `promoting-change-set` Step 7 runs `worktree.sh remove <branch>`.
+4. **Promote** — `promoting-change-set` runs `worktree.sh promote <branch>` from main.
+   Squash-merges the branch, stages the diff for G6 review. After G6 pass, commit.
+
+5. **Remove** — `promoting-change-set` runs `worktree.sh remove <branch>` after commit.
    Removes directory and deletes the merged branch.
 
 ## Interruption Recovery
