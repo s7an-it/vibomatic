@@ -37,6 +37,24 @@ Vibomatic now routes on two axes:
 
 This skill decides the lane before it recommends the next skill.
 
+## Session Mode
+
+At the start of a pipeline run, determine the design decision mode:
+
+**If `--interactive` or `--auto` flag is already set:** use it.
+
+**If no flag:** ask the user once:
+
+> How should design decisions be handled in this session?
+>
+> 1. **Interactive** — I'll present 5 ranked alternatives per key decision, you pick
+> 2. **Auto** — AI evaluates 5 alternatives, picks the best, documents all reasoning
+>
+> Both modes generate the same depth of analysis. The difference is who makes the call.
+
+The chosen mode propagates through all downstream skills via the flag.
+Default if user doesn't respond: `--auto`.
+
 ## Repository Mode Gate
 
 Before recommending any next skill, detect repository mode using `REPO_MODES.md`:

@@ -35,6 +35,18 @@ writing-technical-design  → BASELINED (HOW to build it: architecture, data mod
 
 **Announce at start:** "I'm using the writing-ui-design skill to define the visual design and component specifications."
 
+## Design Alternatives
+
+For each key decision in this phase (component strategy, layout system,
+responsive approach), follow the Design Alternatives Protocol
+(`references/design-alternatives.md`):
+
+1. Identify key decisions — component library vs custom, grid system, breakpoint strategy
+2. Generate 5 ranked alternatives with justification and trade-offs
+3. If `--interactive`: present to user, wait for selection
+4. If `--auto`: pick best fit, document reasoning
+5. Log to `docs/specs/decisions/<feature-name>.md`
+
 ## What UI Design Is (And Is Not)
 
 UI design defines the visual treatment, component structure, and interaction aesthetics of screens that UX design already mapped. It takes the screen inventory, state machines, flows, and information hierarchy from UX design and specifies exactly how each element renders — which components, which tokens, which states, which animations.

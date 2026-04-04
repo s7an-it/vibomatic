@@ -41,6 +41,18 @@ verifying-promotion       → VERIFIED (PROVE: tests pass, QA complete)
 
 **Announce at start:** "I'm using the writing-technical-design skill to define the technical approach."
 
+## Design Alternatives
+
+For each key decision in this phase (architecture, data model, API pattern,
+state management), follow the Design Alternatives Protocol
+(`references/design-alternatives.md`):
+
+1. Identify key decisions — system architecture, storage, API style, auth, caching
+2. Generate 5 ranked alternatives with justification and trade-offs
+3. If `--interactive`: present to user, wait for selection
+4. If `--auto`: pick best fit, document reasoning
+5. Log to `docs/specs/decisions/<feature-name>.md`
+
 ## When To Use
 
 - After writing-ui-design produces a DESIGNED feature spec
