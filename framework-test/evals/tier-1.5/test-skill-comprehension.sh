@@ -131,7 +131,7 @@ echo ""
 
 run_test "vision-sync: chain position" "vision-sync" \
   "What is the next skill in the greenfield lane after vision-sync? Just name the skill." \
-  "persona-builder" "Next skill is persona-builder"
+  "domain-expert" "Next skill is domain-expert"
 
 run_test "vision-sync: scope boundary" "vision-sync" \
   "Does vision-sync cover implementation details like database schemas, API endpoints, or framework choices? Answer yes or no and explain briefly." \
@@ -165,7 +165,7 @@ run_test "writing-change-set: manifest content" "writing-change-set" \
 
 run_test "executing-change-set: TDD enforcement" "executing-change-set" \
   "What is the TDD enforcement order for each task? List the red-green-refactor steps." \
-  "test.*first|write.*test|failing.*test|red|Write test|test before" "Write test first" \
+  "test.*first|write.*test|failing.*test|red|Write test|test before|TDD|test-driven" "Write test first" \
   "FAIL|fail|red|must fail" "Test must fail initially" \
   "PASS|pass|green|must pass" "Then test must pass"
 

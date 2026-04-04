@@ -54,11 +54,13 @@ run_scenario() {
 
   # Extract prompt from scenario (between ``` block under ## Prompt)
   local prompt
-  prompt=$(awk '/^## Prompt/,/^## /{
-    if (/^```$/ && started) exit
-    if (started) print
-    if (/^```/) started=1
-  }' "$scenario_file")
+  prompt=$(awk '
+    /^## Prompt$/ { in_section=1; next }
+    in_section && /^## / { exit }
+    in_section && /^```$/ && started { exit }
+    in_section && started { print }
+    in_section && /^```/ { started=1 }
+  ' "$scenario_file")
 
   if [[ -z "$prompt" ]]; then
     echo "  SKIP: could not extract prompt from $scenario_file"
