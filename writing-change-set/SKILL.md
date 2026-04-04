@@ -67,6 +67,8 @@ docs/plans/<YYYY-MM-DD>-<feature-name>/
 
 **Not every change set needs all eight parts.** A backend-only change might have: types, data model, unit tests, services, spec updates. A UI-only change might have: types, components, unit tests, e2e tests, spec updates. Include only what the change requires. Note omitted parts in the manifest with a one-line reason.
 
+**Vision cross-check (MANDATORY before finalizing):** After writing all parts, re-read the vision doc (section 3: Who We Serve, section 4: Value Proposition, section 6: Boundaries) and the feature spec's AC table. For every AC, verify the change set contains code that implements it. For every vision-level product concept (deployment modes, persona-specific flows, pricing tiers), verify it appears in the code — not just in the spec. If the vision says "three deployment modes," part-01 must include a config module with a MODE environment variable and part-04 must include middleware that gates features per mode. This cross-check exists because the most common pipeline failure is information loss at the spec-to-code boundary: the spec captures a requirement, the code doesn't implement it, and nobody notices until the user complains.
+
 ---
 
 ## Manifest Structure

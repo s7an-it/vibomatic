@@ -161,6 +161,10 @@ If feature specs exist, read one to learn the project's format.
 
 **For Enablers/Integrations:** Also scan for which existing feature specs reference this capability as a dependency or ungrounded precondition.
 
+**Vision-to-spec traceability (MANDATORY):** After reading the vision doc, extract every distinct product concept that implies user-visible behavior. Common examples: deployment modes, pricing tiers, persona-specific flows, platform integrations, privacy/data boundaries. Each concept MUST map to at least one AC in the spec. If the vision says "three deployment modes" and the spec has zero ACs about mode-specific behavior, that is a traceability failure. The spec is the ONLY artifact the code-generation phase reads — anything in the vision that doesn't appear in the spec will be lost.
+
+**Zero-state UX (MANDATORY):** Every user-facing feature MUST include an AC for the first-visit experience — what the user sees before they have configured anything, added any data, or created a profile. If the feature requires setup before showing value, add an AC: "[PREFIX]-ZERO: App shows useful default content before user completes setup." Empty states that say "No data yet, please configure X" are acceptable ONLY if they include a clear call-to-action AND the setup takes under 30 seconds.
+
 ### Step 2: Define The Problem
 
 Write a clear problem statement. This is NOT a solution description — it's what breaks or is missing without this feature.
