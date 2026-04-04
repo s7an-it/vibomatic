@@ -66,7 +66,26 @@ Check:
 
 If any check fails, fix in the worktree before proceeding.
 
-### Step 2: Push the branch
+### Step 2: Ship Preparation
+
+Before pushing, prepare the release:
+
+**2a. Version bump** (if applicable):
+- Read current version from `package.json`, `VERSION`, `Cargo.toml`, or equivalent
+- Bump based on change type: patch (bugfix), minor (feature), major (breaking)
+- In auto mode: P0 decides the bump level. In interactive mode: ask.
+
+**2b. CHANGELOG update**:
+- Append entry for this version with the feature/fix description
+- Reference the spec and manifest for accurate descriptions
+- Create `CHANGELOG.md` if it doesn't exist
+
+**2c. Test audit**:
+- Run the full test suite one final time
+- Report: total tests, passing, failing, new tests added
+- If any tests fail: STOP — fix in worktree before proceeding
+
+### Step 3: Push the branch
 
 Still in the worktree:
 

@@ -40,6 +40,8 @@ they attach to the core pipeline.
 - `bootstrap-extract`
 - `cross-model-review`
 - `visual-tracker`
+- `security-review`
+- `review-learnings`
 - `framework-test`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)

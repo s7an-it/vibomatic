@@ -32,6 +32,8 @@
     "bootstrap-extract",
     "cross-model-review",
     "visual-tracker",
+    "security-review",
+    "review-learnings",
     "framework-test"
   ],
   "corePackForRouting": [

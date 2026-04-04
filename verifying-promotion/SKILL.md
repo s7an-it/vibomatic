@@ -90,6 +90,45 @@ If G7 fails:
   - spec mismatch -> `writing-spec`
   - journey mismatch -> `journey-sync`
 
+## Post-Verification: Canary Monitoring
+
+If the feature has a live URL (localhost or deployed), run a canary check:
+
+1. Open the app in browser (gstack browse)
+2. Navigate through the feature's key journeys
+3. Watch for: console errors, network failures, visual regressions
+4. Compare against visual-tracker baseline (if exists)
+5. Duration: 2-5 minutes of active monitoring
+
+Report: CLEAN (no issues), DEGRADED (non-blocking issues), BROKEN (blocking).
+
+## Post-Verification: Document Sync
+
+After verification passes, reconcile documentation:
+
+1. Read all project docs: README, ARCHITECTURE, CONTRIBUTING, CLAUDE.md
+2. Cross-reference the shipped diff — what changed?
+3. Update any docs that reference changed behavior
+4. Clean up stale TODOs that were completed
+5. Update CHANGELOG if not already done in landing step
+
+This closes the loop — documentation matches shipped reality.
+
+## Post-Verification: Log Learnings
+
+Append operational discoveries from this run to `docs/learnings/learnings.jsonl`:
+
+```json
+{"date": "<date>", "skill": "verifying-promotion", "feature": "<name>", "learning": "<what was discovered>", "confidence": "high|medium|low", "saves_minutes": <estimate>}
+```
+
+Examples of learnings worth logging:
+- "The Prisma migration script needs `--force` flag in CI"
+- "Auth middleware must be loaded before rate limiter"
+- "The empty state component doesn't render without at least one CSS import"
+
+These compound across sessions — `workflow-compass` reads them to make better recommendations.
+
 ## What Not To Do
 
 - Do not fix code inline during verification

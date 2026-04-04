@@ -817,6 +817,10 @@ Commands:
 
   cleanup            Find and remove orphaned worktrees
 
+  freeze <dir>       Restrict edits to a directory (for investigation scope lock)
+
+  unfreeze           Remove the freeze restriction
+
   preflight          Run safety checks without creating anything
 
 Worktree conditions:
@@ -834,6 +838,8 @@ USAGE
 
 case "${1:-}" in
   guard)    shift; cmd_guard "$@" ;;
+  freeze)   shift; echo "${1:?Usage: worktree.sh freeze <directory>}" > "$REPO_ROOT/.worktree-freeze"; ok "Edits restricted to: $1"; echo "  Unfreeze: scripts/worktree.sh unfreeze" ;;
+  unfreeze) rm -f "$REPO_ROOT/.worktree-freeze"; ok "Edit restriction removed" ;;
   create)   shift; cmd_create "$@" ;;
   enter)    shift; cmd_enter "$@" ;;
   status)   cmd_status ;;

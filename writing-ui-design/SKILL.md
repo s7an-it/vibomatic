@@ -39,13 +39,39 @@ writing-technical-design  → BASELINED (HOW to build it: architecture, data mod
 
 For each key decision in this phase (component strategy, layout system,
 responsive approach), follow the Design Alternatives Protocol
-(`references/design-alternatives.md`):
+(`references/design-alternatives.md`).
 
-1. Identify key decisions — component library vs custom, grid system, breakpoint strategy
-2. Generate 5 ranked alternatives with justification and trade-offs
-3. If `--interactive`: present to user, wait for selection
-4. If `--auto`: pick best fit, document reasoning
-5. Log to `docs/specs/decisions/<feature-name>.md`
+## Design Shotgun (variant exploration)
+
+Before finalizing component specs, explore multiple visual directions:
+
+1. For each key screen, generate 3-5 variant HTML/CSS mockups with distinct aesthetic approaches
+2. Open variants in browser (gstack browse) side by side for comparison
+3. User picks direction (interactive) or P0 picks with justification (auto)
+4. Log taste preferences to `docs/specs/decisions/` — they compound across runs
+
+Variants should be genuinely different directions (not color swaps):
+- Variant A: minimal/clean — lots of whitespace, muted colors
+- Variant B: dense/functional — data-forward, compact layout
+- Variant C: bold/branded — strong typography, distinctive personality
+- etc.
+
+Each variant is 50-100 lines of real HTML/CSS you can see in the browser.
+
+## Adversarial Design Review (after UI is drafted)
+
+Score each design dimension 0-10:
+
+| Dimension | What to check |
+|-----------|--------------|
+| Consistency | Same patterns for same interactions across all screens? |
+| Subtraction | Can anything be removed without losing function? |
+| Component reuse | Are similar UI patterns using the same component? |
+| Design system compliance | Does everything follow DESIGN.md tokens? |
+| Dark mode | If applicable — does the palette work in both modes? |
+| Trust signals | Loading states, skeleton screens, optimistic UI — all present? |
+
+Fix anything under 7. In auto mode: P0 fixes automatically.
 
 ## What UI Design Is (And Is Not)
 

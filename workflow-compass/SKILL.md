@@ -37,23 +37,107 @@ Vibomatic now routes on two axes:
 
 This skill decides the lane before it recommends the next skill.
 
-## Session Mode
+## Session Setup
 
-At the start of a pipeline run, determine the design decision mode:
+At the start of a pipeline run, do three things:
+
+### 1. Create the Founder Persona (P0)
+
+The virtual founder persona is your proxy throughout the pipeline. It steers
+decisions, does research, and acts on your behalf.
+
+**From the user's high-level input, create `docs/specs/personas/P0-founder.md`:**
+
+```markdown
+# P0: Virtual Founder
+
+## Vision Intent
+<what the user said they want to build — their words, not interpreted>
+
+## Decision Style
+<extracted from how they communicate: terse → decisive; detailed → collaborative>
+
+## Priorities (inferred from vision)
+1. <what matters most based on what they emphasized>
+2. <what they mentioned second>
+3. <what they implied but didn't say>
+
+## Constraints
+<budget, timeline, team size, technical limitations — from context>
+
+## Research Directives
+Before each key decision, P0 should:
+- Search for real-world validation (demand signals, competitor moves, last 30 days)
+- Check if free/open-source tools exist before building custom
+- Look for production-verified patterns before inventing new ones
+- Flag when there's not enough evidence to decide confidently
+```
+
+P0 is read by every downstream skill. In auto mode, P0 makes decisions.
+In interactive mode, P0 recommends and explains why.
+
+**P0 can interrupt the pipeline at any point:**
+- "Hey — I found a free tool that does this. Use it instead of building."
+- "There's not enough validation for this feature. Consider descoping."
+- "Competitor X launched this exact thing last week. Here's what they got wrong."
+
+### 2. Set Session Mode
 
 **If `--interactive` or `--auto` flag is already set:** use it.
 
 **If no flag:** ask the user once:
 
-> How should design decisions be handled in this session?
+> How should this session work?
 >
-> 1. **Interactive** — I'll present 5 ranked alternatives per key decision, you pick
-> 2. **Auto** — AI evaluates 5 alternatives, picks the best, documents all reasoning
+> 1. **Interactive** — P0 researches and recommends, you make the calls
+> 2. **Auto** — P0 researches and decides, surfaces only high-stakes choices for your approval
 >
-> Both modes generate the same depth of analysis. The difference is who makes the call.
+> Both modes do the same research and analysis. The difference is who decides.
 
-The chosen mode propagates through all downstream skills via the flag.
 Default if user doesn't respond: `--auto`.
+
+### 3. Set Research Depth
+
+In auto mode, P0 automatically researches before decisions. But how deep?
+
+> Research depth?
+>
+> 1. **Quick** — check training data + one web search per decision
+> 2. **Standard** — web search + competitor scan + trend check (default)
+> 3. **Deep** — full market research, 30-day trend analysis, tool landscape scan
+
+Default: `--research standard`.
+
+## Autorun Orchestrator
+
+When `--autorun` is set (or user says "just build it"), workflow-compass
+runs the entire lane automatically:
+
+1. **Classify every decision** as:
+   - **Mechanical** — clear best answer, decide silently (e.g., file naming)
+   - **Taste** — close call, P0 decides but logs it for end-of-run review
+   - **User** — high stakes or irreversible, stop and ask even in auto mode
+
+2. **Run skills sequentially** through the lane, P0 steering each one
+
+3. **At end of run**, present all Taste decisions at once:
+   > "I made 12 decisions during this run. 9 were mechanical. Here are the 3
+   > taste calls I made — review and override any you disagree with."
+
+4. **If any skill blocks** (self-verify fails, investigation escalates, security
+   finding), stop and report. Don't silently skip.
+
+5. **Learn from each run** — log operational discoveries to `docs/learnings/`
+
+Decision classification examples:
+
+| Decision | Classification | Why |
+|----------|---------------|-----|
+| Database column naming | Mechanical | Follow existing conventions |
+| REST vs GraphQL for new API | Taste | Both viable, P0 picks based on research |
+| Whether to add authentication | User | Scope-changing, irreversible |
+| Which CSS framework | Taste | P0 researches, picks, documents |
+| Whether to ship or descope a feature | User | Business decision |
 
 ## Repository Mode Gate
 

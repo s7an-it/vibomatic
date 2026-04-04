@@ -267,6 +267,8 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `bootstrap-extract`
 - `cross-model-review`
 - `visual-tracker`
+- `security-review`
+- `review-learnings`
 - `framework-test`
 
 ## Full Doctrine
