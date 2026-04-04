@@ -74,6 +74,7 @@ Read everything the pipeline has produced:
 | Source | What to extract |
 |--------|----------------|
 | Feature spec | ACs — these are the MUST-verify criteria |
+| Feature spec revision log | Any ACs that changed mid-pipeline — verify code matches the REVISED version, not the original |
 | Manifest | Task list, file-touch plan, validation commands |
 | Journeys | User flows that exercise this feature — trace through code |
 | Solution decision | What paradigm was chosen and why — check if implementation matches |

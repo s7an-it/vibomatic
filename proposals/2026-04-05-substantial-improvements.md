@@ -138,38 +138,22 @@ The chain only serializes when there's a real data dependency.
 
 ---
 
-## P4: Living Spec, Not Frozen Artifacts (HIGH IMPACT)
+## P4: AC Revision Log (IMPLEMENTED)
 
-### Problem
+### Original framing was wrong
 
-Each skill produces a markdown file and moves on. The spec is frozen at DRAFT,
-then UX-REVIEWED, then DESIGNED, then BASELINED. But the spec should be a
-living document that evolves as implementation reveals truth.
+The system already supports in-place AC revision at any layer. The AC table
+is the shared contract that 4 skills read/write. Routing tables in every skill
+include feedback loops for upstream revision. Specs were never "frozen" — they
+were always living documents.
 
-Currently: `BASELINED` means "locked, don't change." But that's wrong — the best
-specs are the ones that get updated as you learn.
+### What was actually missing: audit trail
 
-### Proposed change: Continuous spec reconciliation
+When AC-03 changes mid-pipeline, there was no structured record of what it was,
+what it became, why, and which skill made the change. Now there is:
 
-After every checkpoint commit in `executing-change-set`, run a lightweight
-spec-code reconciliation:
-
-```
-For each checkpoint commit:
-  1. What ACs does this commit address?
-  2. Does the implementation match the AC's intent?
-  3. If not: UPDATE the AC to match reality (not the other way around)
-  4. Log the update in docs/specs/decisions/
-```
-
-This is the inverse of `spec-code-sync` (which checks code matches spec).
-This checks spec matches code — and updates the spec when the code is right
-and the spec was wrong.
-
-**What this gains:**
-- Specs that are always current (not frozen in the past)
-- Implementation discoveries feed back into specs immediately
-- Post-merge spec-code-sync finds fewer false drifts
+`## Revision Log` in the spec format tracks every AC change. `systems-analysis`
+verifies code matches the REVISED ACs, not the originals.
 
 ---
 

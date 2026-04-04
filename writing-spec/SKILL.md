@@ -579,6 +579,33 @@ Each spec is its own file (agent-friendly: parallel processing, clean diffs, tar
 | Hand-wave dependencies | "We'll figure out the email service later" | Create the enabler spec now or explicitly defer with reasoning |
 | Put everything in one spec file | Agents work better with focused files | One spec per feature, cross-reference by ID |
 
+## AC Revision Log
+
+When any downstream skill revises an AC (feasibility issue in tech design,
+implementation discovery, journey gap), the revision must be logged in the
+spec under `## Revision Log`:
+
+```markdown
+## Revision Log
+
+| Date | AC | Was | Now | Why | By skill |
+|------|----|-----|-----|-----|----------|
+| 2026-04-05 | AC-03 | "Items sync in real-time" | "Items sync within 5s via polling" | WebSocket adds disproportionate complexity for MVP scope | writing-technical-design |
+| 2026-04-05 | AC-07 | (new) | "User sees sync indicator during poll interval" | Added to cover the UX gap introduced by AC-03 revision | executing-change-set |
+```
+
+**Rules:**
+1. Never silently change an AC — every change gets a log entry
+2. Include which skill made the revision and WHY
+3. If a revision adds a new AC, log it as `(new)` in the "Was" column
+4. If a revision removes an AC, log it as `(removed)` in the "Now" column
+5. `systems-analysis` checks the revision log against the implementation —
+   every revision should be reflected in the code
+
+The AC table remains the single source of truth. The revision log is the
+audit trail of how it got there. This is how the system learns across layers
+without throwing away downstream work.
+
 ## Routing
 
 | Situation | Route to |
