@@ -479,6 +479,15 @@ overlaps are missed. The result: specs with structural gaps — undefined succes
 features that don't serve any persona, journeys that contradict each other — that only surface
 during implementation or post-launch.
 
+## Audit Mode
+
+When invoked with `--audit` to review existing ship briefs:
+
+1. Glob `docs/specs/features/*-brief.md`
+2. For each brief: check cross-validation still holds (personas still exist? journeys still match? vision still aligned?)
+3. Check brief status: is it still Draft or has it progressed?
+4. Report: brief-by-brief PASS/WARN/FAIL
+
 ## Pipeline Continuation
 
 ### Self-Verify

@@ -1874,6 +1874,17 @@ first to generate it."
 Do NOT create the table yourself — that's `spec-ac-sync`'s job. Just write the tests and
 report which AC IDs they cover.
 
+## Audit Mode
+
+When invoked with `--audit` to review E2E test coverage:
+
+1. Glob `e2e/specs/**/*.spec.ts` (or project test directory)
+2. Glob `docs/specs/journeys/J*.feature.md`
+3. For each journey scenario: does a matching E2E test exist?
+4. For each AC in feature specs: is it covered by E2E (check E2E column in AC table)?
+5. Check test health: any tests that are skipped, flaky (`.skip`, `.fixme`)?
+6. Report: scenario-by-scenario coverage with COVERED/MISSING/SKIPPED
+
 ## Pipeline Continuation
 
 ### Self-Verify

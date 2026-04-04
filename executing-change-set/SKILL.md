@@ -45,6 +45,9 @@ Read and hold in context:
 | Feature spec | `docs/specs/features/<name>.md` | ACs, dependencies, status |
 | UX/UI/tech design | `docs/specs/ux/<name>.md`, `docs/specs/ui/<name>.md`, technical design section | Execution constraints |
 | Journeys | `docs/specs/journeys/J*-<name>.feature.md` | Flow constraints |
+| Domain profile | `docs/specs/domain-profile.md` | Industry context, tech conventions |
+| Domain conventions | `references/domains/*/conventions.md` | Framework-specific patterns |
+| Style contract | `docs/specs/style-contract.md` | Naming, imports, test patterns |
 | Existing code | source tree | Current patterns and boundaries |
 
 ## Core Rules
@@ -95,17 +98,27 @@ Verify the branch is clean before starting a task.
 
 For each task:
 
-1. implement only the task's intended changes in the worktree
-2. stage only the files for that task
-3. inspect `git diff --staged`
-4. compare the staged diff against:
+1. **If the task produces implementation code (services, routes, components):**
+   - Write the test FIRST (unit test for the behavior this task implements)
+   - Run the test — it MUST FAIL (proves the test tests something real)
+   - Write the minimal implementation to make the test pass
+   - Run the test — it MUST PASS
+   - This is TDD red-green per task. Not optional for implementation tasks.
+
+2. **Skip TDD for:** type definitions, config files, migrations (no behavior to test), pure scaffolding, spec/journey updates. These tasks are written and staged directly.
+
+3. Stage only the files for that task (test + implementation together)
+4. Inspect `git diff --staged`
+5. Compare the staged diff against:
    - task intent
    - AC slice
    - design constraints
-5. run the task validation command
-6. if acceptable, create checkpoint commit:
+   - style contract (if `docs/specs/style-contract.md` exists)
+   - domain conventions (if `references/domains/` pack exists for the tech stack)
+6. Run the task validation command
+7. If acceptable, create checkpoint commit:
    - `checkpoint: task-N-<name>`
-7. unstage/continue to the next task
+8. Continue to the next task
 
 ### Step 3: Task review
 

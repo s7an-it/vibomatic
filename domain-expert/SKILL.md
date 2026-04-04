@@ -177,6 +177,16 @@ When invoked on a project that already has a domain profile:
 | 3 | Low-confidence areas were researched | Knowledge Gaps section present | |
 | 4 | Domain reference pack created if warranted | check references/domains/ | |
 
+## Audit Mode
+
+When invoked with `--audit` to re-evaluate domain profile:
+
+1. Read `docs/specs/domain-profile.md`
+2. Check tech stack: does package.json match the profile's declared stack?
+3. Check knowledge gaps: have any low-confidence areas been resolved by new code/research?
+4. Check domain reference packs: still match the current framework versions?
+5. Report: section-by-section CURRENT/STALE/OUTDATED
+
 ## Pipeline Continuation
 
 **If `--progressive` and self-verify passed:**

@@ -502,6 +502,20 @@ Each spec is its own file (agent-friendly: parallel processing, clean diffs, tar
 | Spec exists but ACs are weak/missing | `spec-ac-sync` (can run standalone) |
 | Dependency queue approved | Run this skill again for each queued spec |
 
+## Audit Mode
+
+When invoked with `--audit` to review existing feature specs:
+
+1. Glob `docs/specs/features/*.md` (exclude briefs)
+2. For each spec:
+   - Vision-to-spec traceability: every vision concept has ≥1 AC?
+   - Zero-state AC exists for Feature type?
+   - AC table uses shared contract format?
+   - No compound ACs?
+   - System Dependencies section present?
+   - Status is valid lifecycle value?
+3. Report: spec-by-spec PASS/WARN/FAIL with specific gaps
+
 ## Pipeline Continuation
 
 ### Self-Verify

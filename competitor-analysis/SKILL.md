@@ -156,6 +156,17 @@ For existing products: read the codebase to understand what features already exi
 | 3 | Whitespace section identifies ≥1 opportunity | grep for Whitespace | |
 | 4 | Differentiation section connects to vision | references vision.md concepts | |
 
+## Audit Mode
+
+When invoked with `--audit` to refresh competitive intelligence:
+
+1. Read `docs/specs/competitor-analysis.md`
+2. Check age: more than 30 days old? Market moves fast.
+3. WebSearch for recent changes: new competitors? Pivots? Shutdowns?
+4. Check our product against the table stakes list: any we still don't have?
+5. Check whitespace: has any competitor filled a gap we identified?
+6. Report: competitor-by-competitor CURRENT/CHANGED/NEW with specific findings
+
 ## Pipeline Continuation
 
 **If `--progressive` and self-verify passed:**

@@ -249,6 +249,17 @@ Technical design often reveals problems upstream. Handle them:
 | Design reveals persona gap | `persona-builder` (then return) |
 | No DESIGNED spec exists | `writing-ux-design` (prerequisite, or `writing-spec` if no spec at all) |
 
+## Audit Mode
+
+When invoked with `--audit` to review existing technical design:
+
+1. Read the technical design section in the feature spec
+2. Check feasibility matrix: every AC still marked feasible given current codebase?
+3. Check architecture against actual code: do the components described actually exist?
+4. Check data model against actual schema: tables/columns match?
+5. Check dependency versions: still current? Breaking changes since design was written?
+6. Report: section-by-section PASS/WARN/FAIL
+
 ## Pipeline Continuation
 
 ### Self-Verify

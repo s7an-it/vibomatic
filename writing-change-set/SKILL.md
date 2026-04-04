@@ -72,6 +72,7 @@ Every manifest should include:
 
 - feature spec path
 - branch name
+- **Status:** DRAFTED (lifecycle: DRAFTED → SIMULATED → EXECUTING → CHECKPOINTED → PROMOTED → VERIFIED)
 - base branch and base SHA
 - status: `BASELINED`
 - creation timestamp
@@ -241,6 +242,26 @@ Append to the manifest:
 ```
 
 If any FAIL: fix the manifest, re-check, proceed only when all PASS or acknowledged WARN.
+
+### Scenario Walkthrough (after file-level checks)
+
+For each journey scenario in `docs/specs/journeys/J*.feature.md`:
+
+1. Read the Given/When/Then steps
+2. For each step, identify which planned task implements it
+3. If a step has no implementing task: WARN — scenario coverage gap
+4. Log in the simulation report:
+
+```markdown
+## Scenario Coverage
+
+| Journey | Scenario | Steps | Tasks | Coverage |
+|---------|----------|-------|-------|----------|
+| J01 | First-time setup | 5 | task-1, task-4 | 5/5 ✅ |
+| J02 | Daily trend review | 4 | task-4, task-5 | 3/4 ⚠️ "Then sees learning path" has no task |
+```
+
+Update manifest Status from DRAFTED to SIMULATED when simulation passes.
 
 ## Handoff
 
