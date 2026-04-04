@@ -105,19 +105,43 @@ PR title convention:
 - `fix: <description>` for bugfix lane
 - `refactor: <description>` for refactor lane
 
-### Step 4: Merge the PR
+### Step 4: Merge or wait for approval
 
-After the PR is created, merge it via squash:
+**Solo / auto-approve mode** (`--auto-approve` or solo contributor):
+
+Merge immediately:
 
 ```bash
 gh pr merge <pr-number> --squash --delete-branch
 ```
 
-This squash-merges to main and deletes the remote branch.
+Then continue to Step 5.
 
-### Step 5: Clean up worktree
+**Team / review-required mode** (default for external projects or when reviewers are assigned):
+
+Stop here. The PR is open and waiting for approval.
+
+```
+Landing paused — PR #<number> open, waiting for approval.
+Worktree preserved at .worktrees/<branch-name>.
+Resume after merge: scripts/worktree.sh remove <branch-name>
+```
+
+The worktree stays alive so fixes can be pushed if reviewers request changes.
+When the PR is approved and merged (by a teammate or CI), resume with Step 5.
+
+**How to detect which mode:**
+- If `gh pr view <number> --json reviewRequests` shows reviewers → wait
+- If the repo has branch protection rules requiring approvals → wait
+- If `--auto-approve` flag is set → merge immediately
+- If solo contributor (no reviewers, no protection) → merge immediately
+
+### Step 5: Clean up worktree (after merge)
+
+After the PR is merged (either by you or by a reviewer):
 
 ```bash
+git checkout main && git pull
 scripts/worktree.sh remove <branch-name>
 ```
 
@@ -147,19 +171,23 @@ Before declaring done, verify:
 
 | # | Check | How | PASS/FAIL |
 |---|-------|-----|-----------|
-| 1 | PR was created | `gh pr list` shows the PR | |
-| 2 | PR was merged | `gh pr view <number> --json state` shows MERGED | |
-| 3 | Local worktree removed | `.worktrees/<branch>` no longer exists | |
-| 4 | Feature spec updated | spec shows `PROMOTED` status | |
+| 1 | PR was created | `gh pr view <number>` shows the PR | |
+| 2 | PR was merged OR waiting for approval | `gh pr view <number> --json state` shows MERGED or OPEN | |
+| 3 | If merged: worktree removed | `.worktrees/<branch>` no longer exists | |
+| 4 | If merged: spec updated | spec shows `PROMOTED` status | |
 
-If any check FAILs, fix before continuing.
+If waiting for approval: checks 1-2 pass (PR exists and is OPEN). Checks 3-4 are
+deferred until the PR is merged. Report the PR URL and stop — do not chain to
+`verifying-promotion` until the PR is merged.
 
 ### Chaining
 
-**If `--progressive` flag is present AND self-verify passed:**
-- Check `--skip` list. If this skill is in the skip list, pass through to next.
-- Invoke next skill: `verifying-promotion --progressive --lane <lane>`
+**If PR was merged (auto-approve or post-approval):**
+- If `--progressive`: invoke `verifying-promotion --progressive --lane <lane>`
+- If not progressive: suggest "Next: run `verifying-promotion`"
 
-**If `--progressive` flag is absent:**
-- Report results to user
-- Suggest: "Next: consider running `verifying-promotion`"
+**If PR is open and waiting for approval:**
+- Stop the progressive chain. Report:
+  "PR #<number> open, waiting for approval. After merge, run:
+  `scripts/worktree.sh remove <branch>` then `verifying-promotion`"
+- The chain resumes in a future session after the PR is merged.

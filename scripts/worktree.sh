@@ -441,10 +441,18 @@ cmd_enter() {
 # Full lifecycle: validate → checkout main → squash → commit → remove
 # ============================================================
 cmd_promote() {
-  local branch_name="${1:-}"
+  local branch_name=""
+  local auto_merge=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --auto-merge) auto_merge=true; shift ;;
+      *) branch_name="$1"; shift ;;
+    esac
+  done
 
   if [[ -z "$branch_name" ]]; then
-    echo "Usage: worktree.sh promote <branch-name>"
+    echo "Usage: worktree.sh promote <branch-name> [--auto-merge]"
     exit 1
   fi
 
@@ -512,11 +520,36 @@ $(git diff --stat "main...$branch_name" 2>/dev/null)" 2>&1 || true
     ok "PR created"
   fi
 
-  echo ""
-  info "Next steps:"
-  echo "  1. Review the PR"
-  echo "  2. Merge: gh pr merge --squash --delete-branch"
-  echo "  3. Clean up: scripts/worktree.sh remove $branch_name"
+  # Get PR number
+  local pr_number
+  pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || true)
+
+  if $auto_merge && [[ -n "$pr_number" ]]; then
+    echo ""
+    echo "=== Auto-merge ==="
+    if gh pr merge "$pr_number" --squash --delete-branch 2>&1; then
+      ok "PR #$pr_number merged"
+      echo ""
+      info "Clean up worktree:"
+      echo "  scripts/worktree.sh remove $branch_name"
+    else
+      warn "Auto-merge failed (branch protection or review required?)"
+      info "PR #$pr_number is open — waiting for approval"
+      echo "  After approval: gh pr merge $pr_number --squash --delete-branch"
+      echo "  Then: scripts/worktree.sh remove $branch_name"
+    fi
+  else
+    echo ""
+    info "PR is open — waiting for review/approval"
+    [[ -n "$pr_number" ]] && echo "  PR: #$pr_number"
+    echo ""
+    echo "  After approval:"
+    echo "    gh pr merge ${pr_number:-<number>} --squash --delete-branch"
+    echo "    scripts/worktree.sh remove $branch_name"
+    echo ""
+    echo "  To auto-merge (solo mode):"
+    echo "    scripts/worktree.sh promote $branch_name --auto-merge"
+  fi
 }
 
 # ============================================================
@@ -774,7 +807,8 @@ Commands:
 
   status             Detect if currently inside a worktree
 
-  promote <branch>   Squash-merge branch to main (stages but does not commit)
+  promote <branch>   Push branch + open PR (default: wait for approval)
+    --auto-merge     Also merge the PR immediately (solo mode)
 
   remove <branch>    Remove a worktree and clean up
     --force          Remove even with uncommitted changes
