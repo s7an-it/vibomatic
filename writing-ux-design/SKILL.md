@@ -500,6 +500,17 @@ UX design often reveals problems upstream. Handle them:
 | No DRAFT spec exists | `writing-spec` (prerequisite) |
 | Feature has no user-facing screens | Skip to `writing-technical-design` |
 
+## Audit Mode
+
+When invoked with `--audit` to review existing UX design:
+
+1. Read `docs/specs/ux/<name>.md`
+2. Check against current feature spec ACs: every AC has a screen that addresses it?
+3. Check state coverage: every screen has LOADING, ERROR, EMPTY states defined?
+4. Check flow completeness: can the user reach every screen from the entry point?
+5. Check responsive strategy: defined for all screens?
+6. Report: screen-by-screen PASS/WARN/FAIL
+
 ## Pipeline Continuation
 
 ### Self-Verify

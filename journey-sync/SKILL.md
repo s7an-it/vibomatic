@@ -1325,6 +1325,19 @@ Journeys that improve meaningfully with small additions:
 - [ ] Re-run Mode 6 after major platform additions to promote Tier 3 stubs
 ```
 
+## Audit Mode
+
+When invoked with `--audit` to review existing journeys:
+
+1. Glob `docs/specs/journeys/J*.feature.md`
+2. For each journey:
+   - Persona referenced exists in `docs/specs/personas/`?
+   - ACs referenced exist in the linked feature spec?
+   - Layer 3 analysis: any ungrounded preconditions?
+   - Background steps: do producer journeys exist for each dependency?
+3. Cross-journey check: are there dead-end flows (journey ends but user has no next step)?
+4. Report: journey-by-journey PASS/WARN/FAIL
+
 ## Pipeline Continuation
 
 ### Self-Verify

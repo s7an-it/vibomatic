@@ -243,13 +243,44 @@ Read it. Every UI design decision must reference design system tokens. If the fe
 
 ## Process
 
-### Step 0: Ensure Design System Exists
+### Step 0a: Ensure DESIGN.md Exists (Brand + Aesthetic Foundation)
+
+```bash
+cat DESIGN.md 2>/dev/null || cat docs/specs/DESIGN.md 2>/dev/null
+```
+
+If no DESIGN.md exists, create it at project root. This defines the design direction ABOVE the token level — brand personality, aesthetic approach, motion principles, accessibility baseline.
+
+```markdown
+# Design: [Project Name]
+
+**Generated:** YYYY-MM-DD
+
+## Brand Personality
+[Voice, tone, visual feeling — design direction, not marketing copy]
+
+## Aesthetic Direction
+[Overall visual approach. Reference 2-3 existing products with similar aesthetic goals.]
+
+## Motion Principles
+[When to animate, when not to. Duration ranges. Easing preferences.]
+
+## Dark Mode Strategy
+[Default or toggle? Semantic color tokens? Which surfaces change?]
+
+## Accessibility Baseline
+[WCAG target: AA minimum. Focus indicators. Touch targets ≥44px. Screen reader strategy.]
+```
+
+If DESIGN.md already exists, read it and ensure all UI design decisions align.
+
+### Step 0b: Ensure Design System Exists (Tokens)
 
 ```bash
 cat docs/specs/design-system.md 2>/dev/null
 ```
 
-If the file does not exist, create it before proceeding to Step 1. Follow the design system creation process described in "The Design System" section above.
+If the file does not exist, create it before proceeding to Step 1. Follow the design system creation process described in "The Design System" section above. The design system implements the direction from DESIGN.md as concrete tokens.
 
 If it exists, read it and note:
 - Available color tokens
@@ -258,6 +289,16 @@ If it exists, read it and note:
 - Existing component patterns
 - Motion tokens
 - Dark mode strategy
+
+### Step 0c: UX→UI Traceability Table
+
+Before designing components, map every screen and state from the UX design:
+
+| UX Screen | UX States | UI Components (to design) | Coverage |
+|-----------|-----------|---------------------------|----------|
+| [from UX doc] | [loading, empty, populated, error] | [components to create] | — |
+
+Missing entries = UX screens with no UI plan = design gap. Resolve before proceeding.
 
 ### Step 1: Read The UX Design And Spec
 
@@ -723,6 +764,17 @@ UI design often reveals problems upstream. Handle them:
 | No UX-REVIEWED spec exists | `writing-ux-design` (prerequisite) |
 | Feature has no visual surface | Skip to `writing-technical-design` |
 | Design system does not exist | Create it first (see "The Design System" section) |
+
+## Audit Mode
+
+When invoked with `--audit` to review existing UI design:
+
+1. Read `docs/specs/ui/<name>.md`
+2. UX→UI traceability: every UX screen has mapped UI components?
+3. Design system compliance: components reference tokens from design-system.md, not ad-hoc values?
+4. DESIGN.md alignment: visual decisions match brand personality?
+5. Component state coverage: hover, active, disabled, error, loading states defined?
+6. Report: component-by-component PASS/WARN/FAIL
 
 ## Pipeline Continuation
 

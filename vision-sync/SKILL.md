@@ -198,6 +198,17 @@ Use these handoffs when needed:
 - `references/vibomatic-vision-template.md`
 - `scripts/collect_vision_evidence.sh`
 
+## Audit Mode
+
+When invoked with `--audit` or when vision.md already exists and the user asks to review it:
+
+1. Read `docs/specs/vision.md`
+2. Check completeness: all 12 canonical sections present?
+3. Check staleness: does the vision's "Who We Serve" still match the current persona set?
+4. Check code reality: does the vision's scope match what the codebase actually does? (grep for features mentioned in vision that don't exist in code)
+5. Check consistency: do the Boundaries/Non-Goals still make sense given recent feature additions?
+6. Report: section-by-section PASS/WARN/FAIL with specific findings
+
 ## Pipeline Continuation
 
 ### Self-Verify
