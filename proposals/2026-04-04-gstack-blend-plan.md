@@ -63,6 +63,24 @@ from the skill review findings (F4). This just needs to be enhanced with the
 full design-consultation process (research landscape, propose creative system,
 conversation not form-fill).
 
+### Layer 3b: Design Exploration (1 gstack skill → blended into writing-ui-design)
+
+| gstack skill | Blends into | What it adds |
+|---|---|---|
+| `/design-shotgun` | New mode in `writing-ui-design` | Generate multiple design variants, compare, pick, iterate |
+
+**Adapted approach** (no proprietary binary dependency):
+1. For each key screen, generate 3-5 variant descriptions with distinct aesthetic directions
+2. For each variant, produce HTML/CSS mockup (inline, no framework — just a preview)
+3. Open all variants in the browser (gstack browse) side by side for comparison
+4. User picks a direction (interactive) or AI picks with justification (auto)
+5. Taste preferences logged to `docs/specs/decisions/` and compound across runs
+
+The variants aren't images from a binary — they're real HTML/CSS that you can
+see in the browser and then refine. This is additive to `writing-ui-design`:
+run the shotgun exploration first, then produce the formal component specs
+from the chosen direction.
+
 ---
 
 ### Layer 4: Investigation + Safety (2 gstack skills → enhanced bugfix lane)
@@ -205,7 +223,6 @@ checks design system compliance, spacing, hierarchy.
 
 | gstack skill | Why skip |
 |---|---|
-| `/design-shotgun` | Depends on gstack designer binary (proprietary) |
 | `/design-html` | Depends on Pretext (gstack-specific) |
 | `/benchmark` | Nice-to-have, not blocking. Add later. |
 | `/retro` | Nice-to-have, not blocking. Add later. |
