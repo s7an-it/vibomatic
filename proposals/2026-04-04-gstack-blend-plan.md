@@ -186,6 +186,7 @@ checks design system compliance, spacing, hierarchy.
 
 | Phase | What | Effort |
 |-------|------|--------|
+| 0 | gstack browse daemon (infrastructure for all browser skills) | Low (use directly, MIT) |
 | 1 | P0 Founder Persona + enhanced workflow-compass | Medium |
 | 2 | Adversarial review in 3 design skills + G0 scope review | Medium |
 | 3 | Investigation protocol in bugfix-brief + freeze | Low |
@@ -194,13 +195,18 @@ checks design system compliance, spacing, hierarchy.
 | 6 | Learning system (JSONL + per-skill logging) | Medium |
 | 7 | Autorun orchestrator in workflow-compass | High |
 
+## What We're Taking Directly from gstack
+
+| gstack skill | How we use it |
+|---|---|
+| `/browse` daemon | **Use directly as infrastructure.** gstack's browse is MIT — persistent Chromium, ~100ms, cookies/tabs/localStorage persist, ARIA refs. All browser-dependent skills (QA, canary, design-review, visual-tracker, benchmark) use it. Not Playwright MCP — the real browser. |
+
 ## What We're NOT Taking
 
 | gstack skill | Why skip |
 |---|---|
 | `/design-shotgun` | Depends on gstack designer binary (proprietary) |
 | `/design-html` | Depends on Pretext (gstack-specific) |
-| `/browse` daemon | Complex binary infrastructure. Use Playwright MCP instead. |
 | `/benchmark` | Nice-to-have, not blocking. Add later. |
 | `/retro` | Nice-to-have, not blocking. Add later. |
 | `/careful` + `/guard` | Nice-to-have safety. Add with investigate. |
