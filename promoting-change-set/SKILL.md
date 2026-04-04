@@ -85,20 +85,25 @@ Verify:
 
 Run the manifest’s final validation commands before promotion.
 
-### Step 5: Squash merge
+### Step 5: Worktree guard and squash merge
 
-Promotion uses `scripts/worktree.sh promote` which handles the checkout-and-squash:
+This skill runs on main, not inside the worktree. Check first:
+
+```bash
+scripts/worktree.sh guard --skill promoting-change-set --lane <lane> --branch <branch-name>
+```
+
+The guard verifies you're on main and the worktree branch exists. Then promote:
 
 ```bash
 scripts/worktree.sh promote <branch-name>
 ```
 
 This:
-1. Verifies the worktree is clean (no uncommitted changes).
+1. Verifies the worktree is clean (no uncommitted changes in the branch).
 2. Shows the diff stat (files changed).
-3. Switches to the main worktree (`cd` to repo root).
-4. Runs `git merge --squash <branch-name>`.
-5. Stages the squash diff — but does NOT commit (you inspect first).
+3. Runs `git merge --squash <branch-name>` on main.
+4. Stages the squash diff — but does NOT commit (you inspect first).
 
 Then inspect the staged squash diff before committing.
 

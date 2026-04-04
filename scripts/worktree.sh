@@ -15,7 +15,25 @@
 #   scripts/worktree.sh preflight
 set -euo pipefail
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+# Find the MAIN repo root, even when called from inside a worktree.
+# git rev-parse --show-toplevel returns the worktree root when inside one,
+# so we use --git-common-dir to find the shared .git directory, then derive
+# the main worktree root from that.
+_find_repo_root() {
+  local git_common_dir
+  git_common_dir="$(git rev-parse --git-common-dir 2>/dev/null)" || return 1
+  # git-common-dir returns the path to the shared .git dir
+  # For main worktree: .git (relative) or /path/to/.git
+  # For linked worktree: /path/to/.git (always absolute)
+  if [[ "$git_common_dir" == ".git" ]]; then
+    pwd
+  else
+    # Strip /.git from the end to get the repo root
+    dirname "$git_common_dir"
+  fi
+}
+
+REPO_ROOT="$(_find_repo_root 2>/dev/null || pwd)"
 WORKTREE_DIR="$REPO_ROOT/.worktrees"
 GITIGNORE="$REPO_ROOT/.gitignore"
 
@@ -99,14 +117,14 @@ preflight() {
 #   LEAVE_WORKTREE — skill runs on main but we're in a worktree
 # ============================================================
 
-# Skills that MUST run in a worktree
+# Skills that MUST run inside a worktree
 WORKTREE_SKILLS="executing-change-set"
 
-# Skills that MUST run on main (post-worktree)
-MAIN_AFTER_WORKTREE_SKILLS="verifying-promotion"
+# Skills that run on main but need a worktree to EXIST (to merge from / validate)
+MAIN_NEEDS_WORKTREE="promoting-change-set"
 
-# Skills that trigger worktree close
-WORKTREE_CLOSE_SKILLS="promoting-change-set"
+# Skills that run on main with no worktree dependency
+MAIN_AFTER_WORKTREE="verifying-promotion"
 
 cmd_guard() {
   local skill="" lane="" branch=""
@@ -145,9 +163,45 @@ cmd_guard() {
     return 0
   fi
 
-  # Skills that must run on main (after worktree is closed)
+  # Skills that run on main but need a worktree branch to exist (for squash-merge)
+  local is_main_needs_wt=false
+  for s in $MAIN_NEEDS_WORKTREE; do
+    [[ "$skill" == "$s" ]] && is_main_needs_wt=true
+  done
+
+  if $is_main_needs_wt; then
+    # Must be on main to squash-merge. If in worktree, leave first.
+    if $in_worktree; then
+      echo "LEAVE_WORKTREE"
+      warn "'$skill' runs on main — switch to repo root before promoting"
+      echo "  cd $REPO_ROOT"
+      return 0
+    fi
+
+    # Verify the worktree/branch exists to merge from
+    local target_branch="${branch:-}"
+    if [[ -z "$target_branch" ]]; then
+      fail "'$skill' needs --branch to know which worktree to promote"
+      return 1
+    fi
+
+    if [[ -d "$WORKTREE_DIR/$target_branch" ]]; then
+      echo "STAY_MAIN"
+      ok "On main. Worktree '$target_branch' exists and is ready to promote."
+      echo "  Run: scripts/worktree.sh promote $target_branch"
+    elif git show-ref --verify --quiet "refs/heads/$target_branch" 2>/dev/null; then
+      echo "STAY_MAIN"
+      ok "On main. Branch '$target_branch' exists (no worktree dir — may have been cleaned)."
+    else
+      fail "Branch '$target_branch' not found — nothing to promote"
+      return 1
+    fi
+    return 0
+  fi
+
+  # Skills that run on main after worktree is already removed
   local is_main_after=false
-  for s in $MAIN_AFTER_WORKTREE_SKILLS; do
+  for s in $MAIN_AFTER_WORKTREE; do
     [[ "$skill" == "$s" ]] && is_main_after=true
   done
 
@@ -158,31 +212,6 @@ cmd_guard() {
       echo "  cd $REPO_ROOT"
     else
       echo "STAY_MAIN"
-    fi
-    return 0
-  fi
-
-  # promoting-change-set: needs to be in worktree initially, then transitions to main
-  local is_close_skill=false
-  for s in $WORKTREE_CLOSE_SKILLS; do
-    [[ "$skill" == "$s" ]] && is_close_skill=true
-  done
-
-  if $is_close_skill; then
-    if $in_worktree; then
-      echo "IN_WORKTREE"
-      ok "'$skill' will promote and close this worktree"
-      echo "  Branch: $current_branch"
-    else
-      # Check if there's a worktree to promote
-      if [[ -n "$branch" && -d "$WORKTREE_DIR/$branch" ]]; then
-        echo "NEED_WORKTREE"
-        info "'$skill' needs the worktree — entering"
-        echo "  cd $WORKTREE_DIR/$branch"
-      else
-        fail "'$skill' needs a worktree to promote but none found"
-        return 1
-      fi
     fi
     return 0
   fi
