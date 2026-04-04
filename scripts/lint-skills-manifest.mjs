@@ -94,7 +94,7 @@ const workflowCoreySection = section(
 );
 const workflowCorey = extractByRegex(workflowCoreySection, /`([^`]+)`/g);
 
-const bootstrapSequenceSection = section(repoModes, "Start sequence:", ["### Convert Mode"]);
+const bootstrapSequenceSection = section(repoModes, "Default greenfield sequence:", ["### Convert Mode"]);
 const bootstrapSequence = extractByRegex(
   bootstrapSequenceSection,
   /^\s*\d+\.\s+`([^`]+)`/gm

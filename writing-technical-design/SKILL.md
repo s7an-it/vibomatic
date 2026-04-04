@@ -16,8 +16,9 @@ writing-spec              → DRAFT (WHAT: stories, ACs, journeys)
 writing-ux-design         → UX-REVIEWED (HOW users experience it: flows, states)
 writing-ui-design         → DESIGNED (HOW it looks: components, visual language)
 writing-technical-design  → BASELINED (HOW to build it: architecture, data model)
-writing-change-set        → CHANGE-SET-APPROVED (DO: exact files, exact bytes)
-promoting-change-set      → PROMOTED (APPLY: change set to codebase)
+writing-change-set        → implementation manifest + task graph
+executing-change-set      → CHANGE-SET-APPROVED (DO: execute the plan on branch)
+promoting-change-set      → PROMOTED (APPLY: reviewed branch state to codebase)
 verifying-promotion       → VERIFIED (PROVE: tests pass, QA complete)
 ```
 
@@ -194,7 +195,7 @@ Ready for change set authoring. Next step:
   "Run writing-change-set against docs/specs/features/<feature-name>.md"
 ```
 
-**The terminal state is invoking writing-change-set.**
+**The terminal state is invoking writing-change-set, which then hands off to executing-change-set.**
 
 ## Feedback Loops
 
@@ -214,7 +215,7 @@ Technical design often reveals problems upstream. Handle them:
 
 | Don't | Why | Instead |
 |-------|-----|---------|
-| Write code or exact file contents | That's writing-change-set's job | Define components and responsibilities, not code |
+| Write code or over-spec exact file contents | That's not technical design's job | Define architecture, responsibilities, constraints, and file-level intent |
 | Invent new patterns when existing ones work | Increases codebase complexity | Follow established project patterns unless they're clearly broken |
 | Ignore existing tech stack | Creates maintenance burden | Use what's already there unless there's a strong reason not to |
 | Design without reading ACs | Design may not satisfy requirements | Walk through every AC in the feasibility check |
@@ -225,7 +226,7 @@ Technical design often reveals problems upstream. Handle them:
 
 | Situation | Route to |
 |-----------|----------|
-| Design complete, spec BASELINED | `writing-change-set` |
+| Design complete, spec BASELINED | `writing-change-set` then `executing-change-set` |
 | AC not feasible, spec needs revision | `writing-spec` (feedback loop) |
 | Missing dependency discovered | `feature-discovery` |
 | Design reveals persona gap | `persona-builder` (then return) |

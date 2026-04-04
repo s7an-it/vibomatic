@@ -118,14 +118,15 @@ Phase 3: Feature Spec    → narrows WHAT (stories, acceptance criteria)
 Phase 4: UX Design       → narrows HOW users experience it (flows, states)
 Phase 5: UI Design       → narrows HOW it looks (components, visual language)
 Phase 6: Technical Design → narrows HOW to build it (architecture, data model)
-Phase 7: Change Set      → narrows to ONE implementation (exact files, exact code)
-Phase 8: Promotion       → applies the change set to the codebase
-Phase 9: Verification    → proves the promotion matches the change set
+Phase 7: Change Set      → narrows to ONE reviewed branch outcome
+Phase 8: Promotion       → squash-merges the reviewed branch to main
+Phase 9: Verification    → proves the promoted result matches the manifest
 ```
 
-At Phase 1, the agent is generating. By Phase 7, the agent is transcribing.
-The creative work happened in Phases 1-6 where humans reviewed and approved
-each narrowing. Phase 7 is mechanical — constrained by everything above it.
+At Phase 1, the agent is generating. By Phase 7, the agent is executing
+against a constrained implementation plan. The creative work happens in
+Phases 1-6 and in explicit loop-backs when later phases expose defects
+upstream. Phase 7 is controlled execution with task reviews and checkpoints.
 
 ## Phases and Artifacts
 
@@ -142,8 +143,8 @@ Every state transition requires a review gate.
 | 4 | UX Design | `writing-ux-design` | `docs/specs/ux/<name>.md` | Screen flows, states, interactions, information architecture | DRAFT → UX-REVIEWED |
 | 5 | UI Design | `writing-ui-design` | `docs/specs/ui/<name>.md` + `docs/specs/design-system.md` | Component specs, visual language, responsive behavior | UX-REVIEWED → DESIGNED |
 | 6 | Technical Design | `writing-technical-design` | Updated feature spec: Technical Design section | Architecture, data model, feasibility matrix | DESIGNED → BASELINED |
-| 7 | Change Set | `writing-change-set` | `docs/plans/<date>-<name>/` | Multi-part: manifest + parts (types, services, components, tests, specs, journeys) | BASELINED → CHANGE-SET-APPROVED |
-| 8 | Promotion | `promoting-change-set` | Actual codebase files | Applied changes + deviation report | CHANGE-SET-APPROVED → PROMOTED |
+| 7 | Change Set Planning | `writing-change-set` + `executing-change-set` | `docs/plans/<date>-<name>/` + branch checkpoints | Implementation manifest, task graph, staged diffs, checkpoint commits | BASELINED → CHANGE-SET-APPROVED |
+| 8 | Promotion | `promoting-change-set` | Actual codebase files | Squash merge + manifest/diff validation | CHANGE-SET-APPROVED → PROMOTED |
 | 9 | Verification | `verifying-promotion` | Updated feature spec: VERIFIED status | Test results, QA status, E2E status | PROMOTED → VERIFIED |
 
 ### Artifact Lifecycle
@@ -154,8 +155,8 @@ Feature Spec States:
   UX-REVIEWED         → UX design approved (screen flows, states)
   DESIGNED            → UI design approved (visual, components)
   BASELINED           → technical design approved (architecture, data model)
-  CHANGE-SET-APPROVED → implementation plan reviewed and approved
-  PROMOTED            → change set applied to codebase
+  CHANGE-SET-APPROVED → implementation executed and reviewed on branch
+  PROMOTED            → reviewed branch state squash-merged to main
   VERIFIED            → tests pass, QA complete, E2E complete
 ```
 
@@ -182,7 +183,7 @@ Each feature produces these artifacts as it moves through the pipeline:
 | UX Design | 4 (writing-ux-design) | `docs/specs/ux/<name>.md` |
 | UI Design | 5 (writing-ui-design) | `docs/specs/ui/<name>.md` |
 | Journey Doc(s) | 3 (writing-spec triggers journey-sync) | `docs/specs/journeys/J*-<name>.feature.md` |
-| Change Set | 7 (writing-change-set) | `docs/plans/<date>-<name>/` |
+| Change Set | 7 (writing-change-set + executing-change-set) | `docs/plans/<date>-<name>/` + branch checkpoints |
 
 ## Feature Types
 
@@ -225,33 +226,33 @@ Phase 7, and those files are committed as checkpoints on the feature branch.
 
 ### Why the Branch IS the Change Set
 
-Traditional approach (superpowers/obra):
+Traditional full-doc-code approach:
 ```
-Plan says: "Create src/services/matchScore.ts with a function that
-           calculates compatibility scores"
-Executor: reads the plan, reads the codebase, GENERATES the code
-Problem:  the generation is probabilistic — different every time
+Plan says: "Here is the full code for every file"
+Executor: re-applies or reconstructs that code into the repo
+Problem:  high token cost, duplicated state, and brittle drift between docs and code
 ```
 
 Vibomatic approach:
 ```
-Agent writes: src/services/matchScore.ts directly in the worktree
-Agent writes: tests/matchScore.test.ts directly in the worktree
-Agent writes: src/routes/matches.ts changes directly in the worktree
-Each file:    committed as a checkpoint on the feature branch
-Review:       git diff main...feature-branch shows exactly what changed
-Promotion:    git merge --squash — deterministic, no re-generation
+Manifest says: task-1-types touches src/types/match.ts and tests/matchScore.test.ts
+Executor:      writes those files directly in the worktree
+Review:        git diff --staged checks the current task only
+Checkpoint:    commit task-1 when accepted, then continue
+Promotion:     git merge --squash the reviewed branch, no doc-to-code replay
 ```
 
 The agent writes code while holding full context — every spec, every journey,
 every AC is in the worktree. The code is reviewed on the branch before it
-touches main. Promotion is a mechanical merge, not a probabilistic generation.
+touches main. Promotion is a deterministic merge of reviewed branch state,
+not a second generation step.
 
 ### The Manifest
 
 The manifest still exists as a document (`docs/plans/<date>-<name>/manifest.md`)
-for reviewability. It describes what changed and why — a table of contents for
-the branch diff. But the actual code lives in the branch, not in the manifest.
+for reviewability. It describes what will change, how tasks are grouped, which
+files are expected to move, and which checkpoints should exist. The actual code
+lives in the branch, not in the manifest.
 
 ```markdown
 # Change Set: Match Discovery
@@ -259,10 +260,10 @@ the branch diff. But the actual code lives in the branch, not in the manifest.
 **Feature Spec:** docs/specs/features/feature-matching.md
 **Branch:** feature-match-discovery
 **Base:** main @ <sha>
-**Status:** BASELINED → CHANGE-SET-APPROVED (pending review)
+**Status:** BASELINED
 **Created:** 2026-04-03
 
-## Files Changed
+## Files Planned
 
 | File | Action | Task | Purpose |
 |------|--------|------|---------|
@@ -358,8 +359,8 @@ Step 5: GATE DECISION
 | G2 | UX Design | DRAFT → UX-REVIEWED | Flows cover all stories? States complete? Error handling? Accessibility? |
 | G3 | UI Design | DRAFT → DESIGNED | Design system consistency? Responsive? Dark mode? Component reuse? |
 | G4 | Technical Design | DESIGNED → BASELINED | All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit? |
-| G5 | Change Set | BASELINED → CHANGE-SET-APPROVED | Code matches design? Tests cover ACs? Cross-file consistency? No placeholders? |
-| G6 | Promotion | CHANGE-SET-APPROVED → PROMOTED | Applied code matches change set? No deviations? No unplanned changes? |
+| G5 | Executed Change Set | BASELINED → CHANGE-SET-APPROVED | Executed branch diff matches design? Tests cover ACs? Cross-file consistency? No placeholders? Checkpoints clean? |
+| G6 | Promotion | CHANGE-SET-APPROVED → PROMOTED | Squash diff matches manifest? No unplanned changes? Validation clean? |
 | G7 | Verification | PROMOTED → VERIFIED | Tests pass? QA complete? E2E complete? Spec annotations updated? |
 
 ## Promotion
@@ -370,7 +371,7 @@ branch — specs, designs, code, tests — lands as a single atomic commit.
 ### Promotion Process
 
 ```
-1. Ensure feature branch has passed G5 review (change set approved)
+1. Ensure feature branch has passed G5 review (executed change set approved)
 2. git checkout main && git merge --squash feature-<name>
 3. Deviation check: git diff --staged should match expected changes
    (compare against the manifest's file list)
@@ -644,7 +645,7 @@ Where obra falls short:
    all tasks, reducing cost by 50-60%.
 
 5. **The worktree** is the consistent state — all artifacts from all phases
-   are co-located and immutable until promotion.
+   are co-located and checkpointed until promotion.
 
 ### Sequential vs Parallel: When Each Checkpoint Stacks
 
@@ -760,7 +761,7 @@ produces what you wanted, sometimes it produces something confidently wrong.
 Vibomatic is the methodology that makes agentic development deterministic.
 Not by fixing the models — that's Anthropic's, OpenAI's, and Google's job.
 But by structuring the process so that by the time the agent generates code,
-the code is already determined by everything that came before it.
+the implementation is already tightly constrained by everything that came before it.
 
 **The progressive narrowing model is not optional.** It is the only way to
 get reliable output from a probabilistic system. Every methodology that skips
@@ -781,7 +782,7 @@ main (frozen at SHA)
         Phase 4: writing-ux-design        → checkpoint → [G2 Review]
         Phase 5: writing-ui-design        → checkpoint → [G3 Review]
         Phase 6: writing-technical-design → checkpoint → [G4 Review]
-        Phase 7: writing code + tests     → checkpoint per task → [G5 Review]
+        Phase 7: plan + execute on branch → checkpoint per task → [G5 Review]
         Phase 8: squash merge to main = promotion → [G6 Review]
         Phase 9: verify on main           → [G7 Review]
 ```

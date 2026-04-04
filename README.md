@@ -23,8 +23,8 @@ Vibomatic rejects that.
 ## The Solution: Progressive Narrowing
 
 Each phase constrains the space of possible outputs for the next phase. By the
-time code is written, the implementation is determined — not by pattern matching,
-but by the accumulated constraints from every prior phase.
+time code is written, the implementation surface is tightly constrained — not by
+pattern matching alone, but by the accumulated constraints from every prior phase.
 
 ```
 Phase 1:  Vision              → infinite possibilities
@@ -33,15 +33,16 @@ Phase 3:  Feature Spec        → narrows WHAT (stories, acceptance criteria)
 Phase 4:  UX Design           → narrows HOW users experience it
 Phase 5:  UI Design           → narrows HOW it looks
 Phase 6:  Technical Design    → narrows HOW to build it
-Phase 7:  Implementation      → narrows to ONE implementation (exact files in worktree)
+Phase 7:  Implementation      → narrows to ONE reviewed branch outcome
 Phase 8:  Promotion           → squash-merges the worktree to main
 Phase 9:  Verification        → proves the merge matches the manifest
 ```
 
-At Phase 1, the agent is generating. By Phase 7, the agent is transcribing
-into actual files in a worktree branched from main. The creative work happens
-in Phases 1-6 where humans review each narrowing. Phase 7 is mechanical.
-Phase 8 is a squash merge. Phase 9 is checking.
+At Phase 1, the agent is generating. By Phase 7, the agent is executing against
+a constrained implementation plan inside a worktree branched from main. The
+creative work happens in Phases 1-6 and in any explicit loop-backs. Phase 7 is
+controlled execution with task reviews and checkpoints. Phase 8 is a squash
+merge. Phase 9 is checking.
 
 ## Why This Works (Technical Argument)
 
@@ -54,13 +55,14 @@ exploits this:
    technical design, journeys, and existing code. Every constraint is in context.
 
 2. **Variance reduction.** A one-line ticket produces 50 implementations.
-   A spec with 12 acceptance criteria produces 5. A change set with exact
-   file content produces 1.
+   A spec with 12 acceptance criteria produces 5. A detailed implementation
+   manifest with explicit tasks, files, validations, and checkpoints reduces
+   the remaining variance to a small, reviewable branch diff.
 
 3. **Review before generation.** Traditional: agent generates code, human
    reviews code. Vibomatic: human reviews intent (spec, design, plan),
-   agent copies reviewed intent into code. Reviewing intent is cheaper
-   than reviewing implementation.
+   then the agent executes that intent task by task on a branch. Reviewing
+   intent early is cheaper than reviewing a fully improvised implementation late.
 
 4. **Deterministic promotion.** The worktree IS the code. Promotion is
    `git merge --squash` to main. Deviations are detected by diffing the
@@ -106,8 +108,9 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 | 4. UX Design | `writing-ux-design` | Screen flows, states, interactions | G2 |
 | 5. UI Design | `writing-ui-design` | Component specs, design tokens, visual hierarchy | G3 |
 | 6. Technical Design | `writing-technical-design` | Architecture, data model, feasibility | G4 |
-| 7. Implementation | `writing-change-set` | Code in worktree, manifest, tests | G5 |
-| 8. Promotion | `promoting-change-set` | Squash merge to main + deviation report | G6 |
+| 7. Implementation Planning | `writing-change-set` | Implementation manifest, task graph, AC/test mapping | — |
+| 7b. Execution | `executing-change-set` | Code in worktree, staged diffs, checkpoints | G5 |
+| 8. Promotion | `promoting-change-set` | Squash merge to main + manifest/diff validation | G6 |
 | 9. Verification | spec-code-sync + QA + E2E | VERIFIED status | G7 |
 
 ### Feature Spec Lifecycle
@@ -127,10 +130,11 @@ DRAFT → UX-REVIEWED → DESIGNED → BASELINED → CHANGE-SET-APPROVED → PRO
 | `journey-qa-ac-testing` | Journey-based QA against live environments |
 | `agentic-e2e-playwright` | E2E test authoring (accessibility-first, journey-based) |
 | `feature-marketing-insights` | Mine feature specs for marketing context |
-| `workflow-compass` | Route to the right skill based on project state |
+| `workflow-compass` | Route to the right skill and lane based on project state |
 | `repo-conversion` | Convert an existing repo into vibomatic working mode before full pipeline use |
 | `bugfix-brief` | Root-cause-first planning for bugs and regressions |
 | `work-item-sync` | Project repo-canonical work items to GitHub Issues |
+| `executing-change-set` | Execute the implementation plan directly in the worktree with staged reviews and checkpoints |
 | `review-protocol` | Universal review gate (self-review → cross-review → convergence) |
 
 ## Feature Types
@@ -155,18 +159,22 @@ actual files, not markdown documents.
 ```
 feature/match-discovery (worktree branch)
   src/...                  ← real code, real tests, real files
-  docs/plans/manifest.md   ← what changed, why, apply order, dependencies
+  docs/plans/manifest.md   ← what changed, why, task graph, validations
   checkpoint commits:
     phase-3-spec
     phase-4-ux-design
     phase-5-ui-design
     phase-6-technical-design
-    phase-7-implementation
+    task-1-types
+    task-2-data-model
+    task-3-tests
+    ...
 ```
 
 Each phase creates a checkpoint commit on the feature branch. The manifest
-describes what changed and why, preserving reviewability. Promotion is
-`git merge --squash` to main — one clean commit with the full context.
+describes what changed, how tasks are grouped, and what validation should
+happen, preserving reviewability. Promotion is `git merge --squash` to main —
+one clean commit with the full context.
 
 ## Token Efficiency
 
@@ -212,6 +220,8 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 
 - **Greenfield feature lane**: full progressive narrowing pipeline for net-new
   products or subsystems.
+- **Auto greenfield lane**: full-auto clean-repo path for prompts like
+  "build me an app", with blockers only for real contradictions or missing intent.
 - **Brownfield conversion lane**: establish `project-state.md`, canonical
   artifact mapping, and work-item inventory before enforcing the full pipeline.
 - **Brownfield feature lane**: extend an existing system using delta specs and
@@ -220,6 +230,8 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
   `bugfix-brief`, then implementation and verification.
 - **Drift / maintenance lane**: reconcile specs, journeys, and code with
   `spec-code-sync`, then route the resulting items.
+- **Refactor / chore lane**: preserve behavior while making bounded structural
+  or repo-state changes through implementation planning and execution.
 
 ## Included Skills
 
@@ -241,6 +253,7 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `writing-ui-design`
 - `writing-technical-design`
 - `writing-change-set`
+- `executing-change-set`
 - `review-protocol`
 - `promoting-change-set`
 - `verifying-promotion`

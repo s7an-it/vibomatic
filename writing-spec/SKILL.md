@@ -14,8 +14,8 @@ DRAFT               → user stories + ACs + journeys defined, no technical desi
 UX-REVIEWED         → UX design approved (screen flows, states)
 DESIGNED            → UI design approved (visual, components)
 BASELINED           → technical design approved (architecture, data model)
-CHANGE-SET-APPROVED → implementation plan reviewed and approved
-PROMOTED            → change set applied to codebase
+CHANGE-SET-APPROVED → implementation executed and reviewed on branch
+PROMOTED            → reviewed branch state squash-merged to main
 VERIFIED            → implemented, tested, synced (RESOLVED annotations, QA ✅, E2E ✅)
 ```
 
@@ -56,7 +56,7 @@ Every feature spec carries a `Type` tag that identifies its consumer:
 | `Enabler` | Other service/feature | "As [service], I need..." | System journey with service interactions | Score recalculation cron, event pipeline, email service |
 | `Integration` | External system boundary | "When [external event], the system must..." | Contract journey with request/response | Stripe webhooks, OAuth provider, third-party API |
 
-**The type determines the persona, not the process.** All types go through the same pipeline: writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → promoting-change-set → verifying-promotion.
+**The type determines the persona, not the process.** All types go through the same pipeline: writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → executing-change-set → promoting-change-set → verifying-promotion.
 
 ### How Types Relate
 
@@ -362,7 +362,7 @@ _To be added by writing-technical-design._
 
 ## Implementation Notes
 
-_To be added by writing-change-set._
+_To be added by writing-change-set and executing-change-set._
 
 ---
 
@@ -415,7 +415,7 @@ Missing dependency specs to create:
   1. feature-email-service.md (Enabler) — needed by: MATCH-03, J05 step 3
   2. feature-stripe-integration.md (Integration) — needed by: US-3, J05 step 7
 
-Create these now? (Each goes through writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → promoting-change-set → verifying-promotion)
+Create these now? (Each goes through writing-spec → writing-ux-design → writing-ui-design → writing-technical-design → writing-change-set → executing-change-set → promoting-change-set → verifying-promotion)
 ```
 
 This is how a single feature request cascades into the full system specification. The user approves which dependencies to spec now vs defer.

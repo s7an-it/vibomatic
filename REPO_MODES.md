@@ -36,16 +36,21 @@ Default recommendation:
   - `docs/specs/personas/`
   - `docs/specs/journeys/`
   - `docs/marketing/` (when using `feature-marketing-insights`)
-- Start sequence:
+- Default greenfield sequence:
   1. `vision-sync`
   2. `persona-builder`
-  3. `journey-sync`
-  4. `feature-discovery` / feature specs
+  3. `feature-discovery`
+  4. `writing-spec`
   5. `spec-ac-sync`
-  6. `journey-qa-ac-testing`
-  7. `spec-code-sync`
-  8. `agentic-e2e-playwright`
-  9. `feature-marketing-insights` (parallel marketing track)
+  6. `journey-sync`
+  7. `writing-ux-design`
+  8. `writing-ui-design`
+  9. `writing-technical-design`
+  10. `writing-change-set`
+  11. `executing-change-set`
+  12. `promoting-change-set`
+  13. `verifying-promotion`
+- For prompts effectively meaning "build me an app", run this lane end to end automatically unless a real blocker or contradiction appears.
 
 ### Convert Mode
 

@@ -18,6 +18,7 @@
     "writing-ui-design",
     "writing-technical-design",
     "writing-change-set",
+    "executing-change-set",
     "review-protocol",
     "promoting-change-set",
     "verifying-promotion",
@@ -36,7 +37,8 @@
     "workflow-compass",
     "repo-conversion",
     "bugfix-brief",
-    "work-item-sync"
+    "work-item-sync",
+    "executing-change-set"
   ],
   "pipeline": [
     "writing-spec",
@@ -44,6 +46,7 @@
     "writing-ui-design",
     "writing-technical-design",
     "writing-change-set",
+    "executing-change-set",
     "promoting-change-set",
     "verifying-promotion"
   ],
@@ -51,9 +54,9 @@
     "G1": { "after": "writing-spec", "transition": "DRAFT → UX-REVIEWED", "checks": "Stories testable? ACs specific? Layer 3 clean? Dependencies identified?" },
     "G2": { "after": "writing-ux-design", "transition": "UX-REVIEWED → DESIGNED", "checks": "Flows cover all stories? States complete? Error handling? Accessibility?" },
     "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED", "checks": "Design system consistency? Responsive? Dark mode? Component reuse?" },
-    "G4": { "after": "writing-technical-design", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
-    "G5": { "after": "writing-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Code matches design? Tests cover ACs? Cross-file consistency? No placeholders?" },
-    "G6": { "after": "promoting-change-set", "transition": "PROMOTED → VERIFIED", "checks": "Applied code matches change set? No deviations? No unplanned changes?" },
+    "G4": { "after": "writing-technical-design", "transition": "DESIGNED → BASELINED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
+    "G5": { "after": "executing-change-set", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "Executed branch diff matches design? Tasks cover ACs? Cross-file consistency? No placeholders? Task checkpoints clean?" },
+    "G6": { "after": "promoting-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Squash diff matches manifest file set? No unplanned changes? Validation clean?" },
     "G7": { "after": "verifying-promotion", "transition": "final", "checks": "Tests pass? QA complete? E2E complete? Spec annotations updated?" }
   },
   "externalAddOns": {
@@ -75,12 +78,16 @@
   "bootstrapStartSequence": [
     "vision-sync",
     "persona-builder",
-    "journey-sync",
     "feature-discovery",
+    "writing-spec",
     "spec-ac-sync",
-    "journey-qa-ac-testing",
-    "spec-code-sync",
-    "agentic-e2e-playwright",
-    "feature-marketing-insights"
+    "journey-sync",
+    "writing-ux-design",
+    "writing-ui-design",
+    "writing-technical-design",
+    "writing-change-set",
+    "executing-change-set",
+    "promoting-change-set",
+    "verifying-promotion"
   ]
 }

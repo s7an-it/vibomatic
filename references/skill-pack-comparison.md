@@ -33,8 +33,8 @@
 | **Technical Design** | `writing-technical-design` (feasibility matrix) | `/plan-eng-review` (ASCII diagrams, state machines) | `brainstorming` (design doc) |
 | **CEO/Scope Review** | — gap — | `/plan-ceo-review` (4 scope modes) | — |
 | **Auto-Review Pipeline** | — gap — | `/autoplan` (CEO→design→eng automatic) | — |
-| **Change Set** | `writing-change-set` (multi-part exact bytes, spec chain) | — | `writing-plans` (bite-sized tasks, zero-context) |
-| **Plan Execution** | via superpowers | — | `executing-plans` (batch + architect review) |
+| **Change Set** | `writing-change-set` (implementation manifest, task graph, AC/test mapping) | — | `writing-plans` (bite-sized tasks, zero-context) |
+| **Plan Execution** | `executing-change-set` (task checkpoints, staged-diff review, loop-backs) | — | `executing-plans` (batch + architect review) |
 | **Subagent Dispatch** | via superpowers | — | `subagent-driven-development` (2-stage review) |
 | **TDD** | referenced in plan metadata | "Boil the Lake" philosophy | `test-driven-development` (Iron Law) |
 | **E2E Test Authoring** | `agentic-e2e-playwright` (a11y-first, journey-based) | regression tests from QA fixes | — |
@@ -117,19 +117,19 @@
 | **Technical design** | `writing-technical-design` — architecture, components, data model, feasibility matrix against ACs, risks, trade-offs. DESIGNED → BASELINED | `/plan-eng-review` — ASCII diagrams, data flow, state machines, edge cases, test matrix, error paths. Forces hidden assumptions visible | `brainstorming` — covers architecture/components in design doc |
 | **CEO/scope review** | Gap | `/plan-ceo-review` — 4 modes: expansion, selective expansion, hold scope, reduction. Challenges premises, rethinks scope | None |
 | **Auto-review pipeline** | Gap | `/autoplan` — runs CEO → design → eng review automatically with encoded decision principles | None |
-| **Change set authoring** | `writing-change-set` — multi-part change set with exact file contents (manifest + parts by concern). Spec chain tasks. Test enforcement audit. Plan review loop | Part of the plan output from eng review, but no structured task metadata format | `writing-plans` — bite-sized tasks, zero-context assumption. DRY/YAGNI/TDD. No YAML metadata, no parallel groups, no spec chain |
-| **Dependency analysis** | Built into `writing-change-set` — manifest apply order, part dependencies, cross-file consistency | Not formalized | Not formalized |
-| **Mandatory spec chain** | `writing-change-set` — post-implementation tasks for spec-ac-sync, spec-code-sync, journey-sync, persona-builder, e2e, feature-insights | None | None |
+| **Change set authoring** | `writing-change-set` — implementation manifest with task graph, file-touch plan, AC/test mapping, validation commands, checkpoint plan. No code payload duplication | Part of the plan output from eng review, but no structured task metadata format | `writing-plans` — bite-sized tasks, zero-context assumption. DRY/YAGNI/TDD. No YAML metadata, no parallel groups, no spec chain |
+| **Dependency analysis** | Built into `writing-change-set` — task dependencies, file-touch plan, AC/test coverage, cross-file intent | Not formalized | Not formalized |
+| **Mandatory spec chain** | `writing-change-set` + `executing-change-set` — implementation tasks, spec/journey updates, and verification hooks stay attached to the plan | None | None |
 
 ### Implementation & Execution
 
 | Capability | vibomatic | gstack | superpowers (obra) |
 |---|---|---|---|
-| **Plan execution** | Uses superpowers' execution model (subagent-driven-development or executing-plans) | Claude Code does the coding, fed by plan artifacts. No formalized execution skill | `executing-plans` — batch execution (3 tasks default) with architect review between batches. Load → Review → Execute → Report |
-| **Subagent-per-task** | Uses superpowers' model | No subagent dispatch system | `subagent-driven-development` — fresh subagent per task + two-stage review (spec compliance then code quality). 4 prompt templates |
-| **TDD enforcement** | Built into `writing-change-set` — tests written before implementation in dedicated parts (part-05-tests-unit, part-06-tests-e2e) | "Boil the Lake" philosophy — tests are the cheapest lake, never defer | `test-driven-development` — Iron Law: "NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST." Red-Green-Refactor. Delete code written before tests |
-| **Parallel agents** | Uses superpowers' model | Conductor supports 10-15 simultaneous branches. Random port browser daemon | `dispatching-parallel-agents` — one agent per independent problem domain. Decision flowchart for when to parallelize |
-| **Git worktrees** | Uses superpowers' model | Not formalized (uses Conductor workspaces instead) | `using-git-worktrees` — systematic directory selection, safety verification, .gitignore enforcement |
+| **Plan execution** | `executing-change-set` — executes one task at a time on the branch, stages only the current task diff, checkpoint commits, loop-backs on contradictions | Claude Code does the coding, fed by plan artifacts. No formalized execution skill | `executing-plans` — batch execution (3 tasks default) with architect review between batches. Load → Review → Execute → Report |
+| **Subagent-per-task** | Optional via external add-ons; core model is task-by-task staged review on one branch | No subagent dispatch system | `subagent-driven-development` — fresh subagent per task + two-stage review (spec compliance then code quality). 4 prompt templates |
+| **TDD enforcement** | Built into the implementation manifest and G5 review — tests are explicit tasks with validation before downstream implementation tasks | "Boil the Lake" philosophy — tests are the cheapest lake, never defer | `test-driven-development` — Iron Law: "NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST." Red-Green-Refactor. Delete code written before tests |
+| **Parallel agents** | Optional via external add-ons; core model keeps checkpoints and staged diffs as the review surface | Conductor supports 10-15 simultaneous branches. Random port browser daemon | `dispatching-parallel-agents` — one agent per independent problem domain. Decision flowchart for when to parallelize |
+| **Git worktrees** | Branch/worktree is the canonical change set and review surface | Not formalized (uses Conductor workspaces instead) | `using-git-worktrees` — systematic directory selection, safety verification, .gitignore enforcement |
 
 ### Code Review & Quality
 
@@ -150,7 +150,7 @@
 | **Cookie management** | Gap | `/setup-browser-cookies` — import cookies from Chrome/Arc/Brave/Edge. Interactive picker | None |
 | **Live browser view** | Gap | `/connect-chrome` — Side Panel extension, watch every action live, headed/headless toggle | None |
 | **Performance benchmarks** | Gap | `/benchmark` — baseline Core Web Vitals, resource sizes. Before/after on every PR. Trend tracking | None |
-| **Test enforcement** | `writing-change-set` — tests are part of the change set (written before implementation code), validated at G5 review | "Boil the Lake" — completeness is near-free, never defer tests | `test-driven-development` — Iron Law, but no tiered enforcement system |
+| **Test enforcement** | `writing-change-set` + `executing-change-set` — tests are planned as first-class tasks and validated at G5 review | "Boil the Lake" — completeness is near-free, never defer tests | `test-driven-development` — Iron Law, but no tiered enforcement system |
 
 ### Marketing & Content
 
@@ -224,7 +224,7 @@
 ## Complementarity Map
 
 ### vibomatic + superpowers (current integration)
-vibomatic handles product definition and verification. superpowers handles implementation discipline. Already integrated: `writing-change-set` derived from superpowers' `writing-plans`, evolved from task descriptions to exact-bytes change sets.
+vibomatic handles product definition and verification. superpowers informed the implementation-discipline layer. `writing-change-set` now matches obra-level planning depth, while `executing-change-set` keeps the actual code in the branch rather than duplicating it in docs.
 
 ### vibomatic + gstack (potential integration)
 | vibomatic provides | gstack provides | Together |

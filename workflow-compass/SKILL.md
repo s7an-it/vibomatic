@@ -70,6 +70,7 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 - `repo-conversion`
 - `bugfix-brief`
 - `work-item-sync`
+- `executing-change-set`
 
 ### External Add-On Packs (optional)
 
@@ -110,6 +111,7 @@ the source of truth.
 - `writing-ui-design`
 - `writing-technical-design`
 - `writing-change-set`
+- `executing-change-set`
 - `review-protocol`
 - `promoting-change-set`
 - `verifying-promotion`
@@ -139,10 +141,22 @@ Route:
 7. `writing-ux-design`
 8. `writing-ui-design`
 9. `writing-technical-design`
-10. `review-protocol`
-11. `writing-change-set`
-12. `promoting-change-set`
-13. `verifying-promotion`
+10. `writing-change-set`
+11. `executing-change-set`
+12. `review-protocol`
+13. `promoting-change-set`
+14. `verifying-promotion`
+
+### Lane 1b: Auto Greenfield ("build me an app")
+
+Use when:
+- mode = `bootstrap`
+- the prompt is effectively "build me an app"
+- there is no meaningful existing repo state to preserve
+
+Behavior:
+- run the greenfield lane end-to-end automatically
+- stop only for real blockers, contradictions, or missing product intent that cannot be safely assumed
 
 ### Lane 2: Brownfield Conversion
 
@@ -168,10 +182,11 @@ Route:
 3. `writing-spec` in delta mode
 4. `journey-sync` in expand mode
 5. `writing-technical-design` if architecture changes
-6. `review-protocol`
-7. `writing-change-set`
-8. `promoting-change-set`
-9. `verifying-promotion`
+6. `writing-change-set`
+7. `executing-change-set`
+8. `review-protocol`
+9. `promoting-change-set`
+10. `verifying-promotion`
 
 ### Lane 4: Bugfix / Regression
 
@@ -181,9 +196,12 @@ Use when:
 
 Route:
 1. `bugfix-brief`
-2. implementation path
-3. `journey-qa-ac-testing` or targeted verification
-4. `agentic-e2e-playwright` if the path should be automated
+2. `writing-change-set` if a formal implementation plan is needed
+3. `executing-change-set`
+4. `review-protocol`
+5. `promoting-change-set`
+6. `verifying-promotion`
+7. `journey-qa-ac-testing` or `agentic-e2e-playwright` as targeted support when the verification path needs direct runtime evidence
 
 ### Lane 5: Drift / Maintenance
 
@@ -197,6 +215,21 @@ Route:
 3. `journey-sync` refresh if user flows changed
 4. `work-item-sync` if tracker visibility matters
 
+### Lane 6: Refactor / Chore
+
+Use when:
+- item type is `refactor` or `chore`
+- behavior should stay materially the same, or the work is primarily structural/state-management
+
+Route:
+1. `spec-code-sync` if behavior invariants or current truth are unclear
+2. `writing-change-set`
+3. `executing-change-set`
+4. `review-protocol`
+5. `promoting-change-set`
+6. `verifying-promotion` when the change touches shipped behavior, tests, or user journeys
+7. `work-item-sync` if tracker visibility matters
+
 ## Change-Type Detection
 
 Use these signals:
@@ -208,8 +241,8 @@ Use these signals:
 | Broken behavior | `bugfix` | `bugfix-brief` |
 | Previously working behavior stopped working | `regression` | `bugfix-brief` |
 | Spec/code mismatch | `drift` | `spec-code-sync` |
-| Structural cleanup with no intended behavior change | `refactor` | implementation planning path, informed by `spec-code-sync` if needed |
-| Tracker, docs, or housekeeping item | `chore` | route by scope; often `repo-conversion` or `work-item-sync` for state management |
+| Structural cleanup with no intended behavior change | `refactor` | `writing-change-set` (or `spec-code-sync` first if invariants are unclear) |
+| Tracker, docs, or housekeeping item | `chore` | `work-item-sync` or `writing-change-set`, depending on whether it changes code or project state |
 
 ## Cross-Skill Routing
 
@@ -219,11 +252,16 @@ Use these signals:
 | `repo-conversion` | Bugs/regressions logged | `bugfix-brief` |
 | `repo-conversion` | Feature opportunities logged | `feature-discovery` |
 | `repo-conversion` | Drift logged | `spec-code-sync` |
+| `repo-conversion` | Refactors or chores logged | `writing-change-set` or `work-item-sync`, depending on scope |
 | `repo-conversion` | Tracker visibility needed | `work-item-sync` |
-| `bugfix-brief` | Root cause and fix scope defined | implementation path |
+| `bugfix-brief` | Root cause and fix scope defined | `writing-change-set` or `executing-change-set`, depending on plan depth needed |
+| `writing-change-set` | Implementation manifest complete | `executing-change-set` |
+| `executing-change-set` | Task execution complete, final diff reviewed | `promoting-change-set` |
+| `executing-change-set` | Task reveals spec/UX/UI/tech contradiction | loop back to the relevant upstream skill |
 | `bugfix-brief` | Issue is actually missing capability | `feature-discovery` |
 | `bugfix-brief` | Issue is actually spec drift | `spec-code-sync` |
 | `spec-code-sync` | Drift confirmed | remediation path or work-item update |
+| `spec-code-sync` | Structural cleanup with behavior preserved | `writing-change-set` |
 | `feature-discovery` | Not a new feature, but a broken existing flow | `bugfix-brief` |
 | `feature-discovery` | Existing repo not yet mapped | `repo-conversion` |
 | `journey-sync` | Missing producer, missing persona, or fragmented concept | `feature-discovery` or `persona-builder` |

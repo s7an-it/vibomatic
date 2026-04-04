@@ -33,7 +33,7 @@ Invoke this skill at every gate in the pipeline:
 | G2 | `writing-ux-design` | UX Design | DRAFT → UX-REVIEWED |
 | G3 | `writing-ui-design` | UI Design | DRAFT → DESIGNED |
 | G4 | `writing-technical-design` | Technical Design | DESIGNED → BASELINED |
-| G5 | `writing-change-set` | Change Set | BASELINED → CHANGE-SET-APPROVED |
+| G5 | `executing-change-set` | Executed change set on branch | BASELINED → CHANGE-SET-APPROVED |
 | G6 | `promoting-change-set` | Promotion | CHANGE-SET-APPROVED → PROMOTED |
 | G7 | `verifying-promotion` | Verification | PROMOTED → VERIFIED |
 
@@ -318,29 +318,29 @@ Each gate reviews different aspects. Use the appropriate checklist for the gate 
 | 7 | Consistent with UX/UI? | Technical design doesn't silently drop UX flows or UI states. Everything mapped. |
 | 8 | Dependencies resolvable? | All system dependencies from the spec have specs or are explicitly deferred. |
 
-### G5: Change Set Review (BASELINED to CHANGE-SET-APPROVED)
+### G5: Executed Change Set Review (BASELINED to CHANGE-SET-APPROVED)
 
 | # | Check | What to look for |
 |---|-------|-----------------|
-| 1 | Code matches design? | Implementation follows the technical design. No "improvements" that deviate. |
-| 2 | Tests cover ACs? | Every AC has at least one test. AC IDs referenced in test descriptions. |
+| 1 | Executed diff matches design? | The staged/task diff and final branch diff follow the technical design. No unplanned "improvements." |
+| 2 | Tasks cover ACs? | Every AC is covered by one or more execution tasks and mapped tests. |
 | 3 | Cross-file consistency? | Imports resolve. Types match across files. No file references a function that doesn't exist. |
-| 4 | No placeholders? | No TODO, FIXME, "implement later", or stub functions. Every file is complete. |
-| 5 | Manifest accurate? | Apply order respects dependencies. Files Touched table matches actual parts content. |
-| 6 | Tests written before implementation? | Unit tests appear in earlier parts than the code they test (TDD order in manifest). |
-| 7 | Spec updates included? | Part for spec status changes exists. AC annotations planned. |
-| 8 | Journey updates included? | Part for journey doc changes exists. Scenarios reflect implementation. |
+| 4 | No placeholders? | No TODO, FIXME, "implement later", or stub functions in the executed branch state. |
+| 5 | Manifest accurate? | Files planned in the manifest match the executed branch diff. |
+| 6 | Task checkpoints clean? | Each completed task has a checkpoint commit and passed its task review/validation. |
+| 7 | Tests written in the intended order? | Unit tests constrain implementation where required; the task graph reflects TDD intent. |
+| 8 | Spec and journey updates included? | The implementation includes required spec/journey changes or explicitly defers them with reason. |
 
 ### G6: Promotion Review (CHANGE-SET-APPROVED to PROMOTED)
 
 | # | Check | What to look for |
 |---|-------|-----------------|
-| 1 | Applied code matches change set? | Diff between applied files and change set parts shows zero content deviations. |
-| 2 | No omissions? | Every file in the manifest was applied. No files skipped. |
-| 3 | No additions? | No files created that aren't in the manifest. No "helpful extras." |
-| 4 | No content deviations? | Variable names, function signatures, logic — all identical to the change set. |
-| 5 | Formatting acceptable? | Minor whitespace or import order differences are low severity, not blocking. |
-| 6 | Deviation report produced? | The promoting agent generated a deviation report. If empty, confirm it was checked. |
+| 1 | Squash diff matches manifest? | The staged squash diff contains only manifest-listed files and intended changes. |
+| 2 | No omissions? | Every manifest-listed file that should ship appears in the promotion diff. |
+| 3 | No additions? | No files outside the manifest or approved execution path are being promoted. |
+| 4 | Validation clean? | Final validation commands passed before promotion. |
+| 5 | Checkpoint history trustworthy? | Promotion is backed by task checkpoints and reviewed execution, not ad hoc branch drift. |
+| 6 | Promotion evidence produced? | The promoter recorded manifest/diff comparison and validation outcomes. |
 
 ### G7: Verification Review (PROMOTED to VERIFIED)
 
@@ -419,7 +419,7 @@ The review protocol runs at every gate. Cost depends on artifact size and iterat
 
 - Steps 1-2 (self-review + self-judgment) run in a single agent session — no context switch cost.
 - Step 3 (cross-review) is a separate agent session — context loading cost is the main expense.
-- For large artifacts (change sets), review parts independently and run cross-reviews in parallel.
+- For large artifacts (change sets), review tasks independently and run cross-reviews in parallel.
 - Gate checklists focus the review — agents do not free-associate; they check specific items.
 - If the producing skill is high-quality, most gates pass in iteration 1 with only medium/low findings.
 

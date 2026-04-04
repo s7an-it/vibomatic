@@ -26,6 +26,7 @@ they attach to the core pipeline.
 - `writing-ui-design`
 - `writing-technical-design`
 - `writing-change-set`
+- `executing-change-set`
 - `review-protocol`
 - `promoting-change-set`
 - `verifying-promotion`
