@@ -117,40 +117,85 @@ If the server does not start, that is a bug in the change set. Fix it:
 4. Try `npm start` again
 5. Repeat up to 3 times. If still broken, log the failure with full error output.
 
-### Three-Way Comparison
+### Multi-Approach Comparison
 
-Every scenario produces THREE running applications from THREE approaches:
+Every scenario produces running applications from multiple approaches. The comparison is only valid if each approach uses its methodology's skills as designed.
+
+#### Fairness Rules
+
+Background agents CANNOT run interactive skills (AskUserQuestion, iterative review loops). Therefore:
+
+1. **Each approach MUST be run in the FOREGROUND as a sequential conversation**, not as a background Agent. The operator plays the user role, answering skill questions naturally based on the scenario context.
+2. **Every skill invocation MUST use the Skill tool**, not inline approximation. If an agent "brainstorms" without invoking `superpowers:brainstorming`, that is NOT a fair test of the superpowers methodology.
+3. **Log every skill invoked** with: skill name, input summary (what was passed), output summary (what was produced), and whether the skill asked questions (and what the operator answered).
+4. **If a methodology's skill cannot be invoked** (missing dependency, tool not available), record it as SKIPPED with reason — do not approximate it inline.
+
+#### Approach Definitions
 
 **Approach 1 -- Vibomatic (full 19-skill pipeline):**
-- Run all 19 skills in order
-- Phase 7 produces full code
+- Run all 19 skills in pipeline order using the Skill tool
+- Each skill reads prior phase artifacts from the worktree
 - Server runs on port 3000
+- **Verification requirement:** Skills 14-18 (verifying-promotion, spec-code-sync, journey-qa-ac-testing, agentic-e2e-playwright, feature-marketing-insights) MUST be run, not skipped
 
-**Approach 2 -- Obra/Superpowers (brainstorm-plan-execute):**
-- Invoke `superpowers:brainstorming` with the scenario prompt
-- Invoke `superpowers:writing-plans` with the brainstorm output
-- Invoke `superpowers:executing-plans` with the plan
-- Use `superpowers:dispatching-parallel-agents` for independent tasks
+**Approach 2 -- gstack (office-hours + review pipeline):**
+- Invoke `/office-hours` with the scenario prompt — answer the 6 forcing questions naturally
+- Invoke `/design-consultation` to create DESIGN.md
+- Invoke `/autoplan` OR `/plan-ceo-review` → `/plan-design-review` → `/plan-eng-review` sequentially
+- Write code guided by the reviewed plan
+- Invoke `/qa` against the running server
+- Invoke `/review` on the diff
 - Server runs on port 3001
+- **Log:** Each skill invocation, what questions it asked, what the operator answered
 
-**Approach 3 -- Raw (single prompt):**
-- One prompt: "Build [scenario description]. Produce a complete, runnable Node.js application."
-- No methodology, no phases, no review
+**Approach 3 -- Obra/Superpowers (brainstorm-plan-execute):**
+- Invoke `superpowers:brainstorming` — answer clarifying questions naturally, approve design
+- Invoke `superpowers:writing-plans` with the brainstorm output
+- Invoke `superpowers:test-driven-development` — write failing tests BEFORE implementation
+- Invoke `superpowers:executing-plans` with the plan
+- Invoke `superpowers:requesting-code-review` on the result
+- Invoke `superpowers:verification-before-completion` before declaring done
 - Server runs on port 3002
+- **Log:** Each skill invocation and its output
 
-**Measurements (per approach):**
+**Approach 4 -- Raw (single prompt):**
+- One prompt: "Build [scenario description]. Produce a complete, runnable Node.js application."
+- No methodology, no phases, no review, no skills
+- Server runs on port 3003
+
+#### Universal Expectations (Phase 0)
+
+BEFORE running any approach, derive a checklist of what a user who typed the scenario prompt would expect to see. This checklist must:
+- Be derived ONLY from the user's sentence, not from any methodology's specs
+- Include sub-items that are independently scorable (1 = met, 0 = not met)
+- Cover: does it run, does it show the right data, does it do the core thing, does it address every explicit requirement in the prompt, is it usable on first visit
+- Be written to `framework-test/results/{date}/phase-0-expectations.md` BEFORE any approach runs
+
+#### Measurements (per approach)
 
 | Metric | How to measure |
 |--------|---------------|
+| Universal score | Phase 0 checklist pass rate |
+| Skills invoked | Count of methodology skills actually invoked via Skill tool |
+| Skills skipped | Count of methodology skills not invoked, with reason |
 | ACs satisfied | Check each AC from the vibomatic spec against the running server |
-| Edge cases handled | Count error handlers, validation, boundary checks in code |
-| Token cost | Sum total_tokens from all sub-agent task notifications |
+| Vision-to-code traceability | Suite 9 score |
+| First-time UX | Suite 8 pass/fail |
 | Test coverage | Run unit tests, report pass/fail counts |
 | Time to running server | Wall clock from first prompt to server responding |
 | Code structure | Count files, modules, separation of concerns |
-| E2E pass rate | Run Playwright tests against each server |
+| Files produced | Total source files (src + views) |
+| LOC | Lines of code in source files |
 
-**Report format:** Side-by-side table in `comparison.json` and `comparison.md`. The comparison is the core value proposition -- it proves (or disproves) that vibomatic produces better output.
+#### Methodology Usage Audit
+
+After all approaches complete, produce `methodology-usage-audit.md` with:
+- For each approach: recommended workflow (from that methodology's docs) vs actual workflow (what was invoked)
+- Skill-by-skill table: recommended → invoked? → input → output
+- Fairness verdict: FAIR / PARTIALLY FAIR / UNFAIR with explanation
+- If any approach is UNFAIR, the comparison results for that approach carry a caveat
+
+**Report format:** Side-by-side table in `comparison.json` and `comparison.md`. Include the methodology usage audit as a section. The comparison is only credible if the audit shows all approaches were fairly tested.
 
 ### Self-Improvement Protocol
 
@@ -228,6 +273,32 @@ Give writing-spec a Feature. Verify that Enabler dependencies are discovered aut
 
 Two features, two worktrees, parallel execution. Verify zero cross-contamination. This suite uses real git worktrees and real parallel agents.
 
+## Suite 8: First-Time User Experience
+
+After the server starts, test the FIRST VISIT experience with no profile, no login, no setup:
+
+1. `curl http://localhost:{port}/` — does the homepage show useful content without requiring any user action?
+2. Are all vision-level product concepts visible in the UI? (Check vision doc sections 3-4 against what the homepage shows.)
+3. Can a user understand what the app does within 5 seconds of landing?
+
+If the first visit shows "No data" or requires setup before showing value, that is a FAILURE of the pipeline. Flag it as a skill gap in writing-spec (missing zero-state AC).
+
+## Suite 9: Vision-to-Code Traceability
+
+The most dangerous pipeline failure is information loss at phase boundaries. This suite catches it.
+
+1. Read `docs/specs/vision.md` sections 3 (Who We Serve), 4 (Value Proposition), and 6 (Boundaries).
+2. Extract every distinct product concept that implies user-visible behavior (deployment modes, persona types, platform sources, pricing, privacy).
+3. For each concept, grep the `src/` directory for evidence it's implemented in code.
+4. Score: concepts with code evidence / total concepts.
+
+**Pass criteria:** >= 80% of vision concepts have code evidence. Any concept at 0% is a critical finding — it means the pipeline translated the user's requirement into a spec but then lost it during code generation.
+
+**Root cause mapping for failures:**
+- Concept in vision but NOT in spec ACs → writing-spec missed it during vision-to-spec traceability
+- Concept in spec ACs but NOT in code → writing-change-set missed it during vision cross-check
+- Concept in code but NOT working at runtime → promoting-change-set or verifying-promotion gap
+
 ## Completion Criteria
 
 The autopilot is DONE when ALL of these are true:
@@ -235,6 +306,7 @@ The autopilot is DONE when ALL of these are true:
 - [ ] All 19 skills produced REAL output (no simulations, no outlines, no "interface-tier" hedging)
 - [ ] Server runs and responds to HTTP requests from generated code
 - [ ] E2E tests execute against the live server (pass or fail -- but they RUN)
+- [ ] First-time user experience test passes (useful content on first visit without setup)
 - [ ] Three-way comparison completed (vibomatic vs obra vs raw) with numerical results
 - [ ] At least 1 SKILL.md improvement committed (a real fix, not a formatting change)
 - [ ] All 7 doctrine claims tested with numerical evidence
