@@ -93,6 +93,33 @@ scripts/worktree.sh cleanup
 scripts/worktree.sh preflight
 ```
 
+## Worktree Guard (automatic detection)
+
+Every skill should call the guard at startup to detect if it's in the right place:
+
+```bash
+scripts/worktree.sh guard --skill <skill-name> --lane <lane> --branch <branch>
+```
+
+The guard returns one of four actions:
+
+| Action | Meaning | What to do |
+|--------|---------|------------|
+| `STAY_MAIN` | Skill runs on main, already there | Proceed normally |
+| `NEED_WORKTREE` | Skill needs a worktree | Guard creates/enters it automatically |
+| `IN_WORKTREE` | Skill needs a worktree, already in one | Proceed normally |
+| `LEAVE_WORKTREE` | Skill runs on main but we're in a worktree | `cd` back to repo root |
+
+The guard knows which skills need worktrees, which lanes never use them, and
+handles the transitions. Skills don't need to hard-code worktree logic — they
+call the guard and follow the action.
+
+**Key transitions the guard handles:**
+- `writing-change-set` → `executing-change-set`: guard detects NEED_WORKTREE, creates it
+- `executing-change-set` → `review-protocol`: guard detects LEAVE_WORKTREE (reviews on main)
+- `review-protocol` → `promoting-change-set`: guard detects IN_WORKTREE (enter for squash)
+- `promoting-change-set` → `verifying-promotion`: guard detects STAY_MAIN (worktree removed)
+
 ## Lifecycle
 
 ```
