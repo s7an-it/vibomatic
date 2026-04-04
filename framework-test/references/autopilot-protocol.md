@@ -2,7 +2,7 @@
 
 The autopilot is a continuous loop that runs vibomatic end-to-end on real
 scenarios, producing running applications. Every scenario opens worktrees,
-executes all 19 skills, starts a live server, runs E2E tests, compares
+executes all pipeline skills, starts a live server, runs E2E tests, compares
 against obra and raw baselines, fixes gaps in SKILL.md files, and cleans
 up. No simulations. No hedging. Real output or a bug to fix.
 
@@ -12,7 +12,7 @@ up. No simulations. No hedging. Real output or a bug to fix.
 OUTER LOOP (per scenario):
   1. PICK         -> choose scenario (built-in or auto-suggested from gaps)
   2. OPEN         -> git worktree add /tmp/vibomatic-test-{scenario-id} main
-  3. EXECUTE      -> run ALL 19 skills in pipeline order inside the worktree
+  3. EXECUTE      -> run ALL pipeline skills in pipeline order inside the worktree
                      Phase 7 produces FULL runnable code (all 8 parts)
                      landing-change-set writes files into the worktree
   4. START SERVER -> cd into worktree, npm install, npm start
@@ -52,7 +52,7 @@ Every scenario runs inside git worktrees. No exceptions.
 
 ```bash
 git worktree add /tmp/vibomatic-test-{scenario-id} main
-# ... all 19 skills execute inside this worktree ...
+# ... all pipeline skills execute inside this worktree ...
 # ... server starts from this worktree ...
 git worktree remove /tmp/vibomatic-test-{scenario-id}
 ```
@@ -166,7 +166,7 @@ Every scenario produces THREE running applications from THREE approaches.
 ### Approach 1 -- Vibomatic (full 19-skill pipeline)
 
 1. Open worktree: `/tmp/vibomatic-test-{id}-vibomatic`
-2. Run all 19 skills in pipeline order (see Full Skill Invocation Order)
+2. Run all pipeline skills in pipeline order (see Full Skill Invocation Order)
 3. Phase 7 produces full code (all 8 parts)
 4. `npm install && npm start` on port 3000
 5. Run E2E tests against localhost:3000
@@ -271,7 +271,7 @@ it from the doctrine. Do not report anything as "structurally untestable."
 
 ## Full Skill Invocation Order
 
-When running a scenario, execute ALL 19 skills in this order:
+When running a scenario, execute ALL pipeline skills in this order:
 
 | # | Skill | Phase | Input | Output |
 |---|-------|-------|-------|--------|

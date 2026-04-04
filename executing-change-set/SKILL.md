@@ -238,7 +238,7 @@ Use phase checkpoints from earlier phases as rollback anchors when a loop-back c
 When all tasks are complete and final G5 passes:
 
 - feature status -> `CHANGE-SET-APPROVED`
-- route to `landing-change-set`
+- route to `systems-analysis` (or `review-protocol` in lanes that have it)
 
 ## Pipeline Continuation
 
@@ -259,10 +259,10 @@ If any check FAILs, fix before continuing. If a fix requires upstream changes, s
 
 **If `--progressive` flag is present AND self-verify passed:**
 - Check `--skip` list. If this skill is in the skip list, pass through to next.
-- In greenfield lane: invoke `landing-change-set --progressive --lane greenfield`
+- In greenfield lane: invoke `systems-analysis --progressive --lane greenfield`
 - In brownfield-feature/bugfix/refactor lanes: invoke `review-protocol --progressive --lane <lane>`
 
 **If `--progressive` flag is absent:**
 - Report results to user
-- In greenfield lane: suggest "Next: consider running `landing-change-set`"
+- In greenfield lane: suggest "Next: run `systems-analysis`"
 - In brownfield-feature/bugfix/refactor lanes: suggest "Next: consider running `review-protocol`"

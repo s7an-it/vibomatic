@@ -56,7 +56,7 @@ noise before it reaches the report.
 | 7-8 | High-confidence pattern match against known vulnerability class | Show normally |
 | 5-6 | Moderate; could be a false positive | Show with explicit caveat |
 | 3-4 | Low confidence; pattern present but context unclear | Suppress from main report; appendix only |
-| 1-2 | Speculation or theoretical-only | Only report if severity would be P0 |
+| 1-2 | Speculation or theoretical-only | Only report if severity would be CRITICAL |
 
 **Default mode:** 8/10 gate (zero noise). Only findings scored 8+ appear in the
 main report. This is the right default for most reviews.

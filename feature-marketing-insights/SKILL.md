@@ -33,7 +33,7 @@ chain:
 
 Build the product marketing context from the ground up by systematically mining ExampleProduct feature specs. Produces weighted, validated, bloat-free marketing ammunition — not engineering descriptions.
 
-This skill owns the entire marketing context document (`docs/marketing/product-marketing-context.md`):
+This skill owns the entire marketing context document (`.agents/product-marketing-context.md`):
 - **Foundation** (sections 1-12): Product overview, audience, pain points, competitors, voice, proof points
 - **Layer 1 (atomic insights)**: Individual feature traits with full metadata — one trait, one claim, one weight
 - **Layer 2 (narratives)**: Cross-feature combinations that reference Layer 1 by ID
@@ -311,7 +311,7 @@ Update `docs/marketing/feature-mining-tracker.json`:
 - Update `last_mined` timestamp
 - Recompute summary stats by counting actual array lengths — do NOT increment stored counters
 
-Append to `docs/marketing/product-marketing-context.md`:
+Append to `.agents/product-marketing-context.md`:
 - Only insights with weight >= 55 (aligns with Mode 5 compaction threshold)
 - Use HTML comment format: `<!-- weight:85 source:feature-matching validated:true -->`
 - Organize by **weight tier** (Category-Defining / Strong Differentiators / Meaningful Value)
@@ -362,7 +362,7 @@ Update `.agents/product-marketing-context.md` — this is feature-marketing-insi
 
 **Format:** The 12-section structure that downstream skills expect (Product Overview, Target Audience, Problems & Pain Points, Switching Dynamics, Competitive Landscape, Differentiation, Objections, Customer Language, Brand Voice, Proof Points, Goals). Plus a "Top Marketing Insights" appendix with weight >= 70 insights and top narratives.
 
-**How to sync:** Read `docs/marketing/product-marketing-context.md` and extract/condense into the 12-section format. Include a header noting "Auto-synced by feature-marketing-insights skill" and the source path. The downstream skills don't need the full 352-line doc — they need the foundational positioning sections + the strongest insights as ammunition.
+**How to sync:** Read `.agents/product-marketing-context.md` and extract/condense into the 12-section format. Include a header noting "Auto-synced by feature-marketing-insights skill" and the source path. The downstream skills don't need the full 352-line doc — they need the foundational positioning sections + the strongest insights as ammunition.
 
 **If external transform runs after this skill:** External passes may adapt wording/structure, but they must start from this file and preserve/refresh vibomatic "Top Marketing Insights" from tracker-backed mining.
 

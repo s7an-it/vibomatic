@@ -52,8 +52,9 @@ Default recommendation:
   13. `spec-style-sync`
   14. `writing-change-set`
   15. `executing-change-set`
-  16. `landing-change-set`
-  17. `verifying-promotion`
+  16. `systems-analysis`
+  17. `landing-change-set`
+  18. `verifying-promotion`
 - For prompts effectively meaning "build me an app", run this lane end to end automatically unless a real blocker or contradiction appears.
 
 ### Convert Mode

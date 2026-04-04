@@ -122,11 +122,11 @@ preflight() {
 # ============================================================
 
 # Skills that run BEFORE the worktree exists (planning phase, on main)
-PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design solution-explorer spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass"
+PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design solution-explorer spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass bootstrap-extract review-learnings security-review visual-tracker framework-test"
 
 # Skills that run INSIDE the worktree (implementation + validation)
 # Everything from execution through review happens in the branch
-WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright systems-analysis"
+WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright systems-analysis cross-model-review"
 
 # The squash-merge: transitions FROM worktree TO main
 PROMOTE_SKILL="landing-change-set"

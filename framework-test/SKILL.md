@@ -26,7 +26,7 @@ End-to-end testing that produces running applications, not documents about runni
 |------|---------|-------------|
 | `static` | `bash scripts/run-all.sh --static-only` | Pipeline integrity, cache measurements, doctrine checks. No LLM. |
 | `live` | `bash scripts/run-all.sh --include-live` | Static + spins up server from generated code + runs QA against it. |
-| `autopilot` | "Run framework-test autopilot on scenario S1" | Full loop: worktree per scenario, all 19 skills produce real output, server runs, three-way comparison, self-improvement. Read `references/autopilot-protocol.md` for scenario definitions and KPIs. |
+| `autopilot` | "Run framework-test autopilot on scenario S1" | Full loop: worktree per scenario, all pipeline skills produce real output, server runs, three-way comparison, self-improvement. Read `references/autopilot-protocol.md` for scenario definitions and KPIs. |
 | `comparison` | "Compare vibomatic vs obra vs raw on [feature]" | Three parallel worktrees, same feature three ways, measure delta. |
 | `skill-test` | "Test [skill-name] in isolation" | Single skill, multiple variants, real output required. |
 
@@ -53,7 +53,7 @@ Clean up all worktrees when the scenario completes. Never leave orphaned worktre
 LOOP:
   1.  PICK scenario (start with S1, or auto-suggest based on gaps)
   2.  OPEN worktree from main
-  3.  RUN all 19 skills in pipeline order
+  3.  RUN all pipeline skills in pipeline order
       - Phase 7 produces FULL runnable code (all 8 parts)
       - landing-change-set writes files into the worktree
   4.  START server
@@ -144,7 +144,7 @@ Background agents CANNOT run interactive skills (AskUserQuestion, iterative revi
 #### Approach Definitions
 
 **Approach 1 -- Vibomatic (full 19-skill pipeline):**
-- Run all 19 skills in pipeline order using the Skill tool
+- Run all pipeline skills in pipeline order using the Skill tool
 - Each skill reads prior phase artifacts from the worktree
 - Server runs on port 3000
 - **Verification requirement:** Skills 14-18 (verifying-promotion, spec-code-sync, journey-qa-ac-testing, agentic-e2e-playwright, feature-marketing-insights) MUST be run, not skipped
@@ -396,4 +396,4 @@ framework-test/results/YYYY-MM-DD-HHMMSS/
 
 - `references/autopilot-protocol.md` -- Scenario definitions, user simulation rules, KPIs, full invocation order, loop control
 - `DOCTRINE.md` -- The claims this skill tests
-- `skills-manifest.json` -- Canonical list of all 19 skills
+- `skills-manifest.json` -- Canonical list of all pipeline skills

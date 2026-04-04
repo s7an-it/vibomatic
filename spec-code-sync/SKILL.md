@@ -8,7 +8,7 @@ description: >
   feature-learning") or all features ("spec-code-sync"). Triggers on: "spec-code-sync",
   "does the spec reflect the code", "check if spec is up to date", "audit spec vs code",
   "are the implementation notes current", "check for spec drift", "sync spec to code".
-  Does NOT define acceptance criteria — use spec-sync for that. In brownfield repos,
+  Does NOT define acceptance criteria — use spec-ac-sync for that. In brownfield repos,
   it can also emit or update repo-canonical work items for serious findings.
 inputs:
   required:

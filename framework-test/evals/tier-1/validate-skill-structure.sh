@@ -13,7 +13,7 @@ ERRORS=""
 # Skills exempt from Pipeline Continuation section
 EXEMPT_PIPELINE=("workflow-compass" "framework-test")
 
-# Skills that must have Audit Mode section (the 11 that got it added)
+# Skills that must have Audit Mode section (15 skills)
 AUDIT_SKILLS=(
   "vision-sync"
   "feature-discovery"
@@ -26,6 +26,10 @@ AUDIT_SKILLS=(
   "domain-expert"
   "competitor-analysis"
   "spec-style-sync"
+  "solution-explorer"
+  "systems-analysis"
+  "visual-tracker"
+  "bootstrap-extract"
 )
 
 is_exempt_pipeline() {

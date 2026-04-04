@@ -31,7 +31,7 @@ outputs:
     - { path: "docs/specs/personas/PERSONA_INDEX.md", artifact: persona-index }
 chain:
   lanes:
-    greenfield: { position: 2, prev: vision-sync, next: feature-discovery }
+    greenfield: { position: 4, prev: competitor-analysis, next: feature-discovery }
   progressive: true
   self_verify: true
   human_checkpoint: false

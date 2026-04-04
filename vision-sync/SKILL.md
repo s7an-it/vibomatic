@@ -16,7 +16,7 @@ outputs:
     - { path: "docs/specs/vision.md", artifact: vision, status: ACTIVE }
 chain:
   lanes:
-    greenfield: { position: 1, prev: null, next: persona-builder }
+    greenfield: { position: 1, prev: null, next: domain-expert }
   progressive: true
   self_verify: true
   human_checkpoint: false
@@ -227,7 +227,7 @@ If any check FAILs, fix before continuing. If a fix requires upstream changes, s
 
 **If `--progressive` flag is present AND self-verify passed:**
 - Check `--skip` list. If this skill is in the skip list, pass through to next.
-- Invoke next skill: `persona-builder --progressive --lane greenfield`
+- Invoke next skill: `domain-expert --progressive --lane greenfield`
 
 **If `--progressive` flag is absent:**
 - Report results to user
