@@ -10,6 +10,9 @@
     "agentic-e2e-playwright",
     "feature-marketing-insights",
     "workflow-compass",
+    "repo-conversion",
+    "bugfix-brief",
+    "work-item-sync",
     "writing-spec",
     "writing-ux-design",
     "writing-ui-design",
@@ -30,7 +33,10 @@
     "spec-code-sync",
     "agentic-e2e-playwright",
     "feature-marketing-insights",
-    "workflow-compass"
+    "workflow-compass",
+    "repo-conversion",
+    "bugfix-brief",
+    "work-item-sync"
   ],
   "pipeline": [
     "writing-spec",

@@ -8,7 +8,8 @@ description: >
   feature-learning") or all features ("spec-code-sync"). Triggers on: "spec-code-sync",
   "does the spec reflect the code", "check if spec is up to date", "audit spec vs code",
   "are the implementation notes current", "check for spec drift", "sync spec to code".
-  Does NOT define acceptance criteria — use spec-sync for that.
+  Does NOT define acceptance criteria — use spec-sync for that. In brownfield repos,
+  it can also emit or update repo-canonical work items for serious findings.
 ---
 
 # Spec-Code-Sync: Spec-to-Code Drift Audit
@@ -226,6 +227,26 @@ This completes the three-layer check:
 ### Step 5 — Update the spec in place
 
 Edit the spec file directly. Only touch the Implementation Notes block and any annotations. Do not rewrite narrative, schema, metrics, or design sections.
+
+### Step 5b — Emit or update work items
+
+If the repo already uses vibomatic work-item tracking, mirror serious findings into
+`docs/specs/work-items/` so they can be routed and tracked outside the inline spec note.
+
+Create or update a work item when:
+
+- a `DRIFT` annotation is added
+- a `JOURNEY-GAP` annotation is added
+- a `[SPEC-GENERATED]` section reveals missing work that needs follow-through
+- the same finding spans multiple specs, journeys, or code areas
+
+Recommended mapping:
+
+- `DRIFT` -> work-item type `drift`
+- broken shipped behavior discovered during sync -> `bugfix` or `regression`
+- missing but valid new capability -> `feature`
+
+Repo files remain canonical. If tracker visibility is needed after that, route to `work-item-sync`.
 
 Annotation format used in this project:
 ```

@@ -5,7 +5,7 @@ This skill pack supports two repository modes.
 ## Modes
 
 - `bootstrap` (greenfield): no established product-spec workflow yet.
-- `convert` (brownfield): existing code/docs/process already exist and must be adapted.
+- `convert` (brownfield): existing code/docs/process already exist and must be adapted before the full vibomatic pipeline governs the repo.
 
 ## Mode Detection
 
@@ -21,6 +21,11 @@ Interpretation:
 - If the repo already has active code/docs/testing conventions -> default to `convert`.
 
 When ambiguous, choose `convert` to preserve existing structure.
+
+Default recommendation:
+
+- If the repo is effectively clean, let vibomatic define the workflow directly.
+- If the repo already has meaningful shipped behavior, docs, tests, or conventions, run conversion first.
 
 ## Mode Contract
 
@@ -44,10 +49,21 @@ When ambiguous, choose `convert` to preserve existing structure.
 
 ### Convert Mode
 
+- Start with `repo-conversion` before feature, bugfix, or drift work.
 - Do not force directory/file renames on first pass.
 - Inventory existing artifacts and map them to expected outputs.
 - Preserve established conventions; add compatibility notes where needed.
-- Run sync/audit skills against current structure, then converge gradually.
+- Log discovered bugs, regressions, and drift as repo-canonical work items instead of fixing them inline.
+- Finish the map first, then route each item into the right lane.
+
+Suggested brownfield sequence:
+1. `repo-conversion`
+2. `spec-code-sync`
+3. route by item type:
+   - `writing-spec` in delta mode for feature extension
+   - `bugfix-brief` for bugs and regressions
+   - `spec-code-sync` + selective updates for drift remediation
+   - `work-item-sync` to project repo-canonical items to GitHub Issues
 
 ## Required Behavior for Every Skill
 
@@ -55,6 +71,7 @@ When ambiguous, choose `convert` to preserve existing structure.
 - State selected mode explicitly.
 - In `bootstrap`, create/initialize missing prerequisites instead of failing.
 - In `convert`, adapt to current repo conventions before enforcing target structure.
+- In `convert`, prefer delta-first changes over regenerating canonical artifacts from scratch.
 
 ## Drift Guardrail
 

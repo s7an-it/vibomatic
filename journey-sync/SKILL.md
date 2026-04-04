@@ -15,7 +15,8 @@ description: >
   Tier 2 near-future, Tier 3 vision stubs) that the user approves before anything is written.
   Use Mode 6 when the user says "tiered journeys", "discover journeys", "classify journeys",
   "journey tiers", "full journey discovery", "journeys from personas", or is starting fresh
-  on a new product and wants a complete journey set with no prior setup.
+  on a new product and wants a complete journey set with no prior setup. Mode 7 handles
+  regression-aware refresh for broken or changed user flows in existing products.
 ---
 
 # Journey Sync
@@ -157,6 +158,25 @@ classified journey set (Tier 1/2/3) for the user to approve BEFORE writing a sin
 journey file, then builds only what was approved. Tier 2 journeys show both the
 current path (what works today) and the enhanced path (what becomes possible with
 1-3 backlog additions). Tier 3 journeys become stub files only.
+
+### Mode 7: Regression Refresh
+
+Triggered when the repo is brownfield and the problem is not "we need more journeys"
+but "a known journey is now broken or changed."
+
+Use this mode when:
+- a work item is typed `regression`
+- journey-based QA found a broken flow
+- shipped behavior changed and the journey contract needs to be refreshed
+
+Mode 7 does not generate a full new journey set. It:
+
+1. finds the affected existing journeys
+2. identifies the broken or changed steps
+3. records the expected path vs actual path
+4. updates the journey or writes a work-item note for follow-up
+
+This keeps regression work in the correction lane instead of treating it like greenfield authoring.
 
 This mode is the right starting point for new products, major product pivots, or any
 situation where you want a complete discovery pass rather than incremental additions.

@@ -1,6 +1,6 @@
 ---
 name: writing-spec
-description: Use when defining a new feature or change — produces a DRAFT feature spec with user stories, ACs, and journeys before any technical design or code
+description: Use when defining a new feature or change — produces a DRAFT feature spec with user stories, ACs, and journeys before any technical design or code. Supports greenfield new-feature work and brownfield delta-spec work for extensions, bugfix behavior, and contract changes.
 ---
 
 # Writing Spec
@@ -22,6 +22,21 @@ VERIFIED            → implemented, tested, synced (RESOLVED annotations, QA �
 This skill produces DRAFT specs. It defines WHAT we're building and HOW it's experienced — never HOW to implement it. UX design comes next in writing-ux-design.
 
 **Announce at start:** "I'm using the writing-spec skill to define the feature requirements."
+
+## Authoring Modes
+
+Choose one mode before writing:
+
+| Mode | Use when | Output style |
+|------|----------|--------------|
+| `new-feature` | Net-new greenfield capability | Full DRAFT feature spec |
+| `extend-feature` | Brownfield feature extension | Delta-first spec that preserves existing truth |
+| `bugfix-behavior` | Intended behavior needs to be clarified for a correction | Minimal behavior contract for the broken path |
+| `contract-change` | External/system contract changes without a large new feature | Focused contract and dependency updates |
+
+Default:
+- `bootstrap` repos -> `new-feature`
+- `convert` repos -> prefer `extend-feature` unless the issue is clearly bug or contract driven
 
 ## What Traditional Software Development Gets Wrong
 
@@ -131,6 +146,8 @@ Every system step (`←`) is a dependency on an Enabler or Integration. Layer 3 
 - **bootstrap:** Create `docs/specs/features/` directory if it doesn't exist. Generate first spec from scratch.
 - **convert:** Read existing specs first. Match their format, header fields, and conventions. Don't force vibomatic conventions on first pass — adapt.
 
+In `convert`, this skill should usually write a **delta spec**, not regenerate a full canonical feature document from scratch.
+
 ## Process
 
 ### Step 0: Determine Feature Type
@@ -144,6 +161,17 @@ Before writing anything, classify the work:
 | It handles communication with an external system | `Integration` |
 
 If unclear, ask: "Who breaks if this doesn't work?" If the answer is a user — Feature. If the answer is another service — Enabler. If the answer is "we can't talk to [external system]" — Integration.
+
+### Step 0b: Determine Authoring Mode
+
+Before writing anything, classify the authoring mode:
+
+- Existing repo + new capability in an existing area -> `extend-feature`
+- Existing repo + broken known behavior -> `bugfix-behavior`
+- Interface or dependency contract changes -> `contract-change`
+- Clean repo or new subsystem -> `new-feature`
+
+If the repo is brownfield and has not yet been mapped into vibomatic working mode, route to `repo-conversion` first.
 
 ### Step 1: Context Scan
 
@@ -159,11 +187,25 @@ cat docs/specs/vision.md 2>/dev/null | head -50
 
 If feature specs exist, read one to learn the project's format.
 
+For brownfield work, also read:
+
+```bash
+cat docs/specs/project-state.md 2>/dev/null
+ls docs/specs/work-items/WI-*.md 2>/dev/null | head
+```
+
+If a work item already defines the problem, reuse that framing instead of inventing a new one.
+
 **For Enablers/Integrations:** Also scan for which existing feature specs reference this capability as a dependency or ungrounded precondition.
 
 **Vision-to-spec traceability (MANDATORY):** After reading the vision doc, extract every distinct product concept that implies user-visible behavior. Common examples: deployment modes, pricing tiers, persona-specific flows, platform integrations, privacy/data boundaries. Each concept MUST map to at least one AC in the spec. If the vision says "three deployment modes" and the spec has zero ACs about mode-specific behavior, that is a traceability failure. The spec is the ONLY artifact the code-generation phase reads — anything in the vision that doesn't appear in the spec will be lost.
 
 **Zero-state UX (MANDATORY):** Every user-facing feature MUST include an AC for the first-visit experience — what the user sees before they have configured anything, added any data, or created a profile. If the feature requires setup before showing value, add an AC: "[PREFIX]-ZERO: App shows useful default content before user completes setup." Empty states that say "No data yet, please configure X" are acceptable ONLY if they include a clear call-to-action AND the setup takes under 30 seconds.
+
+**Delta-first rule for brownfield:** In `extend-feature`, `bugfix-behavior`, and `contract-change` modes, explicitly state:
+- what behavior already exists and must remain invariant
+- what behavior changes
+- which existing journeys/specs are being extended rather than replaced
 
 ### Step 2: Define The Problem
 
@@ -196,6 +238,13 @@ This means [consequence — data staleness, manual work, broken flow].
 ```
 
 **Gate:** If you cannot articulate the problem without referencing the solution, stop and ask what breaks without this.
+
+For `bugfix-behavior`, the problem statement should capture:
+- actual behavior
+- expected behavior
+- why the mismatch matters
+
+Do not turn a bugfix clarification into a net-new feature narrative unless the evidence shows the capability is actually missing.
 
 ### Step 3: Write Consumer Stories
 

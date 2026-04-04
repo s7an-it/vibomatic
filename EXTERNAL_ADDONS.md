@@ -18,6 +18,18 @@ they attach to the core pipeline.
 - `agentic-e2e-playwright`
 - `feature-marketing-insights`
 - `workflow-compass`
+- `repo-conversion`
+- `bugfix-brief`
+- `work-item-sync`
+- `writing-spec`
+- `writing-ux-design`
+- `writing-ui-design`
+- `writing-technical-design`
+- `writing-change-set`
+- `review-protocol`
+- `promoting-change-set`
+- `verifying-promotion`
+- `framework-test`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)
 

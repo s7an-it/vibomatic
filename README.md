@@ -128,6 +128,9 @@ DRAFT → UX-REVIEWED → DESIGNED → BASELINED → CHANGE-SET-APPROVED → PRO
 | `agentic-e2e-playwright` | E2E test authoring (accessibility-first, journey-based) |
 | `feature-marketing-insights` | Mine feature specs for marketing context |
 | `workflow-compass` | Route to the right skill based on project state |
+| `repo-conversion` | Convert an existing repo into vibomatic working mode before full pipeline use |
+| `bugfix-brief` | Root-cause-first planning for bugs and regressions |
+| `work-item-sync` | Project repo-canonical work items to GitHub Issues |
 | `review-protocol` | Universal review gate (self-review → cross-review → convergence) |
 
 ## Feature Types
@@ -196,6 +199,52 @@ npx skills add s7an-it/vibomatic
 - **convert** — adapt to an existing project's conventions
 
 Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
+
+### Default Recommendation
+
+- **Clean repo / greenfield**: use vibomatic directly. Let the repo adopt the
+  vibomatic workflow from day one.
+- **Existing repo / brownfield**: run `repo-conversion` first. Inventory the
+  current truth, map artifacts into vibomatic form, log findings as work items,
+  then route to the right lane.
+
+### Workflow Lanes
+
+- **Greenfield feature lane**: full progressive narrowing pipeline for net-new
+  products or subsystems.
+- **Brownfield conversion lane**: establish `project-state.md`, canonical
+  artifact mapping, and work-item inventory before enforcing the full pipeline.
+- **Brownfield feature lane**: extend an existing system using delta specs and
+  journey expansion instead of regenerating the full world.
+- **Bugfix / regression lane**: root-cause-first correction work using
+  `bugfix-brief`, then implementation and verification.
+- **Drift / maintenance lane**: reconcile specs, journeys, and code with
+  `spec-code-sync`, then route the resulting items.
+
+## Included Skills
+
+- `vision-sync`
+- `persona-builder`
+- `journey-sync`
+- `journey-qa-ac-testing`
+- `feature-discovery`
+- `spec-ac-sync`
+- `spec-code-sync`
+- `agentic-e2e-playwright`
+- `feature-marketing-insights`
+- `workflow-compass`
+- `repo-conversion`
+- `bugfix-brief`
+- `work-item-sync`
+- `writing-spec`
+- `writing-ux-design`
+- `writing-ui-design`
+- `writing-technical-design`
+- `writing-change-set`
+- `review-protocol`
+- `promoting-change-set`
+- `verifying-promotion`
+- `framework-test`
 
 ## Full Doctrine
 

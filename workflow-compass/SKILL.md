@@ -1,37 +1,54 @@
 ---
 name: workflow-compass
 description: >
-  Know which product development skill to use next based on what exists in the project
-  and what was just done. Maps the core skills (vision-sync, persona-builder, journey-sync,
-  journey-qa-ac-testing, feature-discovery, spec-ac-sync, spec-code-sync,
-  agentic-e2e-playwright, feature-marketing-insights) and the pipeline skills
-  (writing-spec, writing-ux-design, writing-ui-design, writing-technical-design,
-  writing-change-set, review-protocol, promoting-change-set),
-  their relationships, inputs, outputs, and handoff points. Use when: "what should I do next",
+  Know which vibomatic skill to run next based on repo state, change type, and current
+  project artifacts. Routes greenfield repos directly into the core pipeline and routes
+  existing repos through repo-conversion first. Use when: "what should I do next",
   "which skill do I run", "what's the right order", "product workflow", "skill map",
-  "where do I start", "what comes after journey-sync", "I just ran spec-ac-sync now what",
-  or when the user seems unsure which product skill to invoke. Also use when a skill
-  just finished and produced findings that need routing to another skill.
+  "where do I start", "what lane is this", "is this a feature or a bugfix", or when
+  a skill finishes and its findings need a concrete next step.
 ---
 
 # Workflow Compass
 
-You have core product development skills and pipeline skills. Each one produces artifacts that other
-skills consume. Running them in the wrong order wastes work — running them in the
-right order compounds value. This skill knows the graph.
+Vibomatic now routes on two axes:
 
----
+1. **Repo state**
+   - `bootstrap` = greenfield / clean repo
+   - `convert` = brownfield / existing repo
+2. **Change type**
+   - `conversion`
+   - `feature`
+   - `bugfix`
+   - `regression`
+   - `refactor`
+   - `drift`
+   - `chore`
+
+This skill decides the lane before it recommends the next skill.
 
 ## Repository Mode Gate
 
 Before recommending any next skill, detect repository mode using `REPO_MODES.md`:
 
-- `bootstrap`: initialize missing spec workflow structure first, then route.
-- `convert`: adapt to existing repo structure/process first, then route.
+- `bootstrap`: initialize missing vibomatic structure and run the greenfield lane
+- `convert`: preserve current truth first, then route to the right brownfield lane
 
-If mode is ambiguous, default to `convert` (preserve existing patterns).
+If mode is ambiguous, default to `convert`.
 
----
+## Routing Rule
+
+**Clean repo:** run vibomatic directly.
+
+**Existing repo:** run `repo-conversion` first unless the repo has already been mapped into vibomatic working mode.
+
+Signals that conversion has already happened:
+
+- `docs/specs/project-state.md` exists
+- `docs/specs/work-items/INDEX.md` exists
+- the repo already uses lane-based work items and canonical vibomatic status files
+
+If these are missing in a real brownfield repo, route to `repo-conversion`.
 
 ## Skill Availability Contract
 
@@ -40,7 +57,6 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 
 ### Core Pack (always available in vibomatic)
 
-- `workflow-compass`
 - `vision-sync`
 - `persona-builder`
 - `journey-sync`
@@ -50,17 +66,14 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 - `spec-code-sync`
 - `agentic-e2e-playwright`
 - `feature-marketing-insights`
-- `writing-spec`
-- `writing-ux-design`
-- `writing-ui-design`
-- `writing-technical-design`
-- `writing-change-set`
-- `review-protocol`
-- `promoting-change-set`
+- `workflow-compass`
+- `repo-conversion`
+- `bugfix-brief`
+- `work-item-sync`
 
 ### External Add-On Packs (optional)
 
-Only route to external skills when explicitly installed/confirmed.
+Only route to external skills when explicitly installed or confirmed.
 
 - **coreyhaines-marketing-pack (optional):**
   `product-marketing-context`, `customer-research`, `market-competitors`, `competitor-alternatives`,
@@ -68,325 +81,197 @@ Only route to external skills when explicitly installed/confirmed.
   `market-ads`, `market-emails`, `signup-flow-cro`, `onboarding-cro`
 
 - **planning add-on (optional):**
-  `writing-plans` (external add-on; for vibomatic repos, use core `writing-change-set` instead)
+  `writing-plans` (external add-on; for vibomatic repos, use core `writing-change-set` unless the repo explicitly prefers an external planning flow)
 
 If an external skill is not confirmed, provide a core-pack fallback route.
 External pack definitions live in `EXTERNAL_ADDONS.md`.
 
----
+## The Routing Skills
 
-## The 9 Skills
+### `repo-conversion`
+Maps a brownfield repo into vibomatic working mode. Produces `project-state.md`,
+repo-canonical work items, and compatibility notes. Logs findings, then stops.
 
-### 1. vision-sync
-**What it does:** Creates, refines, or converts product vision docs using proposal-first, evidence-backed workflow aligned with Vibomatic mode gates.
+### `bugfix-brief`
+Root-cause-first bug and regression planning. Produces an implementation-ready
+correction brief without forcing a full feature-spec rewrite.
 
-**Produces:** `docs/specs/vision.md` proposals (or applied canonical updates), evidence table, open questions, approval gate.
+### `work-item-sync`
+Projects repo-canonical work items to GitHub Issues. GitHub is a projection, not
+the source of truth.
 
-**Consumes:** Runtime/code reality, status docs (`README.md`, `IMPLEMENTATION_STATUS.md`), specs/legacy vision files.
+## The Product Pipeline Skills
 
-**2 modes:** Grounded (evidence-backed) and Scratch (assumption-tagged).
+- `vision-sync`
+- `persona-builder`
+- `feature-discovery`
+- `writing-spec`
+- `writing-ux-design`
+- `writing-ui-design`
+- `writing-technical-design`
+- `writing-change-set`
+- `review-protocol`
+- `promoting-change-set`
+- `verifying-promotion`
+- `journey-sync`
+- `spec-ac-sync`
+- `spec-code-sync`
+- `journey-qa-ac-testing`
+- `agentic-e2e-playwright`
+- `feature-marketing-insights`
 
-**Key detail:** Vision-only scope. Uses canonical target `docs/specs/vision.md`, defaults to proposal-first, and prefers convert over delete to preserve meaning.
+## Lane Model
 
----
+### Lane 1: Greenfield Feature
 
-### 2. persona-builder
-**What it does:** Defines WHO the users are — archetypes, patience budgets, trust triggers, lifecycle progression.
+Use when:
+- mode = `bootstrap`
+- the repo is clean or effectively clean
+- behavior is still being discovered
 
-**Produces:** `docs/specs/personas/P*.md`, `PERSONA_INDEX.md`, optionally `TIER2_BACKLOG.md`, `SKILL_AUDIT.md`
+Route:
+1. `vision-sync`
+2. `persona-builder`
+3. `feature-discovery`
+4. `writing-spec`
+5. `spec-ac-sync`
+6. `journey-sync`
+7. `writing-ux-design`
+8. `writing-ui-design`
+9. `writing-technical-design`
+10. `review-protocol`
+11. `writing-change-set`
+12. `promoting-change-set`
+13. `verifying-promotion`
 
-**Consumes:** Vision doc, feature specs, challenge library (`docs/personas/`)
+### Lane 2: Brownfield Conversion
 
-**7 modes:** Build all, Skill audit, Add one, Expand one, Interview, Discover gaps, Tiered auto-discovery
+Use when:
+- mode = `convert`
+- the repo has not yet been mapped into vibomatic working mode
 
-**Key detail:** Each persona file has a `Skill Implications` section with specific guidance for journey-sync and downstream messaging/CRO skills (often external add-ons like copywriting/page-cro/onboarding-cro). The `Lifecycle Progression` section (Instance 1/2/3) is essentially a proto-journey map.
+Route:
+1. `repo-conversion`
+2. `work-item-sync` if the team wants GitHub visibility
+3. route each resulting item by type
 
----
+### Lane 3: Brownfield Feature Extension
 
-### 3. journey-sync
-**What it does:** Defines HOW users move through the product — multi-feature BDD flows with Gherkin scenarios, AC traceability, and three-layer analysis.
+Use when:
+- mode = `convert`
+- the repo is already mapped
+- the item type is `feature`
 
-**Produces:** `docs/specs/journeys/J*.feature.md`, `JOURNEY_INDEX.md`
+Route:
+1. `spec-code-sync`
+2. `feature-discovery`
+3. `writing-spec` in delta mode
+4. `journey-sync` in expand mode
+5. `writing-technical-design` if architecture changes
+6. `review-protocol`
+7. `writing-change-set`
+8. `promoting-change-set`
+9. `verifying-promotion`
 
-**Consumes:** Feature specs, persona files (reads `Skill Implications > journey-sync`), existing E2E tests, existing journeys
+### Lane 4: Bugfix / Regression
 
-**6 modes:** Bootstrap, Expand, Refresh, Migrate legacy, Auto (full sync), Tiered auto-discovery
+Use when:
+- item type is `bugfix` or `regression`
+- behavior is wrong, broken, or changed unexpectedly
 
-**Key detail:** Layer 3 analysis finds problems invisible to individual specs — contradictions, dead ends, persona mismatches, ungrounded preconditions (supply-side gaps), concept fragmentation. Layer 3 findings route to other skills (feature-discovery, writing-change-set, persona-builder, spec-ac-sync).
+Route:
+1. `bugfix-brief`
+2. implementation path
+3. `journey-qa-ac-testing` or targeted verification
+4. `agentic-e2e-playwright` if the path should be automated
 
-**Cross-journey dependency graph:** Phase 4 traces every Background precondition back to its producing role, checks if a producer journey exists, if the UI exists, and if validation is intact.
+### Lane 5: Drift / Maintenance
 
----
+Use when:
+- item type is `drift`
+- specs, journeys, and code disagree
 
-### 4. journey-qa-ac-testing
-**What it does:** Runs journey-first manual/agentic QA against any target runtime URL (local, preview, staging, prod), validates mapped ACs, captures evidence, and writes QA status back to feature specs.
+Route:
+1. `spec-code-sync`
+2. selective spec or code remediation
+3. `journey-sync` refresh if user flows changed
+4. `work-item-sync` if tracker visibility matters
 
-**Produces:** Updated QA columns in AC tables, evidence screenshots under `docs/specs/features/test-evidence/`, run summary.
+## Change-Type Detection
 
-**Consumes:** Journey docs, feature AC tables, target environment URL.
+Use these signals:
 
-**4 modes:** Smoke, Regression, Feature-AC, Exploratory.
+| Signal | Change Type | First Skill |
+|--------|-------------|-------------|
+| Existing repo needs vibomatic adoption | `conversion` | `repo-conversion` |
+| Net-new capability or extension with user value | `feature` | `feature-discovery` |
+| Broken behavior | `bugfix` | `bugfix-brief` |
+| Previously working behavior stopped working | `regression` | `bugfix-brief` |
+| Spec/code mismatch | `drift` | `spec-code-sync` |
+| Structural cleanup with no intended behavior change | `refactor` | implementation planning path, informed by `spec-code-sync` if needed |
+| Tracker, docs, or housekeeping item | `chore` | route by scope; often `repo-conversion` or `work-item-sync` for state management |
 
-**Key detail:** Complements (not replaces) E2E automation. This is runtime verification before/alongside automated test authoring.
-
----
-
-### 5. feature-discovery
-**What it does:** Validates feature ideas BEFORE design — cross-references against personas, journeys, specs, and code. Produces a Feature Ship Brief or diagnoses an existing problem (concept fragmentation, pipeline break).
-
-**Produces:** `docs/specs/features/YYYY-MM-DD-<name>-brief.md`
-
-**Consumes:** Journeys (Tier 1 — checked first), personas (Tier 1), feature specs (Tier 2 — only when pointed there), codebase (Tier 3 — verify reality)
-
-**Key detail:** Identifies industry patterns (flash deals, referrals, bookings, loyalty, etc.) and checks all three sides: producer, consumer, system. Catches concept fragmentation — two components with different names creating the same entity. Routes to the right downstream skill based on findings.
-
----
-
-### 6. spec-ac-sync
-**What it does:** Ensures every User Story in a feature spec has complete, testable acceptance criteria. Rewrites vague ACs, writes missing ones.
-
-**Produces:** Updated AC tables in `docs/specs/features/*.md` (in-place edits)
-
-**Consumes:** Feature spec files
-
-**Key detail:** The AC table format (`| AC | Description | QA | E2E | Test |`) is the shared contract across 4 skills. spec-ac-sync owns the Description column. journey-qa-ac-testing owns QA. agentic-e2e-playwright owns E2E + Test. spec-code-sync reads the table for drift checking.
-
----
-
-### 7. spec-code-sync
-**What it does:** Audits specs against actual code — finds where PLANNED items are now implemented, where RESOLVED references are stale, where code contradicts the spec.
-
-**Produces:** Updated Implementation Notes in `docs/specs/features/*.md` (in-place annotations: PLANNED, RESOLVED, DRIFT, UPDATED, REVERTED)
-
-**Consumes:** Feature spec files, actual source code (searches all tiers: schema, backend, frontend, tests)
-
-**Key detail:** Does NOT touch ACs — that's spec-ac-sync's job. Flags drift but doesn't resolve it. Checks cross-feature dependencies (Feature B RESOLVED but depends on Feature A still PLANNED).
-
----
-
-### 8. agentic-e2e-playwright
-**What it does:** Writes E2E tests that behave like real users — accessibility-first selectors, page objects, API waits, shared account cleanup.
-
-**Produces:** `e2e/specs/**/*.spec.ts`, page objects, test helpers
-
-**Consumes:** Journey docs (primary test source — reads scenarios as test scripts), persona files (from journey headers), AC tables (maps tests to AC IDs), actual component source code (reads before writing selectors)
-
-**Key detail:** Reads the actual frontend code before writing any selector — never guesses. Fixes production bugs rather than writing test workarounds. Uses Base44 SDK as DB helper for test setup/teardown.
-
----
-
-### 9. feature-marketing-insights
-**What it does:** Mines feature specs for marketing ammunition — translates engineering descriptions into user-facing value claims with weights, audience segments, and competitive validation. The bridge between what the product IS and how you TALK about it.
-
-**Produces:** `docs/marketing/product-marketing-context.md` (weighted insights + foundation), `docs/marketing/feature-mining-tracker.json` (persistent state), `.agents/product-marketing-context.md` (consumer file for downstream marketing skills)
-
-**Consumes:** Feature specs (`docs/specs/features/*.md`), spec Implementation Notes (live vs planned status), foundational context (vision, audience, competitors)
-
-**8 modes:** Full Scan (iterative 3-4 features/session), Single Feature, Refresh (re-mine changed specs), Foundation (sections 1-12), Compact (trim low-weight), Capability Combinations (cross-feature narratives), Quality Eval, Persona Validation (virtual buyers interrogate the marketing)
-
-**Key detail:** Processes 3-4 features per conversation to avoid context degradation. Tracker persists state across sessions. Mode 3 (Refresh) checks spec-code-sync's Implementation Notes — when a PLANNED item becomes qualifying live status (`RESOLVED`/`FIXED`/verified `UPDATED`), planned-feature penalty is removed and the insight is upgraded; `DRIFT`/`REVERTED` prevents live marketing until corrected. Mode 8 (Persona Validation) constructs virtual buyer personas that could inform persona-builder.
-
-**Where it fits:** feature-marketing-insights sits on a parallel track — the marketing extraction layer. The product pipeline (personas → journeys → specs → code → e2e) builds the product. feature-marketing-insights reads the same specs and translates them for the market. It doesn't feed back into the product pipeline directly, but its persona validation (Mode 8) can surface gaps that persona-builder should address, and its live-vs-planned checking depends on spec-code-sync status annotations (`RESOLVED`/`FIXED`/`UPDATED`/`DRIFT`/`REVERTED`).
-
----
-
-## The Dependency Graph
-
-```
-                      vision-sync
-                 (WHAT product is and why)
-                          │
-                          ▼
-                    persona-builder
-                    (WHO are users)
-                         │
-                    reads personas
-                         ▼
-feature-discovery ◄────► journey-sync ──────► journey-qa-ac-testing ──────► agentic-e2e-playwright
-(VALIDATE ideas)    routes   (HOW they move)   (VERIFY real runtime)         (PROVE it works)
-      │             back          │                    ▲                               │
-      │                           │                    │                               │
-      ▼                           ▼                    │                               │
-  spec-ac-sync ◄──────── spec-code-sync ───────────────┘                               │
-  (ARE specs complete)    (SYNC spec↔code↔journey reality)                              │
-      │                                                                                 │
-      └──────────────────────── AC table contract ───────────────────────────────────────┘
-
-                    feature-marketing-insights ◄───────────────────────────────────────────────────┘
-                    (MARKET what's built)
-                    reads specs + status annotations
-                         │
-                         ▼
-                    downstream marketing skills
-                    (core pack + optional external add-ons)
-```
-
-### Data flow (what feeds what)
-
-| Producer skill | Artifact | Consumer skills |
-|---------------|----------|-----------------|
-| vision-sync | Canonical vision + evidence-backed change proposals | persona-builder (user framing), feature-discovery (idea alignment), journey-sync (north-star boundaries) |
-| persona-builder | `P*.md` persona files | journey-sync (Phase 2), agentic-e2e (persona from journey header), feature-discovery (Step 0 Tier 1) |
-| journey-sync | `J*.feature.md` journey docs | agentic-e2e (primary test source), feature-discovery (Step 0 Tier 1) |
-| journey-sync | Layer 3 findings | feature-discovery (ungrounded preconditions), persona-builder (missing persona), spec-ac-sync (missing transitions) |
-| spec-ac-sync | AC tables in feature specs | journey-qa-ac-testing (manual QA status), agentic-e2e (maps tests to AC IDs), spec-code-sync (reads for drift) |
-| spec-code-sync | Status annotations (`RESOLVED`/`FIXED`/`UPDATED`/`DRIFT`/`REVERTED`) | spec-ac-sync (stale ACs need rewriting) |
-| journey-qa-ac-testing | Journey runtime verification + evidence + QA status updates | spec-ac-sync (missing/weak AC fixes), journey-sync (flow gap fixes), agentic-e2e (automation follow-up) |
-| feature-discovery | Feature Ship Brief | journey-sync (input for new journeys), `writing-change-set` (core; or `writing-plans` if external add-on installed) |
-| agentic-e2e | E2E test results | spec-ac-sync (E2E column gets filled) |
-| feature-marketing-insights | Marketing context doc + tracker | Downstream marketing skills (core-pack outputs + optional external add-ons) |
-| feature-marketing-insights | Mode 8 persona validation gaps | persona-builder (buyer personas may reveal missing product personas) |
-
-### Cross-skill routing (when skill A finishes, what's next)
+## Cross-Skill Routing
 
 | Skill just finished | Finding | Route to |
 |--------------------|---------|----------|
-| vision-sync | Vision missing or first-pass canonicalized | persona-builder (persona set from canonical user/problem framing) |
-| vision-sync | Evidence conflict or unresolved scope drift | spec-code-sync for drift check, then rerun vision-sync grounded |
-| journey-sync | Journey set finalized for release validation | journey-qa-ac-testing (smoke/regression) |
-| journey-sync | Ungrounded precondition — no producer journey, no UI | feature-discovery |
-| journey-sync | Ungrounded precondition — UI exists but bypasses validation | `writing-change-set` (core; or `writing-plans` if external add-on installed) |
-| journey-sync | Missing persona for a role | persona-builder |
-| journey-sync | Missing transition needs ACs | spec-ac-sync |
-| journey-sync | Concept fragmentation (two names, one entity) | feature-discovery |
-| feature-discovery | Consumer journey exists, producer missing | journey-sync (Mode 2: Expand) |
-| feature-discovery | Not a new feature — pipeline fix | `writing-change-set` (core; or `writing-plans` if external add-on installed) |
-| feature-discovery | Feature crosses role boundaries | journey-sync first, then back |
-| feature-discovery | Persona doesn't exist for this user type | persona-builder |
-| spec-code-sync | DRIFT found — spec says X, code does Y | Developer decides: fix code or update spec |
-| spec-code-sync | PLANNED → live-status annotation (`RESOLVED`/`FIXED`/verified `UPDATED`) | spec-ac-sync (ACs may need updating) |
-| spec-ac-sync | ACs written/rewritten | journey-qa-ac-testing (manual verification), then agentic-e2e (new tests to write) |
-| journey-qa-ac-testing | AC failures found in runtime | fix code/spec -> rerun journey-qa-ac-testing |
-| agentic-e2e | Tests passing, E2E column filled | Done — or spec-ac-sync if gaps found during testing |
-| persona-builder | New persona created | journey-sync (new persona needs journeys) |
-| persona-builder | Skill audit findings | Update the flagged skills |
-| feature-marketing-insights | Specs mined, marketing context built | Downstream content layer (core pack first, optional external add-ons) |
-| feature-marketing-insights | Mode 3 Refresh — spec changed, PLANNED→live status (`RESOLVED`/`FIXED`/verified `UPDATED`) | Upgrade insight weight, remove planned penalty |
-| feature-marketing-insights | Mode 8 Persona Validation gaps | persona-builder (buyer persona gap may = product persona gap) |
-| spec-code-sync | Live-status annotation (`RESOLVED`/`FIXED`/verified `UPDATED`) | feature-marketing-insights Mode 3 (Refresh — re-mine to upgrade planned→live weight) |
-| spec-code-sync | `DRIFT` / `REVERTED` on previously marketed feature | feature-marketing-insights Mode 3 (downgrade/deprecate stale live claims) |
+| `repo-conversion` | Brownfield map completed | route by work-item type |
+| `repo-conversion` | Bugs/regressions logged | `bugfix-brief` |
+| `repo-conversion` | Feature opportunities logged | `feature-discovery` |
+| `repo-conversion` | Drift logged | `spec-code-sync` |
+| `repo-conversion` | Tracker visibility needed | `work-item-sync` |
+| `bugfix-brief` | Root cause and fix scope defined | implementation path |
+| `bugfix-brief` | Issue is actually missing capability | `feature-discovery` |
+| `bugfix-brief` | Issue is actually spec drift | `spec-code-sync` |
+| `spec-code-sync` | Drift confirmed | remediation path or work-item update |
+| `feature-discovery` | Not a new feature, but a broken existing flow | `bugfix-brief` |
+| `feature-discovery` | Existing repo not yet mapped | `repo-conversion` |
+| `journey-sync` | Missing producer, missing persona, or fragmented concept | `feature-discovery` or `persona-builder` |
+| `journey-qa-ac-testing` | Runtime failure in known behavior | `bugfix-brief` |
+| `journey-qa-ac-testing` | Vague or missing ACs | `spec-ac-sync` |
+| `feature-marketing-insights` | Product context stale after spec changes | `spec-code-sync` then refresh marketing |
 
----
+## Project State Checks
 
-## When to Use Each Skill
-
-### "I need to create, convert, or realign product vision"
-1. **vision-sync** — create/refine/convert canonical vision with evidence table
-2. **persona-builder** — derive or refresh personas from canonical vision
-3. **journey-sync** — regenerate journeys if north-star/problem framing changed
-
-### "I'm starting a new product / major feature area"
-1. **vision-sync** (intent=create, mode=grounded) — establish canonical product direction first
-2. **persona-builder** (Mode 7: Tiered Auto-Discovery) — who are the users?
-3. **journey-sync** (Mode 6: Tiered Auto-Discovery) — how do they move through it?
-4. **spec-ac-sync** — are the feature specs testable?
-5. **journey-qa-ac-testing** (smoke/feature-ac) — validate runtime behavior against journeys + ACs
-6. **agentic-e2e-playwright** — automate validated flows
-
-### "Someone asked about a feature idea"
-1. **feature-discovery** — validate against existing personas, journeys, code
-
-### "Run manual QA by journeys against local/staging/prod"
-1. **journey-qa-ac-testing** — execute flow-based runtime verification at target URL
-2. **spec-ac-sync** — tighten any vague/missing ACs discovered during QA
-3. **agentic-e2e-playwright** — automate stable, validated paths
-
-### "I just shipped code and want to verify everything"
-1. **spec-code-sync** — does the code match the specs?
-2. **journey-qa-ac-testing** (smoke/regression) — verify runtime behavior at target URL
-3. **spec-ac-sync** — are new behaviors covered by ACs?
-4. **agentic-e2e-playwright** — write tests for uncovered ACs
-
-### "Tests are failing / specs feel stale"
-1. **spec-code-sync** — find where specs drifted from code
-2. **spec-ac-sync** — fix vague or missing ACs
-3. **journey-sync** (Mode 3: Refresh) — update journeys with current state
-4. **journey-qa-ac-testing** — re-verify runtime flows after fixes
-5. **vision-sync** (mode=grounded) — update canonical vision if drift changes product reality
-
-### "I think we're missing something but can't articulate what"
-1. **persona-builder** (Mode 6: Discover Gaps) — scan product for uncovered user types
-2. **journey-sync** — run Layer 3 analysis + cross-journey dependency graph
-3. **feature-discovery** — for any gaps found
-
-### "A stakeholder suggested a feature and I need to evaluate it"
-1. **feature-discovery** — reads journeys and personas first, code second, asks questions only for what it can't answer from the codebase
-
-### "What should we build next? What are users asking for?"
-1. **feature-discovery** — mine existing journeys/specs/personas and recent code changes first to identify candidate gaps from your own product signals.
-2. **[External Add-On: coreyhaines] customer-research** — optional enrichment from Reddit/G2/forums/competitor reviews. Use only if installed.
-3. **feature-discovery** — for each finding, validate against internal personas,
-   journeys, and specs. Is this already built? Is it concept fragmentation?
-   Does a journey already cover it? Or is it genuinely new?
-4. Route each validated idea to the right next step (journey-sync for new
-   journeys, writing-change-set for quick fixes, persona-builder if it reveals
-   a new user type)
-
-### "Time to start marketing / prepare for launch"
-The marketing phase runs on a parallel track. It reads from the product pipeline
-but doesn't block it. Run these in order:
-
-1. **feature-marketing-insights** (Mode 1: Full Scan) — mine specs for marketing ammunition.
-   Produces weighted insights, competitive landscape foundation, audience definition.
-   Writes/syncs `.agents/product-marketing-context.md` as canonical consumer output.
-2. **[External Add-On: coreyhaines] Optional transform:** `product-marketing-context`
-   can rewrite/adapt the file, but must start from existing `.agents/product-marketing-context.md`
-   and keep vibomatic insight sections intact.
-3. **Core output use** — consume `.agents/product-marketing-context.md` directly in your repo workflows.
-4. **[External Add-On: coreyhaines] Optional expansion**
-   - `market-competitors`
-   - `competitor-alternatives`
-   - `copywriting`
-   - `page-cro`
-   - `launch-strategy`
-   - `market-social`
-   - `market-ads`
-   - `market-emails`
-   - `signup-flow-cro` / `onboarding-cro`
-5. If external add-ons are used, pass `.agents/product-marketing-context.md` as the grounding input.
-   If a specific add-on still expects `.claude/product-marketing-context.md`, create a compatibility mirror from `.agents` but keep `.agents` as canonical.
-
-### "Product changed, marketing needs to catch up"
-1. **spec-code-sync** — finds status changes (PLANNED→live, plus DRIFT/REVERTED where behavior changed)
-2. **feature-marketing-insights** (Mode 3: Refresh) — re-mines changed specs, upgrades
-   planned→live weight, re-syncs consumer context
-3. **[External Add-On: coreyhaines]** refresh `market-competitors` if installed and competitive landscape changed
-4. Re-run any downstream content skill (core or external) that referenced the changed features
-
----
-
-## How to Check Project State
-
-Before recommending a skill, check what exists:
+Before recommending a lane, inspect:
 
 ```bash
-# Personas
-ls docs/specs/personas/P*.md 2>/dev/null | wc -l
+# Foundational vibomatic state
+ls docs/specs/project-state.md 2>/dev/null
+ls docs/specs/work-items/INDEX.md 2>/dev/null
 
-# Journeys
+# Canonical product artifacts
+ls docs/specs/vision.md 2>/dev/null
+ls docs/specs/personas/P*.md 2>/dev/null | wc -l
+ls docs/specs/features/*.md 2>/dev/null | wc -l
 ls docs/specs/journeys/J*.feature.md 2>/dev/null | wc -l
 
-# Feature specs
-ls docs/specs/features/*.md 2>/dev/null | wc -l
-
-# E2E tests
-find e2e -name "*.spec.ts" 2>/dev/null | wc -l
-
-# Last activity
-git log --oneline -5 -- docs/specs/
+# Existing test and code reality
+find . -path "*/test*" -o -path "*/e2e*" 2>/dev/null | head
+git log --oneline -5 -- docs/specs/ 2>/dev/null
 ```
 
-| State | What's missing | Start with |
-|-------|---------------|------------|
-| No canonical vision | Product direction undefined | vision-sync (intent=create) |
-| Legacy/multiple vision files | Canonical source unclear | vision-sync (intent=convert) |
-| No personas, no journeys | Everything | persona-builder (Mode 7) |
-| Personas exist, no journeys | User flows undefined | journey-sync (Mode 6) |
-| Journeys + ACs exist, runtime not manually verified | QA confidence gap | journey-qa-ac-testing |
-| Personas + journeys exist, specs vague | ACs not testable | spec-ac-sync |
-| Everything exists, code changed since | Possible drift | spec-code-sync |
-| Everything exists and synced | Proof it works | agentic-e2e-playwright |
-| Product ready, no marketing context | Marketing not started | feature-marketing-insights (Mode 4: Foundation, then Mode 1: Full Scan) |
-| Marketing context exists, no competitor report | Competition unknown | [External Add-On: coreyhaines] market-competitors |
-| Context + competitors exist, no vs pages | SEO gap | [External Add-On: coreyhaines] competitor-alternatives |
-| Context exists, stale (specs changed) | Marketing out of date | feature-marketing-insights (Mode 3: Refresh) |
+Interpretation:
+
+| State | Meaning | Start with |
+|------|---------|------------|
+| Clean repo, little established structure | Greenfield | `vision-sync` or `workflow-compass` lane recommendation |
+| Existing repo, no vibomatic state files | Brownfield unmapped | `repo-conversion` |
+| Existing repo, mapped, feature request | Brownfield feature lane | `spec-code-sync` then `feature-discovery` |
+| Existing repo, mapped, bug or regression | Correction lane | `bugfix-brief` |
+| Existing repo, mapped, doc/code mismatch | Drift lane | `spec-code-sync` |
+| Work items exist, no external visibility | Tracker projection gap | `work-item-sync` |
+
+## Recommendation Style
+
+When answering "what should I do next?", give:
+
+1. detected repo mode
+2. detected change type
+3. selected lane
+4. immediate next skill
+5. why that route is correct
+
+Example:
+
+> Repo mode: convert. Change type: regression. This repo is already mapped, so do not rerun conversion. Use the bugfix lane. Next skill: `bugfix-brief`, because the immediate problem is correcting broken behavior, not authoring a new feature.
