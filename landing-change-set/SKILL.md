@@ -10,8 +10,8 @@ outputs:
     - { path: "(PR merged to main)", artifact: landed-code, status: PROMOTED }
 chain:
   lanes:
-    greenfield: { position: 13, prev: executing-change-set, next: verifying-promotion }
-    brownfield-feature: { position: 10, prev: review-protocol, next: verifying-promotion }
+    greenfield: { position: 14, prev: executing-change-set, next: verifying-promotion }
+    brownfield-feature: { position: 11, prev: review-protocol, next: verifying-promotion }
     bugfix: { position: 5, prev: review-protocol, next: verifying-promotion }
     refactor: { position: 5, prev: review-protocol, next: verifying-promotion }
   progressive: true

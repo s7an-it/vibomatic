@@ -10,7 +10,7 @@ outputs:
     - { path: "(gate decision)", artifact: gate-decision }
 chain:
   lanes:
-    brownfield-feature: { position: 9, prev: executing-change-set, next: landing-change-set }
+    brownfield-feature: { position: 10, prev: executing-change-set, next: landing-change-set }
     bugfix: { position: 4, prev: executing-change-set, next: landing-change-set }
     refactor: { position: 4, prev: executing-change-set, next: landing-change-set }
   progressive: true

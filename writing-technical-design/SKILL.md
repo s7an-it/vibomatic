@@ -13,8 +13,8 @@ outputs:
     - { path: "docs/specs/features/<name>.md", artifact: feature-spec, status: BASELINED }
 chain:
   lanes:
-    greenfield: { position: 9, prev: writing-ui-design, next: spec-style-sync }
-    brownfield-feature: { position: 5, prev: journey-sync, next: spec-style-sync }
+    greenfield: { position: 9, prev: writing-ui-design, next: solution-explorer }
+    brownfield-feature: { position: 5, prev: journey-sync, next: solution-explorer }
   progressive: true
   self_verify: true
   human_checkpoint: false
@@ -279,10 +279,10 @@ If any check FAILs, fix before continuing. If a fix requires upstream changes, s
 
 **If `--progressive` flag is present AND self-verify passed:**
 - Check `--skip` list. If this skill is in the skip list, pass through to next.
-- Invoke next skill: `spec-style-sync --progressive --lane <lane>`
-  - In greenfield lane: `spec-style-sync --progressive --lane greenfield`
-  - In brownfield-feature lane: `spec-style-sync --progressive --lane brownfield-feature`
+- Invoke next skill: `solution-explorer --progressive --lane <lane>`
+  - In greenfield lane: `solution-explorer --progressive --lane greenfield`
+  - In brownfield-feature lane: `solution-explorer --progressive --lane brownfield-feature`
 
 **If `--progressive` flag is absent:**
 - Report results to user
-- Suggest: "Next: consider running `spec-style-sync`"
+- Suggest: "Next: consider running `solution-explorer` to challenge the design with alternatives, or `spec-style-sync` if the approach is well-established"
