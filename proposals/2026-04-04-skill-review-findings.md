@@ -149,7 +149,7 @@ Updated by:
 - writing-change-set → DRAFTED
 - simulation step → SIMULATED (if all checks pass)
 - executing-change-set → EXECUTING (at start), CHECKPOINTED (all tasks done)
-- promoting-change-set → PROMOTED
+- landing-change-set → PROMOTED
 - verifying-promotion → VERIFIED
 
 ### Fix 5: UX→UI traceability table

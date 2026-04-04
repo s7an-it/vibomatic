@@ -14,7 +14,7 @@ OUTER LOOP (per scenario):
   2. OPEN         -> git worktree add /tmp/vibomatic-test-{scenario-id} main
   3. EXECUTE      -> run ALL 19 skills in pipeline order inside the worktree
                      Phase 7 produces FULL runnable code (all 8 parts)
-                     promoting-change-set writes files into the worktree
+                     landing-change-set writes files into the worktree
   4. START SERVER -> cd into worktree, npm install, npm start
                      Wait for http://localhost:3000 to respond (max 15 retries, 2s apart)
                      If server fails: fix Phase 7 output, try again (max 3 fix attempts)
@@ -250,8 +250,8 @@ These verify the pipeline has no holes:
 | writing-ux-design -> writing-ui-design | UI design references UX screens |
 | writing-ui-design -> writing-technical-design | Tech design references UI components |
 | writing-technical-design -> writing-change-set | Change set covers all tech design components |
-| writing-change-set -> promoting-change-set | Manifest lists all changed files |
-| promoting-change-set -> verifying-promotion | spec-code-sync finds the RESOLVED items |
+| writing-change-set -> landing-change-set | Manifest lists all changed files |
+| landing-change-set -> verifying-promotion | spec-code-sync finds the RESOLVED items |
 | review-protocol at each gate | Findings are actionable, not theater |
 
 ### Doctrine Verification
@@ -287,7 +287,7 @@ When running a scenario, execute ALL 19 skills in this order:
 | 10 | `writing-technical-design` | Phase 6 | DESIGNED spec + all designs | BASELINED spec |
 | 11 | `review-protocol` | Gate G4 | BASELINED spec | Findings (self + cross) |
 | 12 | `writing-change-set` | Phase 7 | BASELINED spec + designs | Code in worktree + manifest |
-| 13 | `promoting-change-set` | Phase 8 | Change set | Promoted code on branch |
+| 13 | `landing-change-set` | Phase 8 | Change set | Promoted code on branch |
 | 14 | `verifying-promotion` | Phase 9 | Promoted code + specs | Verification report |
 | 15 | `spec-code-sync` | Verification | Specs + code | RESOLVED/DRIFT annotations |
 | 16 | `journey-qa-ac-testing` | Verification | Journeys + live server | QA column updates |

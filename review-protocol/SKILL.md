@@ -10,9 +10,9 @@ outputs:
     - { path: "(gate decision)", artifact: gate-decision }
 chain:
   lanes:
-    brownfield-feature: { position: 9, prev: executing-change-set, next: promoting-change-set }
-    bugfix: { position: 4, prev: executing-change-set, next: promoting-change-set }
-    refactor: { position: 4, prev: executing-change-set, next: promoting-change-set }
+    brownfield-feature: { position: 9, prev: executing-change-set, next: landing-change-set }
+    bugfix: { position: 4, prev: executing-change-set, next: landing-change-set }
+    refactor: { position: 4, prev: executing-change-set, next: landing-change-set }
   progressive: true
   self_verify: false
   human_checkpoint: false
@@ -49,7 +49,7 @@ Invoke this skill at every gate in the pipeline:
 | G3 | `writing-ui-design` | UI Design | DRAFT → DESIGNED |
 | G4 | `writing-technical-design` | Technical Design | DESIGNED → BASELINED |
 | G5 | `executing-change-set` | Executed change set on branch | BASELINED → CHANGE-SET-APPROVED |
-| G6 | `promoting-change-set` | Promotion | CHANGE-SET-APPROVED → PROMOTED |
+| G6 | `landing-change-set` | Promotion | CHANGE-SET-APPROVED → PROMOTED |
 | G7 | `verifying-promotion` | Verification | PROMOTED → VERIFIED |
 
 ## Worktree Context
@@ -534,10 +534,10 @@ If any check FAILs, fix before continuing. If a fix requires upstream changes, s
 
 **If `--progressive` flag is present AND self-verify passed:**
 - Check `--skip` list. If this skill is in the skip list, pass through to next.
-- In brownfield-feature lane: invoke `promoting-change-set --progressive --lane brownfield-feature`
-- In bugfix lane: invoke `promoting-change-set --progressive --lane bugfix`
-- In refactor lane: invoke `promoting-change-set --progressive --lane refactor`
+- In brownfield-feature lane: invoke `landing-change-set --progressive --lane brownfield-feature`
+- In bugfix lane: invoke `landing-change-set --progressive --lane bugfix`
+- In refactor lane: invoke `landing-change-set --progressive --lane refactor`
 
 **If `--progressive` flag is absent:**
 - Report results to user
-- Suggest: "Next: consider running `promoting-change-set`"
+- Suggest: "Next: consider running `landing-change-set`"

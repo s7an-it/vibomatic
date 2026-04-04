@@ -16,7 +16,7 @@ outputs:
     - { path: "(branch checkpoint commits)", artifact: executed-code }
 chain:
   lanes:
-    greenfield: { position: 12, prev: writing-change-set, next: promoting-change-set }
+    greenfield: { position: 12, prev: writing-change-set, next: landing-change-set }
     brownfield-feature: { position: 8, prev: writing-change-set, next: review-protocol }
     bugfix: { position: 3, prev: writing-change-set, next: review-protocol }
     refactor: { position: 3, prev: writing-change-set, next: review-protocol }
@@ -208,7 +208,7 @@ Use phase checkpoints from earlier phases as rollback anchors when a loop-back c
 When all tasks are complete and final G5 passes:
 
 - feature status -> `CHANGE-SET-APPROVED`
-- route to `promoting-change-set`
+- route to `landing-change-set`
 
 ## Pipeline Continuation
 
@@ -229,10 +229,10 @@ If any check FAILs, fix before continuing. If a fix requires upstream changes, s
 
 **If `--progressive` flag is present AND self-verify passed:**
 - Check `--skip` list. If this skill is in the skip list, pass through to next.
-- In greenfield lane: invoke `promoting-change-set --progressive --lane greenfield`
+- In greenfield lane: invoke `landing-change-set --progressive --lane greenfield`
 - In brownfield-feature/bugfix/refactor lanes: invoke `review-protocol --progressive --lane <lane>`
 
 **If `--progressive` flag is absent:**
 - Report results to user
-- In greenfield lane: suggest "Next: consider running `promoting-change-set`"
+- In greenfield lane: suggest "Next: consider running `landing-change-set`"
 - In brownfield-feature/bugfix/refactor lanes: suggest "Next: consider running `review-protocol`"

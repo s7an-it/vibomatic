@@ -55,7 +55,7 @@ LOOP:
   2.  OPEN worktree from main
   3.  RUN all 19 skills in pipeline order
       - Phase 7 produces FULL runnable code (all 8 parts)
-      - promoting-change-set writes files into the worktree
+      - landing-change-set writes files into the worktree
   4.  START server
       - cd into worktree
       - npm install (or equivalent)
@@ -108,7 +108,7 @@ Phase 7 (writing-change-set) produces ALL 8 parts. Not just types. Not just a sp
 | `part-07-tests-e2e` | Playwright E2E test files | Yes |
 | `part-08-config` | package.json, tsconfig.json, docker-compose.yml, .env.example | Yes |
 
-promoting-change-set writes ALL files into the worktree. Then:
+landing-change-set writes ALL files into the worktree. Then:
 
 ```bash
 cd /tmp/vibomatic-test-{id}-vibomatic
@@ -308,7 +308,7 @@ The most dangerous pipeline failure is information loss at phase boundaries. Thi
 **Root cause mapping for failures:**
 - Concept in vision but NOT in spec ACs → writing-spec missed it during vision-to-spec traceability
 - Concept in spec ACs but NOT in code → writing-change-set missed it during vision cross-check
-- Concept in code but NOT working at runtime → promoting-change-set or verifying-promotion gap
+- Concept in code but NOT working at runtime → landing-change-set or verifying-promotion gap
 
 ## Completion Criteria
 

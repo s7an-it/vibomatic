@@ -25,7 +25,7 @@
     "writing-change-set",
     "executing-change-set",
     "review-protocol",
-    "promoting-change-set",
+    "landing-change-set",
     "verifying-promotion",
     "framework-test"
   ],
@@ -58,7 +58,7 @@
     "spec-style-sync",
     "writing-change-set",
     "executing-change-set",
-    "promoting-change-set",
+    "landing-change-set",
     "verifying-promotion"
   ],
   "reviewGates": {
@@ -67,7 +67,7 @@
     "G3": { "after": "writing-ui-design", "transition": "DESIGNED → BASELINED", "checks": "Design system consistency? Responsive? Dark mode? Component reuse?" },
     "G4": { "after": "writing-technical-design", "transition": "DESIGNED → BASELINED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
     "G5": { "after": "executing-change-set", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "Executed branch diff matches design? Tasks cover ACs? Cross-file consistency? No placeholders? Task checkpoints clean?" },
-    "G6": { "after": "promoting-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Squash diff matches manifest file set? No unplanned changes? Validation clean?" },
+    "G6": { "after": "landing-change-set", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Squash diff matches manifest file set? No unplanned changes? Validation clean?" },
     "G7": { "after": "verifying-promotion", "transition": "final", "checks": "Tests pass? QA complete? E2E complete? Spec annotations updated?" }
   },
   "externalAddOns": {
@@ -101,12 +101,12 @@
     "spec-style-sync",
     "writing-change-set",
     "executing-change-set",
-    "promoting-change-set",
+    "landing-change-set",
     "verifying-promotion"
   ],
   "laneDefinitions": {
     "greenfield": {
-      "skills": ["vision-sync", "domain-expert", "competitor-analysis", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "promoting-change-set", "verifying-promotion"],
+      "skills": ["vision-sync", "domain-expert", "competitor-analysis", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "landing-change-set", "verifying-promotion"],
       "defaultSkips": []
     },
     "brownfield-conversion": {
@@ -114,11 +114,11 @@
       "defaultSkips": []
     },
     "brownfield-feature": {
-      "skills": ["spec-code-sync", "feature-discovery", "writing-spec", "journey-sync", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "skills": ["spec-code-sync", "feature-discovery", "writing-spec", "journey-sync", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
       "defaultSkips": ["writing-ux-design", "writing-ui-design"]
     },
     "bugfix": {
-      "skills": ["bugfix-brief", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "skills": ["bugfix-brief", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
       "defaultSkips": ["spec-style-sync"]
     },
     "drift": {
@@ -126,7 +126,7 @@
       "defaultSkips": []
     },
     "refactor": {
-      "skills": ["spec-code-sync", "writing-change-set", "executing-change-set", "review-protocol", "promoting-change-set", "verifying-promotion"],
+      "skills": ["spec-code-sync", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
       "defaultSkips": []
     }
   }

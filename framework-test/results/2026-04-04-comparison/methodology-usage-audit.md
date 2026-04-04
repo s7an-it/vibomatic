@@ -21,7 +21,7 @@
 | 10 | `writing-technical-design` | ✅ DONE | Technical design section |
 | 11 | `review-protocol` | ❓ UNKNOWN | Not verified if formal review ran |
 | 12 | `writing-change-set` | ✅ DONE | Full code written (20 files) |
-| 13 | `promoting-change-set` | ✅ DONE | Code is in the worktree |
+| 13 | `landing-change-set` | ✅ DONE | Code is in the worktree |
 | 14 | `verifying-promotion` | ❌ NOT DONE | No verification report found |
 | 15 | `spec-code-sync` | ❌ NOT DONE | All ACs still show PLANNED, none RESOLVED |
 | 16 | `journey-qa-ac-testing` | ❌ NOT DONE | No QA column updates in AC tables |
@@ -42,7 +42,7 @@ The pipeline stopped after code generation (skill 13). Skills 14-18 (verificatio
 - writing-ui-design ← UX design + spec
 - writing-technical-design ← all previous + design system
 - writing-change-set ← BASELINED spec + all designs
-- promoting-change-set ← change set files
+- landing-change-set ← change set files
 
 ---
 

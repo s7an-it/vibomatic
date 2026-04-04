@@ -39,7 +39,7 @@ Available skills and their purposes:
 - writing-change-set: Produce implementation manifests with task graphs
 - executing-change-set: Execute implementation tasks with TDD
 - review-protocol: Multi-pass code review
-- promoting-change-set: Squash-merge reviewed branch to main
+- landing-change-set: Squash-merge reviewed branch to main
 - verifying-promotion: Post-merge verification
 - bugfix-brief: Triage and scope bug fixes
 - repo-conversion: Convert existing repos to vibomatic structure

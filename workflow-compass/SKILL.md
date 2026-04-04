@@ -128,7 +128,7 @@ the source of truth.
 - `writing-change-set`
 - `executing-change-set`
 - `review-protocol`
-- `promoting-change-set`
+- `landing-change-set`
 - `verifying-promotion`
 - `journey-sync`
 - `spec-ac-sync`
@@ -159,7 +159,7 @@ Route:
 10. `writing-change-set`
 11. `executing-change-set`
 12. `review-protocol`
-13. `promoting-change-set`
+13. `landing-change-set`
 14. `verifying-promotion`
 
 ### Lane 1b: Auto Greenfield ("build me an app")
@@ -200,7 +200,7 @@ Route:
 6. `writing-change-set`
 7. `executing-change-set`
 8. `review-protocol`
-9. `promoting-change-set`
+9. `landing-change-set`
 10. `verifying-promotion`
 
 ### Lane 4: Bugfix / Regression
@@ -214,7 +214,7 @@ Route:
 2. `writing-change-set` if a formal implementation plan is needed
 3. `executing-change-set`
 4. `review-protocol`
-5. `promoting-change-set`
+5. `landing-change-set`
 6. `verifying-promotion`
 7. `journey-qa-ac-testing` or `agentic-e2e-playwright` as targeted support when the verification path needs direct runtime evidence
 
@@ -241,7 +241,7 @@ Route:
 2. `writing-change-set`
 3. `executing-change-set`
 4. `review-protocol`
-5. `promoting-change-set`
+5. `landing-change-set`
 6. `verifying-promotion` when the change touches shipped behavior, tests, or user journeys
 7. `work-item-sync` if tracker visibility matters
 
@@ -271,7 +271,7 @@ Use these signals:
 | `repo-conversion` | Tracker visibility needed | `work-item-sync` |
 | `bugfix-brief` | Root cause and fix scope defined | `writing-change-set` or `executing-change-set`, depending on plan depth needed |
 | `writing-change-set` | Implementation manifest complete | `executing-change-set` |
-| `executing-change-set` | Task execution complete, final diff reviewed | `promoting-change-set` |
+| `executing-change-set` | Task execution complete, final diff reviewed | `landing-change-set` |
 | `executing-change-set` | Task reveals spec/UX/UI/tech contradiction | loop back to the relevant upstream skill |
 | `bugfix-brief` | Issue is actually missing capability | `feature-discovery` |
 | `bugfix-brief` | Issue is actually spec drift | `spec-code-sync` |
