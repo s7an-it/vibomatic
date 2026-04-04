@@ -261,16 +261,60 @@ Say so. "No existing specs, personas, or journeys relate to this idea. Starting 
 
 ---
 
-## Step 1: Business Questions (One at a Time)
+## Step 1: Business Questions
 
-Ask these in order. One question per message. Listen fully before moving on.
+This step behaves differently based on invocation mode.
+
+### Guided Mode (standalone or `--progressive` without `--auto-approve`)
+
+Ask questions one at a time. Listen fully before moving on.
 
 **Scale to what the user already said AND what the codebase reveals** — if the context scan,
 the codebase grep, or the user's initial message already answered a question, skip it.
-Don't ask the user questions the code can answer. If the code shows that a component creates
-Entity X directly (bypassing secureOperation), that answers Q1 (who), Q2 (how bad — it's a
-security gap), and Q7 (MVP — fix the pipeline). Present your findings and confirm, don't
-interrogate.
+Don't ask the user questions the code can answer.
+
+For each question: **always present a recommended answer** based on the context scan, codebase
+analysis, and domain knowledge. The user can accept the recommendation, customize it, or
+override it entirely.
+
+Format:
+```
+Q1: Who has this problem?
+RECOMMENDATION: Based on P1's profile, this serves self-directed learners who [pain].
+→ Accept / Customize / Override?
+```
+
+If you're **not confident** in your recommendation, say so:
+```
+Q4: What's the bet?
+I'm not certain about the strategic thesis here. Let me research what's working
+in this space before recommending.
+[invoke research skill → return with finding]
+RECOMMENDATION (based on research): [finding-informed answer]
+→ Accept / Customize / Override?
+```
+
+### Auto Mode (`--progressive --auto-approve`)
+
+Answer questions yourself using this priority:
+
+1. **Codebase evidence** — what the context scan revealed (strongest signal)
+2. **Persona/journey data** — what existing artifacts say about this user/problem
+3. **Domain conventions** — what the industry pattern suggests (from training data)
+4. **Research** — if 1-3 leave uncertainty, invoke the `research` skill, take decision based on finding
+
+For each question, log the answer and its source in the brief:
+```
+Q1: Who has this problem?
+→ P1 (Self-Directed Learner) — source: persona match from context scan
+Q4: What's the bet?
+→ [answer] — source: research finding (docs/specs/research-log.md, 2026-04-04)
+```
+
+Auto mode does NOT skip questions — it answers them. Every question still gets a recorded
+answer. The brief must be complete.
+
+### The 8 Questions
 
 | # | Question | What you're learning |
 |---|----------|----------------------|
@@ -283,20 +327,29 @@ interrogate.
 | 7 | **What's the MVP?** Smallest thing that proves or disproves the bet. User behavior, not features. | Validation scope |
 | 8 | **What are you explicitly NOT building?** | Scope boundary |
 
+### When to invoke research
+
+Invoke the `research` skill when:
+- The domain is unfamiliar (framework, API, market segment you lack confidence about)
+- The strategic thesis (Q4) requires external validation
+- The user asks "what's the best practice for X?" and you're not confident
+- Auto mode encounters a question where codebase + personas + training data leave genuine uncertainty
+
+Do NOT research what the codebase already answers. Do NOT research general knowledge you're confident about.
+
 ### Informed by Step 0
 
-When the context scan found relevant artifacts, weave them in:
+When the context scan found relevant artifacts, weave them into recommendations:
 
 - **Persona found:** "Based on P1's profile, they struggle with [pain]. Is that the person you mean, or someone else?"
 - **Journey found:** "J02 already has users doing [thing] at the [step]. Is your MVP extending that, or something separate?"
 - **Spec found:** "The matching spec mentions [related concept]. Is your bet that the current approach is wrong, or that it needs an addition?"
 
-### If the user can't answer one
+### Gaps
 
-Don't invent it. Mark the section as a gap in the brief: "Gap: user couldn't articulate a
-kill condition — worth defining before committing engineering time."
+In guided mode: if the user can't answer a question, mark it as a gap. "Gap: user couldn't articulate a kill condition — worth defining before committing engineering time." Honest gaps > invented answers.
 
-Honest gaps > invented answers.
+In auto mode: if research can't resolve a question, mark it as a gap with the research finding attached. Don't invent answers to fill gaps.
 
 ---
 
