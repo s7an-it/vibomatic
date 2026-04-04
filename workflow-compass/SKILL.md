@@ -312,7 +312,18 @@ runs the entire lane automatically:
    - **Taste** — close call, P0 decides but logs it for end-of-run review
    - **User** — high stakes or irreversible, stop and ask even in auto mode
 
-2. **Run skills sequentially** through the lane, P0 steering each one
+2. **Run skills through the lane**, P0 steering each one.
+   **Parallel where independent** — skills with zero data dependencies
+   run as concurrent subagents:
+
+   | Parallel group | Skills | Why parallel |
+   |----------------|--------|-------------|
+   | Market research | `domain-expert` + `competitor-analysis` | Both read vision.md, produce independent outputs |
+
+   Dispatch both via Agent tool in a single message, wait for both to
+   complete, then continue to the next sequential skill (`persona-builder`).
+
+   All other skills run sequentially (they consume the previous skill's output).
 
 3. **At end of run**, present all Taste decisions at once:
    > "I made 12 decisions during this run. 9 were mechanical. Here are the 3

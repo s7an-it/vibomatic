@@ -20,7 +20,7 @@ outputs:
     - { path: "docs/specs/domain-profile.md", artifact: domain-profile }
 chain:
   lanes:
-    greenfield: { position: 1.5, prev: vision-sync, next: competitor-analysis }
+    greenfield: { position: 2, prev: vision-sync, next: persona-builder, parallel: competitor-analysis }
   progressive: true
   self_verify: true
   human_checkpoint: false
@@ -190,8 +190,10 @@ When invoked with `--audit` to re-evaluate domain profile:
 ## Pipeline Continuation
 
 **If `--progressive` and self-verify passed:**
-- Invoke next skill: `competitor-analysis --progressive --lane <lane>`
+- This skill runs in parallel with `competitor-analysis` (dispatched by workflow-compass).
+- Do NOT chain to competitor-analysis — the orchestrator handles both.
+- When both complete, orchestrator chains to `persona-builder`.
 
 **If standalone:**
 - Report domain profile summary
-- Suggest: "Next: run `competitor-analysis` to map the competitive landscape, or `persona-builder` if you've already validated the market"
+- Suggest: "Next: run `competitor-analysis` if not already done, or `persona-builder`"

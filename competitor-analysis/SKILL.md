@@ -18,7 +18,7 @@ outputs:
     - { path: "docs/specs/competitor-analysis.md", artifact: competitor-analysis }
 chain:
   lanes:
-    greenfield: { position: 1.7, prev: domain-expert, next: persona-builder }
+    greenfield: { position: 2, prev: vision-sync, next: persona-builder, parallel: domain-expert }
   progressive: true
   self_verify: true
   human_checkpoint: false
@@ -170,8 +170,10 @@ When invoked with `--audit` to refresh competitive intelligence:
 ## Pipeline Continuation
 
 **If `--progressive` and self-verify passed:**
-- Invoke next skill: `persona-builder --progressive --lane <lane>`
+- This skill runs in parallel with `domain-expert` (dispatched by workflow-compass).
+- Do NOT chain to persona-builder — the orchestrator handles sequencing.
+- When both complete, orchestrator chains to `persona-builder`.
 
 **If standalone:**
 - Report competitive landscape summary
-- Suggest: "Next: run `persona-builder` to define users informed by this analysis, or `feature-discovery` if personas already exist"
+- Suggest: "Next: run `persona-builder` or `feature-discovery`"
