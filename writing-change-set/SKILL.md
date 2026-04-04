@@ -71,10 +71,9 @@ Every manifest should include:
 ### 1. Header
 
 - feature spec path
-- branch name
+- branch name (convention: `feature-<name>`, `bugfix-<name>`, or `refactor-<name>` — matches the lane)
 - **Status:** DRAFTED (lifecycle: DRAFTED → SIMULATED → EXECUTING → CHECKPOINTED → PROMOTED → VERIFIED)
-- base branch and base SHA
-- status: `BASELINED`
+- base branch and base SHA (typically `main` and its current HEAD)
 - creation timestamp
 
 ### 2. Implementation Summary

@@ -1,36 +1,35 @@
 #!/usr/bin/env bash
 # vibomatic worktree manager
 #
-# Central utility for creating, removing, listing, and cleaning up git worktrees.
-# All worktrees live under .worktrees/ in the repo root. No exceptions.
+# Central utility for creating, entering, promoting from, and cleaning up
+# git worktrees. All worktrees live under .worktrees/ in the repo root.
 #
 # Usage:
 #   scripts/worktree.sh create <branch-name> [--from <base>]
+#   scripts/worktree.sh enter <branch-name>
+#   scripts/worktree.sh status
 #   scripts/worktree.sh remove <branch-name> [--force]
+#   scripts/worktree.sh promote <branch-name>
 #   scripts/worktree.sh list
 #   scripts/worktree.sh cleanup
 #   scripts/worktree.sh preflight
-#
-# Conditions for worktree creation (enforced automatically):
-#   1. .gitignore must contain .worktrees/
-#   2. No uncommitted changes on the current branch
-#   3. Branch name must not already exist (unless --from is used to reset)
-#   4. .worktrees/ directory must be git-ignored (verified via git check-ignore)
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 WORKTREE_DIR="$REPO_ROOT/.worktrees"
 GITIGNORE="$REPO_ROOT/.gitignore"
 
-# --- Colors (if terminal supports them) ---
+# --- Colors ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+CYAN='\033[0;36m'
+NC='\033[0m'
 
 ok()   { echo -e "  ${GREEN}[OK]${NC} $1"; }
 warn() { echo -e "  ${YELLOW}[WARN]${NC} $1"; }
 fail() { echo -e "  ${RED}[FAIL]${NC} $1"; }
+info() { echo -e "  ${CYAN}[INFO]${NC} $1"; }
 
 # ============================================================
 # PREFLIGHT — safety checks before any worktree operation
@@ -40,14 +39,13 @@ preflight() {
 
   echo "=== Worktree Preflight Checks ==="
 
-  # 1. Must be in a git repo
   if ! git rev-parse --is-inside-work-tree &>/dev/null; then
     fail "Not inside a git repository"
     return 1
   fi
   ok "Inside git repository"
 
-  # 2. .gitignore must exist
+  # Auto-fix: create .gitignore if missing
   if [[ ! -f "$GITIGNORE" ]]; then
     fail ".gitignore does not exist — creating it"
     echo -e "# Worktrees\n.worktrees/" > "$GITIGNORE"
@@ -56,7 +54,7 @@ preflight() {
     ok ".gitignore created and committed"
   fi
 
-  # 3. .gitignore must contain .worktrees/
+  # Auto-fix: add .worktrees/ to .gitignore if missing
   if ! grep -q '\.worktrees' "$GITIGNORE"; then
     fail ".gitignore does not ignore .worktrees/ — adding it"
     echo -e "\n# Worktrees\n.worktrees/" >> "$GITIGNORE"
@@ -67,17 +65,15 @@ preflight() {
     ok ".gitignore contains .worktrees/"
   fi
 
-  # 4. git check-ignore confirms .worktrees/ is ignored
   if ! git check-ignore -q "$WORKTREE_DIR/" 2>/dev/null; then
-    fail ".worktrees/ is not being ignored by git (check .gitignore patterns)"
+    fail ".worktrees/ is not being ignored by git"
     errors=$((errors + 1))
   else
     ok ".worktrees/ is git-ignored (verified)"
   fi
 
-  # 5. No uncommitted changes (warn, don't block)
   if ! git diff --quiet HEAD 2>/dev/null; then
-    warn "Uncommitted changes on current branch — worktree will branch from HEAD"
+    warn "Uncommitted changes on current branch"
   else
     ok "Working tree is clean"
   fi
@@ -92,7 +88,62 @@ preflight() {
 }
 
 # ============================================================
-# CREATE — create a new worktree under .worktrees/
+# STATUS — detect if currently inside a worktree
+# ============================================================
+cmd_status() {
+  local cwd
+  cwd="$(pwd)"
+
+  # Check if we're inside .worktrees/
+  if [[ "$cwd" == "$WORKTREE_DIR"/* ]]; then
+    local branch_name
+    branch_name=$(basename "$(echo "$cwd" | sed "s|$WORKTREE_DIR/||" | cut -d/ -f1)")
+    local wt_path="$WORKTREE_DIR/$branch_name"
+
+    echo "=== Worktree Status ==="
+    ok "Inside worktree"
+    echo "  Branch: $branch_name"
+    echo "  Path:   $wt_path"
+
+    if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
+      echo "  State:  dirty (uncommitted changes)"
+    else
+      echo "  State:  clean"
+    fi
+
+    local commit_count
+    commit_count=$(cd "$wt_path" && git rev-list --count main..HEAD 2>/dev/null || echo "?")
+    echo "  Commits ahead of main: $commit_count"
+    return 0
+  fi
+
+  # Check if we're in the main worktree
+  if [[ "$cwd" == "$REPO_ROOT"* && "$cwd" != "$WORKTREE_DIR"* ]]; then
+    echo "=== Worktree Status ==="
+    info "On main worktree (not inside a feature worktree)"
+
+    # Show any active worktrees
+    local count=0
+    while IFS= read -r line; do
+      local wt_path
+      wt_path=$(echo "$line" | awk '{print $1}')
+      [[ "$wt_path" == "$REPO_ROOT" ]] && continue
+      count=$((count + 1))
+    done < <(git worktree list)
+
+    if [[ $count -gt 0 ]]; then
+      echo "  Active worktrees: $count (use 'worktree.sh list' to see them)"
+    fi
+    return 1  # not in a worktree
+  fi
+
+  echo "=== Worktree Status ==="
+  info "Outside vibomatic repository"
+  return 1
+}
+
+# ============================================================
+# CREATE — create a new worktree, or report if it already exists
 # ============================================================
 cmd_create() {
   local branch_name=""
@@ -110,19 +161,28 @@ cmd_create() {
     exit 1
   fi
 
-  # Run preflight
   preflight || exit 1
 
   local wt_path="$WORKTREE_DIR/$branch_name"
 
-  # Check if worktree already exists
+  # If worktree already exists, report it and exit 0 (idempotent for chain resume)
   if [[ -d "$wt_path" ]]; then
-    fail "Worktree already exists at $wt_path"
-    echo "  Use 'worktree.sh remove $branch_name' first, or choose a different name."
-    exit 1
+    ok "Worktree already exists — resuming"
+    echo "  Path:   $wt_path"
+    echo "  Branch: $branch_name"
+
+    local commit_count
+    commit_count=$(cd "$wt_path" && git rev-list --count main..HEAD 2>/dev/null || echo "?")
+    echo "  Commits ahead of main: $commit_count"
+
+    if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
+      warn "Worktree has uncommitted changes"
+    fi
+    echo ""
+    echo "  cd $wt_path"
+    return 0
   fi
 
-  # Create the worktree
   echo ""
   echo "=== Creating Worktree ==="
   echo "  Branch: $branch_name"
@@ -131,64 +191,23 @@ cmd_create() {
   echo ""
 
   mkdir -p "$WORKTREE_DIR"
-  git worktree add -b "$branch_name" "$wt_path" "$base_ref" 2>&1
+
+  # If branch already exists (e.g., from a prior remote push), use it
+  if git show-ref --verify --quiet "refs/heads/$branch_name" 2>/dev/null; then
+    info "Branch '$branch_name' already exists — attaching worktree to it"
+    git worktree add "$wt_path" "$branch_name" 2>&1
+  else
+    git worktree add -b "$branch_name" "$wt_path" "$base_ref" 2>&1
+  fi
 
   ok "Worktree created"
 
   # --- Project setup (auto-detect) ---
-  echo ""
-  echo "=== Project Setup ==="
+  _run_setup "$wt_path"
 
-  if [[ -f "$wt_path/package.json" ]]; then
-    echo "  Detected: Node.js (package.json)"
-    if [[ -f "$wt_path/package-lock.json" ]]; then
-      (cd "$wt_path" && npm ci --silent 2>&1) && ok "npm ci complete" || warn "npm ci failed"
-    elif [[ -f "$wt_path/yarn.lock" ]]; then
-      (cd "$wt_path" && yarn install --frozen-lockfile --silent 2>&1) && ok "yarn install complete" || warn "yarn install failed"
-    else
-      (cd "$wt_path" && npm install --silent 2>&1) && ok "npm install complete" || warn "npm install failed"
-    fi
-  elif [[ -f "$wt_path/Cargo.toml" ]]; then
-    echo "  Detected: Rust (Cargo.toml)"
-    (cd "$wt_path" && cargo build 2>&1) && ok "cargo build complete" || warn "cargo build failed"
-  elif [[ -f "$wt_path/requirements.txt" ]]; then
-    echo "  Detected: Python (requirements.txt)"
-    (cd "$wt_path" && pip install -r requirements.txt -q 2>&1) && ok "pip install complete" || warn "pip install failed"
-  elif [[ -f "$wt_path/pyproject.toml" ]]; then
-    echo "  Detected: Python (pyproject.toml)"
-    (cd "$wt_path" && pip install -e . -q 2>&1) && ok "pip install complete" || warn "pip install failed"
-  elif [[ -f "$wt_path/go.mod" ]]; then
-    echo "  Detected: Go (go.mod)"
-    (cd "$wt_path" && go build ./... 2>&1) && ok "go build complete" || warn "go build failed"
-  else
-    ok "No package manager detected — skipping setup"
-  fi
+  # --- Baseline tests ---
+  _run_baseline_tests "$wt_path"
 
-  # --- Baseline test check ---
-  echo ""
-  echo "=== Baseline Tests ==="
-
-  local test_cmd=""
-  if [[ -f "$wt_path/package.json" ]] && grep -q '"test"' "$wt_path/package.json" 2>/dev/null; then
-    test_cmd="npm test"
-  elif [[ -f "$wt_path/Cargo.toml" ]]; then
-    test_cmd="cargo test"
-  elif [[ -f "$wt_path/go.mod" ]]; then
-    test_cmd="go test ./..."
-  fi
-
-  if [[ -n "$test_cmd" ]]; then
-    echo "  Running: $test_cmd"
-    if (cd "$wt_path" && eval "$test_cmd" 2>&1 >/dev/null); then
-      ok "Baseline tests pass"
-    else
-      warn "Baseline tests FAIL — proceed with caution"
-    fi
-  else
-    ok "No test command detected — skipping"
-  fi
-
-  # --- Summary ---
   echo ""
   echo "=== Worktree Ready ==="
   echo "  Path:   $wt_path"
@@ -196,6 +215,110 @@ cmd_create() {
   echo ""
   echo "  cd $wt_path"
   echo ""
+}
+
+# ============================================================
+# ENTER — print the cd command for an existing worktree
+# ============================================================
+cmd_enter() {
+  local branch_name="${1:-}"
+
+  if [[ -z "$branch_name" ]]; then
+    echo "Usage: worktree.sh enter <branch-name>"
+    exit 1
+  fi
+
+  local wt_path="$WORKTREE_DIR/$branch_name"
+
+  if [[ ! -d "$wt_path" ]]; then
+    fail "No worktree at $wt_path"
+    echo "  Available worktrees:"
+    for d in "$WORKTREE_DIR"/*/; do
+      [[ -d "$d" ]] && echo "    $(basename "$d")"
+    done 2>/dev/null || echo "    (none)"
+    exit 1
+  fi
+
+  echo "=== Entering Worktree ==="
+  echo "  Branch: $branch_name"
+  echo "  Path:   $wt_path"
+
+  local commit_count
+  commit_count=$(cd "$wt_path" && git rev-list --count main..HEAD 2>/dev/null || echo "?")
+  echo "  Commits ahead of main: $commit_count"
+
+  if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
+    warn "Uncommitted changes present"
+  fi
+
+  echo ""
+  echo "  cd $wt_path"
+}
+
+# ============================================================
+# PROMOTE — squash-merge a worktree branch to main, then remove it
+# Full lifecycle: validate → checkout main → squash → commit → remove
+# ============================================================
+cmd_promote() {
+  local branch_name="${1:-}"
+
+  if [[ -z "$branch_name" ]]; then
+    echo "Usage: worktree.sh promote <branch-name>"
+    exit 1
+  fi
+
+  local wt_path="$WORKTREE_DIR/$branch_name"
+
+  if [[ ! -d "$wt_path" ]]; then
+    fail "No worktree at $wt_path"
+    exit 1
+  fi
+
+  echo "=== Promoting Worktree: $branch_name ==="
+  echo ""
+
+  # 1. Check worktree is clean
+  if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
+    fail "Worktree has uncommitted changes — commit or discard before promoting"
+    exit 1
+  fi
+  ok "Worktree is clean"
+
+  # 2. Show what will be promoted
+  local commit_count
+  commit_count=$(cd "$wt_path" && git rev-list --count main..HEAD 2>/dev/null || echo "?")
+  info "$commit_count commit(s) ahead of main"
+
+  echo ""
+  echo "  Files changed:"
+  git diff --stat "main...$branch_name" 2>/dev/null | sed 's/^/    /'
+
+  # 3. Switch to main and squash-merge
+  echo ""
+  echo "=== Squash Merge ==="
+
+  # Must be in the main worktree for the merge
+  cd "$REPO_ROOT"
+
+  if ! git diff --quiet HEAD 2>/dev/null; then
+    fail "Main worktree has uncommitted changes — clean it first"
+    exit 1
+  fi
+
+  git merge --squash "$branch_name" 2>&1
+  ok "Squash staged on main"
+
+  echo ""
+  echo "  Staged diff:"
+  git diff --cached --stat | sed 's/^/    /'
+
+  echo ""
+  info "Squash is staged but NOT committed."
+  info "Review the diff, then commit:"
+  echo "    git commit -m \"Promote $branch_name: <description>\""
+  echo ""
+  info "After committing, remove the worktree:"
+  echo "    scripts/worktree.sh remove $branch_name"
 }
 
 # ============================================================
@@ -229,7 +352,14 @@ cmd_remove() {
   echo "  Branch: $branch_name"
   echo ""
 
-  # Check for uncommitted changes
+  # Must not be inside the worktree we're removing
+  local cwd
+  cwd="$(pwd)"
+  if [[ "$cwd" == "$wt_path"* ]]; then
+    info "Currently inside the worktree — switching to repo root"
+    cd "$REPO_ROOT"
+  fi
+
   if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
     if $force; then
       warn "Uncommitted changes — force removing"
@@ -239,7 +369,6 @@ cmd_remove() {
     fi
   fi
 
-  # Remove worktree
   if $force; then
     git worktree remove --force "$wt_path" 2>&1
   else
@@ -248,11 +377,17 @@ cmd_remove() {
 
   ok "Worktree removed"
 
-  # Clean up the branch if it was fully merged
-  if git branch --merged main 2>/dev/null | grep -q "$branch_name"; then
+  # Delete branch if merged
+  if git branch --merged main 2>/dev/null | grep -q " $branch_name$"; then
     git branch -d "$branch_name" 2>&1 && ok "Branch $branch_name deleted (was merged)"
   else
     warn "Branch $branch_name kept (not merged to main)"
+  fi
+
+  # Remove .worktrees/ if now empty
+  if [[ -d "$WORKTREE_DIR" ]] && [[ -z "$(ls -A "$WORKTREE_DIR" 2>/dev/null)" ]]; then
+    rmdir "$WORKTREE_DIR"
+    ok "Removed empty .worktrees/ directory"
   fi
 }
 
@@ -270,29 +405,29 @@ cmd_list() {
     wt_hash=$(echo "$line" | awk '{print $2}')
     wt_branch=$(echo "$line" | grep -oP '\[.*?\]' || echo "[detached]")
 
-    # Skip the main worktree
-    if [[ "$wt_path" == "$REPO_ROOT" ]]; then
-      continue
-    fi
+    [[ "$wt_path" == "$REPO_ROOT" ]] && continue
 
     count=$((count + 1))
     echo "  $count. $wt_branch"
     echo "     Path:   $wt_path"
     echo "     Commit: $wt_hash"
 
-    # Check for uncommitted changes
     if (cd "$wt_path" 2>/dev/null && ! git diff --quiet HEAD 2>/dev/null); then
-      echo "     Status: ${YELLOW}dirty (uncommitted changes)${NC}"
+      echo -e "     Status: ${YELLOW}dirty${NC}"
     else
       echo "     Status: clean"
     fi
+
+    local ahead
+    ahead=$(cd "$wt_path" 2>/dev/null && git rev-list --count main..HEAD 2>/dev/null || echo "?")
+    echo "     Ahead:  $ahead commit(s)"
     echo ""
   done < <(git worktree list)
 
   if [[ $count -eq 0 ]]; then
-    echo "  No active worktrees (besides main)."
+    echo "  No active worktrees."
     echo ""
-    echo "  Create one with: scripts/worktree.sh create <branch-name>"
+    echo "  Create one: scripts/worktree.sh create <branch-name>"
   else
     echo "  Total: $count worktree(s)"
   fi
@@ -307,7 +442,6 @@ cmd_cleanup() {
 
   local cleaned=0
 
-  # 1. Prune git's worktree list (removes entries for deleted directories)
   local pruned
   pruned=$(git worktree prune -v 2>&1)
   if [[ -n "$pruned" ]]; then
@@ -317,32 +451,28 @@ cmd_cleanup() {
     ok "No stale worktree references"
   fi
 
-  # 2. Check .worktrees/ for directories not in git worktree list
   if [[ -d "$WORKTREE_DIR" ]]; then
     local known_paths
     known_paths=$(git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //')
 
     for dir in "$WORKTREE_DIR"/*/; do
       [[ ! -d "$dir" ]] && continue
-      dir="${dir%/}"  # strip trailing slash
+      dir="${dir%/}"
 
       if ! echo "$known_paths" | grep -q "^${dir}$"; then
-        warn "Orphaned directory: $dir (not in git worktree list)"
-        echo "    Removing..."
+        warn "Orphaned directory: $dir"
         rm -rf "$dir"
         ok "Removed $dir"
         cleaned=$((cleaned + 1))
       fi
     done
 
-    # Remove .worktrees/ if empty
     if [[ -d "$WORKTREE_DIR" ]] && [[ -z "$(ls -A "$WORKTREE_DIR" 2>/dev/null)" ]]; then
       rmdir "$WORKTREE_DIR"
       ok "Removed empty .worktrees/ directory"
     fi
   fi
 
-  # 3. Check for orphaned /tmp/vibomatic-* directories
   local tmp_orphans=0
   for dir in /tmp/vibomatic-*/; do
     [[ ! -d "$dir" ]] && continue
@@ -364,7 +494,67 @@ cmd_cleanup() {
 }
 
 # ============================================================
-# MAIN — route to subcommand
+# HELPERS
+# ============================================================
+_run_setup() {
+  local wt_path="$1"
+  echo ""
+  echo "=== Project Setup ==="
+
+  if [[ -f "$wt_path/package.json" ]]; then
+    echo "  Detected: Node.js"
+    if [[ -f "$wt_path/package-lock.json" ]]; then
+      (cd "$wt_path" && npm ci --silent 2>&1) && ok "npm ci" || warn "npm ci failed"
+    elif [[ -f "$wt_path/yarn.lock" ]]; then
+      (cd "$wt_path" && yarn install --frozen-lockfile --silent 2>&1) && ok "yarn install" || warn "yarn failed"
+    else
+      (cd "$wt_path" && npm install --silent 2>&1) && ok "npm install" || warn "npm install failed"
+    fi
+  elif [[ -f "$wt_path/Cargo.toml" ]]; then
+    echo "  Detected: Rust"
+    (cd "$wt_path" && cargo build 2>&1) && ok "cargo build" || warn "cargo build failed"
+  elif [[ -f "$wt_path/requirements.txt" ]]; then
+    echo "  Detected: Python (requirements.txt)"
+    (cd "$wt_path" && pip install -r requirements.txt -q 2>&1) && ok "pip install" || warn "pip failed"
+  elif [[ -f "$wt_path/pyproject.toml" ]]; then
+    echo "  Detected: Python (pyproject.toml)"
+    (cd "$wt_path" && pip install -e . -q 2>&1) && ok "pip install" || warn "pip failed"
+  elif [[ -f "$wt_path/go.mod" ]]; then
+    echo "  Detected: Go"
+    (cd "$wt_path" && go build ./... 2>&1) && ok "go build" || warn "go build failed"
+  else
+    ok "No package manager detected — skipping"
+  fi
+}
+
+_run_baseline_tests() {
+  local wt_path="$1"
+  echo ""
+  echo "=== Baseline Tests ==="
+
+  local test_cmd=""
+  if [[ -f "$wt_path/package.json" ]] && grep -q '"test"' "$wt_path/package.json" 2>/dev/null; then
+    test_cmd="npm test"
+  elif [[ -f "$wt_path/Cargo.toml" ]]; then
+    test_cmd="cargo test"
+  elif [[ -f "$wt_path/go.mod" ]]; then
+    test_cmd="go test ./..."
+  fi
+
+  if [[ -n "$test_cmd" ]]; then
+    echo "  Running: $test_cmd"
+    if (cd "$wt_path" && eval "$test_cmd" 2>&1 >/dev/null); then
+      ok "Baseline tests pass"
+    else
+      warn "Baseline tests FAIL — proceed with caution"
+    fi
+  else
+    ok "No test command detected — skipping"
+  fi
+}
+
+# ============================================================
+# MAIN
 # ============================================================
 usage() {
   cat <<'USAGE'
@@ -374,38 +564,42 @@ Usage:
   scripts/worktree.sh <command> [options]
 
 Commands:
-  create <branch>  Create a new worktree under .worktrees/
-    --from <ref>   Base the worktree on a specific ref (default: HEAD)
+  create <branch>    Create a new worktree (idempotent — resumes if exists)
+    --from <ref>     Base on a specific ref (default: HEAD)
 
-  remove <branch>  Remove a worktree and clean up
-    --force        Remove even with uncommitted changes
+  enter <branch>     Show path to enter an existing worktree
 
-  list             Show all active worktrees
+  status             Detect if currently inside a worktree
 
-  cleanup          Find and remove orphaned worktrees
+  promote <branch>   Squash-merge branch to main (stages but does not commit)
 
-  preflight        Run safety checks without creating anything
+  remove <branch>    Remove a worktree and clean up
+    --force          Remove even with uncommitted changes
 
-When to use worktrees:
-  ALWAYS for:
-    - executing-change-set   (implementation work)
-    - promoting-change-set   (squash-merge to main)
-    - framework-test autopilot (scenario execution)
-    - parallel feature work   (multiple features at once)
+  list               Show all active worktrees with status
 
-  NEVER for:
-    - spec writing           (single-file edits on main)
-    - vision/persona work    (foundational docs on main)
-    - reviews/audits         (read-only analysis)
+  cleanup            Find and remove orphaned worktrees
 
-  OPTIONAL for:
-    - writing-change-set     (if simulation needs isolation)
-    - tech design            (if prototyping is needed)
+  preflight          Run safety checks without creating anything
+
+Worktree conditions:
+  ALWAYS:  executing-change-set, promoting-change-set, framework-test autopilot
+  NEVER:   spec writing, vision/persona, reviews/audits
+  OPTIONAL: writing-change-set (simulation), tech design (prototyping)
+
+Branch naming convention:
+  feature-<name>     Greenfield / brownfield feature
+  bugfix-<name>      Bugfix lane
+  refactor-<name>    Refactor lane
+  test-<name>        Framework test / eval
 USAGE
 }
 
 case "${1:-}" in
   create)   shift; cmd_create "$@" ;;
+  enter)    shift; cmd_enter "$@" ;;
+  status)   cmd_status ;;
+  promote)  shift; cmd_promote "$@" ;;
   remove)   shift; cmd_remove "$@" ;;
   list)     cmd_list ;;
   cleanup)  cmd_cleanup ;;
