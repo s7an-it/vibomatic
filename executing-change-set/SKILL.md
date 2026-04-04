@@ -82,23 +82,22 @@ Suggested task sequence:
 
 ## Process
 
-### Step 0: Worktree Pre-flight
+### Step 0: Worktree Guard
 
-Implementation code must never land directly on main. Before starting:
+Implementation code must never land directly on main. Run the worktree guard:
 
-1. Check current location: `scripts/worktree.sh status`
-   - If already in the correct worktree → proceed to Step 1 (chain resume).
-   - If on main → continue to step 2.
-2. Read branch name from the manifest header.
-3. Create or resume the worktree: `scripts/worktree.sh create <branch-name>`
-   - If the worktree already exists (interrupted chain), it resumes idempotently.
-   - If new, it creates the branch, runs project setup, and checks baseline tests.
-4. Enter the worktree: `cd .worktrees/<branch-name>`
+```bash
+scripts/worktree.sh guard --skill executing-change-set --lane <lane> --branch <branch-name>
+```
 
-Branch naming convention:
-- `feature-<name>` for greenfield / brownfield feature lanes
-- `bugfix-<name>` for bugfix lane
-- `refactor-<name>` for refactor lane
+The guard handles all scenarios:
+- **NEED_WORKTREE** → creates the worktree (idempotent — resumes if exists), runs setup and baseline tests
+- **IN_WORKTREE** → already in the right place, proceed
+- **STAY_MAIN** → should not happen for this skill (guard will warn)
+
+The branch name comes from the manifest header. Convention: `feature-<name>`, `bugfix-<name>`, `refactor-<name>`.
+
+After the guard, `cd` into `.worktrees/<branch-name>` if not already there.
 
 See `WORKTREES.md` for the full lifecycle.
 

@@ -88,6 +88,158 @@ preflight() {
 }
 
 # ============================================================
+# GUARD — intelligent worktree check for any skill
+#
+# Usage: worktree.sh guard --skill <name> --lane <lane> [--branch <name>]
+#
+# Outputs one action and takes it:
+#   STAY_MAIN      — skill runs on main, already there
+#   NEED_WORKTREE  — skill needs a worktree, creates/enters it
+#   IN_WORKTREE    — skill needs a worktree, already in one
+#   LEAVE_WORKTREE — skill runs on main but we're in a worktree
+# ============================================================
+
+# Skills that MUST run in a worktree
+WORKTREE_SKILLS="executing-change-set"
+
+# Skills that MUST run on main (post-worktree)
+MAIN_AFTER_WORKTREE_SKILLS="verifying-promotion"
+
+# Skills that trigger worktree close
+WORKTREE_CLOSE_SKILLS="promoting-change-set"
+
+cmd_guard() {
+  local skill="" lane="" branch=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --skill) skill="$2"; shift 2 ;;
+      --lane)  lane="$2"; shift 2 ;;
+      --branch) branch="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  if [[ -z "$skill" ]]; then
+    echo "Usage: worktree.sh guard --skill <name> --lane <lane> [--branch <name>]"
+    exit 1
+  fi
+
+  # Detect current location
+  local cwd in_worktree=false current_branch=""
+  cwd="$(pwd)"
+  if [[ "$cwd" == "$WORKTREE_DIR"/* ]]; then
+    in_worktree=true
+    current_branch=$(basename "$(echo "$cwd" | sed "s|$WORKTREE_DIR/||" | cut -d/ -f1)")
+  fi
+
+  # Lanes that never need worktrees
+  if [[ "$lane" == "drift" || "$lane" == "brownfield-conversion" ]]; then
+    if $in_worktree; then
+      echo "LEAVE_WORKTREE"
+      warn "Lane '$lane' doesn't use worktrees — switch to main"
+      echo "  cd $REPO_ROOT"
+    else
+      echo "STAY_MAIN"
+    fi
+    return 0
+  fi
+
+  # Skills that must run on main (after worktree is closed)
+  local is_main_after=false
+  for s in $MAIN_AFTER_WORKTREE_SKILLS; do
+    [[ "$skill" == "$s" ]] && is_main_after=true
+  done
+
+  if $is_main_after; then
+    if $in_worktree; then
+      echo "LEAVE_WORKTREE"
+      warn "'$skill' runs on main — worktree should already be removed"
+      echo "  cd $REPO_ROOT"
+    else
+      echo "STAY_MAIN"
+    fi
+    return 0
+  fi
+
+  # promoting-change-set: needs to be in worktree initially, then transitions to main
+  local is_close_skill=false
+  for s in $WORKTREE_CLOSE_SKILLS; do
+    [[ "$skill" == "$s" ]] && is_close_skill=true
+  done
+
+  if $is_close_skill; then
+    if $in_worktree; then
+      echo "IN_WORKTREE"
+      ok "'$skill' will promote and close this worktree"
+      echo "  Branch: $current_branch"
+    else
+      # Check if there's a worktree to promote
+      if [[ -n "$branch" && -d "$WORKTREE_DIR/$branch" ]]; then
+        echo "NEED_WORKTREE"
+        info "'$skill' needs the worktree — entering"
+        echo "  cd $WORKTREE_DIR/$branch"
+      else
+        fail "'$skill' needs a worktree to promote but none found"
+        return 1
+      fi
+    fi
+    return 0
+  fi
+
+  # Skills that must run in a worktree
+  local needs_worktree=false
+  for s in $WORKTREE_SKILLS; do
+    [[ "$skill" == "$s" ]] && needs_worktree=true
+  done
+
+  if $needs_worktree; then
+    if $in_worktree; then
+      echo "IN_WORKTREE"
+      ok "Already in worktree for '$skill'"
+      echo "  Branch: $current_branch"
+    else
+      echo "NEED_WORKTREE"
+      if [[ -n "$branch" ]]; then
+        info "'$skill' needs a worktree — creating/entering '$branch'"
+        # Actually create it (idempotent)
+        cmd_create "$branch"
+      else
+        warn "'$skill' needs a worktree but no --branch specified"
+        echo "  Read the branch name from the manifest, then:"
+        echo "  scripts/worktree.sh create <branch-name>"
+      fi
+    fi
+    return 0
+  fi
+
+  # review-protocol: always on main, read branch diffs via git diff
+  if [[ "$skill" == "review-protocol" ]]; then
+    if $in_worktree; then
+      echo "LEAVE_WORKTREE"
+      info "'review-protocol' runs on main — reading branch diff from there"
+      echo "  cd $REPO_ROOT"
+    else
+      echo "STAY_MAIN"
+    fi
+    return 0
+  fi
+
+  # All other skills: run on main
+  if $in_worktree; then
+    # If we're in a worktree but this skill doesn't need one,
+    # the user may have navigated here manually. Don't force them out
+    # for pre-execution skills, but warn.
+    echo "STAY_MAIN"
+    warn "'$skill' typically runs on main — you're in a worktree"
+    echo "  This is unusual. If intentional, proceed. Otherwise: cd $REPO_ROOT"
+  else
+    echo "STAY_MAIN"
+  fi
+  return 0
+}
+
+# ============================================================
 # STATUS — detect if currently inside a worktree
 # ============================================================
 cmd_status() {
@@ -564,6 +716,11 @@ Usage:
   scripts/worktree.sh <command> [options]
 
 Commands:
+  guard              Intelligent worktree check for any skill
+    --skill <name>   Current skill name
+    --lane <lane>    Current lane (greenfield, bugfix, etc.)
+    --branch <name>  Branch name (from manifest, optional)
+
   create <branch>    Create a new worktree (idempotent — resumes if exists)
     --from <ref>     Base on a specific ref (default: HEAD)
 
@@ -596,6 +753,7 @@ USAGE
 }
 
 case "${1:-}" in
+  guard)    shift; cmd_guard "$@" ;;
   create)   shift; cmd_create "$@" ;;
   enter)    shift; cmd_enter "$@" ;;
   status)   cmd_status ;;
