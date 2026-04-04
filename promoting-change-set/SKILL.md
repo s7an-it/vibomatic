@@ -115,6 +115,17 @@ If G6 fails:
 - do not promote
 - route back to execution or planning depending on the defect
 
+### Step 7: Clean up worktree
+
+After a successful squash-merge and G6 pass:
+
+```bash
+scripts/worktree.sh remove <branch-name>
+```
+
+This removes the `.worktrees/<branch-name>` directory and deletes the branch
+(since it's now merged). See `WORKTREES.md` for the full lifecycle.
+
 ## Anti-Patterns
 
 - Do not reapply code from docs

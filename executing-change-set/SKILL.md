@@ -82,6 +82,16 @@ Suggested task sequence:
 
 ## Process
 
+### Step 0: Worktree Pre-flight
+
+Implementation code must never land directly on main. Before starting:
+
+1. Run `scripts/worktree.sh preflight` — verifies `.gitignore` has `.worktrees/`, working tree is clean.
+2. If not already in a worktree, create one: `scripts/worktree.sh create <branch-name>` (branch name from the manifest).
+3. `cd` into the worktree path (`.worktrees/<branch-name>`).
+
+See `WORKTREES.md` for the full worktree model.
+
 ### Step 1: Read the manifest and confirm branch state
 
 Extract:

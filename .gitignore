@@ -1,0 +1,19 @@
+# Worktrees (project-local, always ignored)
+.worktrees/
+
+# Test results (generated, not tracked)
+framework-test/results/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
