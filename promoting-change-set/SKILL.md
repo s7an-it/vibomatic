@@ -85,15 +85,15 @@ Verify:
 
 Run the manifest’s final validation commands before promotion.
 
-### Step 5: Worktree guard and squash merge
+### Step 5: Leave worktree and squash merge
 
-This skill runs on main, not inside the worktree. Check first:
+The feature has been built, tested, and reviewed inside the worktree. Now merge it.
 
 ```bash
 scripts/worktree.sh guard --skill promoting-change-set --lane <lane> --branch <branch-name>
 ```
 
-The guard verifies you're on main and the worktree branch exists. Then promote:
+The guard tells you to switch to main if you're still in the worktree. Then promote:
 
 ```bash
 scripts/worktree.sh promote <branch-name>
