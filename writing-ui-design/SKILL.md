@@ -43,20 +43,125 @@ responsive approach), follow the Design Alternatives Protocol
 
 ## Design Shotgun (variant exploration)
 
-Before finalizing component specs, explore multiple visual directions:
+Before finalizing component specs, explore multiple visual directions through a structured variant generation process.
 
-1. For each key screen, generate 3-5 variant HTML/CSS mockups with distinct aesthetic approaches
-2. Open variants in browser (gstack browse) side by side for comparison
-3. User picks direction (interactive) or P0 picks with justification (auto)
-4. Log taste preferences to `docs/specs/decisions/` — they compound across runs
+### Step 1: Context Gathering (5 Dimensions)
+
+Before generating any variants, gather context across five dimensions:
+
+| Dimension | Question | Source |
+|-----------|----------|--------|
+| **Who** | Who is the user? Demographics, technical comfort, aesthetic expectations. | Personas, vision.md |
+| **Job to be done** | What is the user trying to accomplish on this screen? What is the primary action? | Feature spec, UX design |
+| **What exists** | Is there an existing UI, design system, DESIGN.md, or brand guidelines to align with? | Codebase scan, DESIGN.md |
+| **User flow** | Where did the user come from? Where do they go next? What is the emotional arc? | UX flows, state machines |
+| **Edge cases** | Empty states, error states, overflowing content, long strings, first-time vs returning user. | UX design states, ACs |
+
+Do not skip this step. Variants generated without context are generic.
+
+### Step 2: Taste Memory
+
+Before generating new concepts, read prior approved designs:
+
+```bash
+cat docs/specs/decisions/approved.json 2>/dev/null
+ls docs/specs/decisions/taste-*.md 2>/dev/null
+```
+
+If prior approvals exist, bias toward the user's established preferences — font choices, density preferences, color temperature, decoration level. Taste compounds across sessions. A user who consistently picks minimal variants should not be shown maximalist options unless explicitly exploring a new direction.
+
+### Step 3: Concept Generation
+
+Generate N text-only concepts (typically 3-5). Each concept is a **distinct creative direction**, not a variation on the same idea.
+
+Bad (variations):
+- Concept A: Blue buttons with rounded corners
+- Concept B: Blue buttons with square corners
+- Concept C: Teal buttons with rounded corners
+
+Good (directions):
+- Concept A: **Editorial** — generous whitespace, large serif headings, content-first with minimal chrome
+- Concept B: **Dashboard** — dense, data-forward, compact sidebar navigation, monospace accents
+- Concept C: **Boutique** — bold brand color, oversized typography, personality-driven with illustration accents
+
+Each concept description should include: name, aesthetic philosophy, typography approach, color temperature, density, and what makes it appropriate for the target user.
+
+### Step 4: Concept Confirmation
+
+Present the text concepts to the user BEFORE generating HTML. This is a gate.
+
+```
+I've drafted 3 design directions for [screen name]:
+
+A) Editorial — generous whitespace, large serif headings, content-first...
+B) Dashboard — dense, data-forward, compact sidebar navigation...
+C) Boutique — bold brand color, oversized typography, personality-driven...
+
+Shall I generate HTML mockups for all 3, or would you like to adjust/replace any direction?
+```
+
+In auto mode: P0 selects which concepts to generate with justification. In interactive mode: wait for user confirmation.
+
+### Step 5: Variant Generation
+
+For each confirmed concept, generate a self-contained HTML/CSS file:
+
+- **50-100 lines of real HTML/CSS** — not pseudocode, not wireframes
+- Inline styles or a `<style>` block — no external dependencies except Google Fonts
+- Real content (not lorem ipsum) — use plausible data for the product's domain
+- Responsive: looks reasonable at both 375px and 1200px
+- All edge cases visible: show at least one empty state, one error state, or one overflow case per variant
+
+```bash
+# Generate variants
+write docs/specs/ui/variants/<screen>-A-editorial.html
+write docs/specs/ui/variants/<screen>-B-dashboard.html
+write docs/specs/ui/variants/<screen>-C-boutique.html
+
+# Open comparison board in browser
+gstack browse docs/specs/ui/variants/<screen>-A-editorial.html
+gstack browse docs/specs/ui/variants/<screen>-B-dashboard.html
+```
+
+### Step 6: Comparison and Selection
+
+Open variants in browser (gstack browse) side by side for comparison.
+
+- User picks direction (interactive) or P0 picks with justification (auto)
+- Selection should note specific elements to keep, not just "I like B"
+- Mixing is allowed: "B's layout with A's typography"
+
+### Step 7: Iteration Loop
+
+After selection:
+
+1. **Capture feedback** — what to keep, what to change, what to combine from other variants
+2. **Save taste preferences** — write approved direction to `docs/specs/decisions/approved.json`:
+
+```json
+{
+  "screen": "<screen-name>",
+  "date": "YYYY-MM-DD",
+  "chosen_direction": "B — Dashboard",
+  "keep": ["dense layout", "monospace accents", "compact sidebar"],
+  "change": ["soften border-radius", "warmer background"],
+  "combine_from": { "A": ["serif headings"] },
+  "rejected": ["C — too playful for enterprise users"]
+}
+```
+
+3. **Iterate or finalize** — generate a refined variant incorporating feedback, open in browser for verification. Repeat until approved.
+4. **Log to decisions** — append to `docs/specs/decisions/` so future design shotgun runs inherit these preferences.
+
+Taste preferences compound across runs. The first design shotgun for a project explores broadly; subsequent runs narrow based on established taste.
+
+### Quick Reference
 
 Variants should be genuinely different directions (not color swaps):
 - Variant A: minimal/clean — lots of whitespace, muted colors
 - Variant B: dense/functional — data-forward, compact layout
 - Variant C: bold/branded — strong typography, distinctive personality
 - etc.
-
-Each variant is 50-100 lines of real HTML/CSS you can see in the browser.
 
 ## Adversarial Design Review (after UI is drafted)
 
@@ -287,30 +392,219 @@ Read it. Every UI design decision must reference design system tokens. If the fe
 cat DESIGN.md 2>/dev/null || cat docs/specs/DESIGN.md 2>/dev/null
 ```
 
-If no DESIGN.md exists, create it at project root. This defines the design direction ABOVE the token level — brand personality, aesthetic approach, motion principles, accessibility baseline.
+If no DESIGN.md exists, create it at project root using the **Design Consultation** process below. This defines the design direction ABOVE the token level — brand personality, aesthetic approach, motion principles, accessibility baseline.
+
+If DESIGN.md already exists, read it and ensure all UI design decisions align.
+
+#### Design Consultation Process (creating DESIGN.md)
+
+##### Phase 1: Product Context Gathering
+
+Before making any design decisions, understand what you are designing for.
+
+1. **Read the README** — what does this product claim to be? What problem does it solve?
+2. **Read package.json** (or equivalent manifest) — what frameworks, UI libraries, and dependencies are already in play?
+3. **Scan existing components** — `ls src/components/ 2>/dev/null`, `ls app/ 2>/dev/null`, `ls pages/ 2>/dev/null`. Are there existing patterns, a component library, or a blank slate?
+4. **Read any existing design artifacts** — `docs/specs/vision.md`, personas, prior DESIGN.md attempts
+5. **Summarize the product context:**
+   - What is this product?
+   - Who uses it? (demographics, technical comfort, context of use)
+   - What stage is it at? (greenfield, MVP, scaling, redesign)
+   - What constraints exist? (framework, existing UI, brand guidelines)
+
+##### Phase 2: Research the Landscape
+
+Run a web search for 5-10 products in the same space. Look at direct competitors, adjacent products, and best-in-class examples from other domains that serve similar user needs.
+
+For each product noted, capture: name, URL, what they do well visually, what they do poorly.
+
+Then perform a **3-layer synthesis:**
+
+- **Layer 1 — Convention:** What patterns does EVERY product in this space share? These are user expectations. Violating them creates friction. (e.g., dashboards always have left nav, e-commerce always shows price prominently)
+- **Layer 2 — Trend:** What is trending or emerging? What are the best products doing that the average ones are not? (e.g., bento grids, glassmorphism fading out, variable fonts rising)
+- **Layer 3 — Differentiation:** Given THIS product's specific users and positioning, where should we deliberately break from convention? What design choices would make this product feel different without confusing users?
+
+##### Phase 3: Complete Design Proposal
+
+Present the design direction as one coherent package. For each dimension, mark decisions as **SAFE** (following convention) or **RISK** (deliberate departure from norms).
+
+**Always propose at least 2 RISKS** with clear rationale for why the departure serves this product's users.
+
+| Dimension | Description |
+|-----------|-------------|
+| **AESTHETIC** | Overall visual direction — minimal, dense, playful, corporate, editorial, etc. Reference 2-3 real products. SAFE or RISK. |
+| **DECORATION** | Border-radius, shadows, gradients, textures, dividers. How "decorated" vs "flat" is the UI? SAFE or RISK. |
+| **LAYOUT** | Grid system, max-width, sidebar vs top-nav, content density. SAFE or RISK. |
+| **COLOR** | Primary, secondary, accent, semantic colors — all with hex values. Light and dark mode. SAFE or RISK. |
+| **TYPOGRAPHY** | Display, body, UI, and code fonts — 3 specific font recommendations with rationale. SAFE or RISK. |
+| **SPACING** | Base unit, scale, density philosophy. SAFE or RISK. |
+| **MOTION** | Approach (restrained vs expressive), easing curves, duration ranges. SAFE or RISK. |
+
+Example RISK with rationale:
+> **TYPOGRAPHY — RISK:** Use Satoshi (geometric sans) for headings instead of the expected neutral grotesque. Rationale: the product targets creative professionals who respond to typographic personality; a generic font signals "another SaaS tool."
+
+##### Font Guidance
+
+**Recommended fonts** (distinctive, high-quality, well-hinted):
+- **Sans-serif:** Satoshi, Instrument Sans, DM Sans, Geist, Plus Jakarta Sans
+- **Monospace:** JetBrains Mono, Geist Mono, Berkeley Mono, Fira Code
+
+**Blacklisted** (never use under any circumstances):
+- Papyrus, Comic Sans, Lobster, Impact, Jokerman, Curlz MT
+
+**Overused** (never as primary — acceptable as fallback or body only if justified):
+- Inter, Roboto, Arial, Open Sans, Poppins, Montserrat, Lato, Nunito
+
+The goal is a font stack that gives the product a voice. If a user can't tell your product from a Tailwind template, the typography has failed.
+
+##### Phase 4: Generate Font + Color Preview
+
+After the proposal is confirmed, generate an HTML preview page showing:
+- Typography specimens (display, heading, body, UI, code) at actual sizes
+- Color palette swatches with hex values and contrast ratios
+- Light and dark mode side by side
+
+Open in browser for visual confirmation before writing DESIGN.md.
+
+#### DESIGN.md Structure
+
+The final DESIGN.md at project root must follow this structure:
 
 ```markdown
 # Design: [Project Name]
 
 **Generated:** YYYY-MM-DD
+**Last Updated:** YYYY-MM-DD
 
-## Brand Personality
-[Voice, tone, visual feeling — design direction, not marketing copy]
+---
+
+## Product Context
+
+[What this product is, who it serves, what stage it's at, what constraints exist.
+This section is the "why" behind every design decision below.]
+
+---
 
 ## Aesthetic Direction
-[Overall visual approach. Reference 2-3 existing products with similar aesthetic goals.]
 
-## Motion Principles
-[When to animate, when not to. Duration ranges. Easing preferences.]
+[Overall visual approach. SAFE/RISK classification.
+Reference 2-3 existing products with similar aesthetic goals.
+What makes this product feel like THIS product and not a generic template.]
+
+---
+
+## Typography
+
+| Role | Font | Weight | Size | Line Height | Usage |
+|------|------|--------|------|-------------|-------|
+| Display | [specific font] | [weight] | [size] | [lh] | Hero headings, marketing |
+| Body | [specific font] | [weight] | [size] | [lh] | Paragraphs, descriptions |
+| UI | [specific font] | [weight] | [size] | [lh] | Buttons, labels, nav items |
+| Data | [specific font] | [weight] | [size] | [lh] | Tables, metrics, numbers |
+| Code | [specific font] | [weight] | [size] | [lh] | Code blocks, CLI output |
+
+**Font stack:** `[primary], [fallback], [system fallback]`
+**Loading strategy:** [Google Fonts / self-hosted / variable font]
+
+---
+
+## Color
+
+**Approach:** [Monochromatic, complementary, analogous, split-complementary — and why]
+
+### Core Palette
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|-----------|-----------|-------|
+| `color.primary` | #XXXXXX | #XXXXXX | Primary actions, brand accent |
+| `color.primary.hover` | #XXXXXX | #XXXXXX | Hover state |
+| `color.secondary` | #XXXXXX | #XXXXXX | Secondary actions |
+| `color.accent` | #XXXXXX | #XXXXXX | Highlights, badges, emphasis |
+| `color.background` | #XXXXXX | #XXXXXX | Page background |
+| `color.surface` | #XXXXXX | #XXXXXX | Card/container backgrounds |
+| `color.surface.elevated` | #XXXXXX | #XXXXXX | Modals, dropdowns |
+| `color.text.primary` | #XXXXXX | #XXXXXX | Primary text |
+| `color.text.secondary` | #XXXXXX | #XXXXXX | Supporting text |
+| `color.border` | #XXXXXX | #XXXXXX | Default borders |
+
+### Semantic Colors
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|-----------|-----------|-------|
+| `color.error` | #XXXXXX | #XXXXXX | Error states |
+| `color.warning` | #XXXXXX | #XXXXXX | Warning states |
+| `color.success` | #XXXXXX | #XXXXXX | Success states |
+| `color.info` | #XXXXXX | #XXXXXX | Informational |
+
+---
+
+## Spacing
+
+**Base unit:** [e.g., 4px]
+**Scale:** [e.g., 4, 8, 12, 16, 24, 32, 48, 64, 96]
+**Density philosophy:** [compact / comfortable / spacious — and why]
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `spacing.xs` | [value] | Tight (related elements) |
+| `spacing.sm` | [value] | Small (within components) |
+| `spacing.md` | [value] | Medium (between components) |
+| `spacing.lg` | [value] | Large (between sections) |
+| `spacing.xl` | [value] | Extra large (page-level) |
+
+---
+
+## Layout
+
+| Property | Value | Rationale |
+|----------|-------|-----------|
+| Grid system | [e.g., 12-column CSS Grid] | [why] |
+| Max content width | [e.g., 1200px] | [why] |
+| Border radius | [e.g., 8px default, 12px cards, 9999px pills] | [why] |
+| Sidebar width | [if applicable] | [why] |
+| Content measure | [max line length for readability] | [why] |
+
+---
+
+## Motion
+
+**Approach:** [restrained / expressive — and why]
+
+| Property | Value | Usage |
+|----------|-------|-------|
+| Easing (default) | [e.g., cubic-bezier(0.4, 0, 0.2, 1)] | Standard transitions |
+| Easing (enter) | [e.g., cubic-bezier(0, 0, 0.2, 1)] | Elements entering |
+| Easing (exit) | [e.g., cubic-bezier(0.4, 0, 1, 1)] | Elements leaving |
+| Duration (fast) | [e.g., 100ms] | Micro-interactions |
+| Duration (normal) | [e.g., 200ms] | Standard transitions |
+| Duration (slow) | [e.g., 350ms] | Large transitions |
+
+**Reduced motion:** all animations collapse to instant or opacity-only.
+
+---
+
+## Decisions Log
+
+| # | Decision | Classification | Rationale |
+|---|----------|---------------|-----------|
+| 1 | [e.g., Use Satoshi for display type] | RISK | [why this departure from convention serves the product] |
+| 2 | [e.g., 8px border-radius on all cards] | SAFE | [follows established SaaS convention] |
+| 3 | [e.g., No sidebar — top nav only] | RISK | [product is content-focused, sidebar wastes horizontal space] |
+
+---
 
 ## Dark Mode Strategy
-[Default or toggle? Semantic color tokens? Which surfaces change?]
+
+[Default or toggle? Semantic color tokens? Which surfaces change?
+How is elevation communicated without shadows?]
+
+---
 
 ## Accessibility Baseline
-[WCAG target: AA minimum. Focus indicators. Touch targets ≥44px. Screen reader strategy.]
-```
 
-If DESIGN.md already exists, read it and ensure all UI design decisions align.
+[WCAG target: AA minimum. Focus indicators. Touch targets ≥44px.
+Minimum font sizes. Screen reader strategy. Contrast ratios.]
+```
 
 ### Step 0b: Ensure Design System Exists (Tokens)
 

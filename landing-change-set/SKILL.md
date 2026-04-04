@@ -68,22 +68,82 @@ If any check fails, fix in the worktree before proceeding.
 
 ### Step 2: Ship Preparation
 
-Before pushing, prepare the release:
+Before pushing, prepare the release. Commit order matters for bisectability:
+1. Infrastructure changes (config, build, CI) first
+2. Models + their tests
+3. Controllers/services + their tests
+4. VERSION + CHANGELOG last (single atomic commit)
 
-**2a. Version bump** (if applicable):
-- Read current version from `package.json`, `VERSION`, `Cargo.toml`, or equivalent
-- Bump based on change type: patch (bugfix), minor (feature), major (breaking)
-- In auto mode: P0 decides the bump level. In interactive mode: ask.
+**2a. Version bump** — 4-digit `MAJOR.MINOR.PATCH.MICRO` format:
+
+Read current version from `package.json`, `VERSION`, `Cargo.toml`, or equivalent.
+
+**Idempotency check first:** compare the VERSION value on the base branch vs HEAD.
+If already bumped (values differ), skip the bump entirely.
+
+```bash
+BASE_VERSION=$(git show main:VERSION 2>/dev/null || echo "0.0.0.0")
+HEAD_VERSION=$(cat VERSION 2>/dev/null || echo "0.0.0.0")
+if [ "$BASE_VERSION" != "$HEAD_VERSION" ]; then
+  echo "VERSION already bumped ($BASE_VERSION -> $HEAD_VERSION), skipping"
+fi
+```
+
+Bump level rules:
+- **MICRO** (+0.0.0.1): fewer than 50 changed lines, trivial fix, no new files
+- **PATCH** (+0.0.1.0): 50+ changed lines, no feature signals
+- **MINOR** (+0.1.0.0): feature signals detected — ASK user before bumping
+  - Feature signals: new routes, new migrations, new test files, `feat/` branch prefix
+- **MAJOR** (+1.0.0.0): milestones only — ALWAYS ASK user
+
+Bumping a digit resets all digits to its right to 0.
+Example: `1.3.2.7` with PATCH bump becomes `1.3.3.0`.
 
 **2b. CHANGELOG update**:
-- Append entry for this version with the feature/fix description
-- Reference the spec and manifest for accurate descriptions
-- Create `CHANGELOG.md` if it doesn't exist
 
-**2c. Test audit**:
-- Run the full test suite one final time
-- Report: total tests, passing, failing, new tests added
-- If any tests fail: STOP — fix in worktree before proceeding
+1. Read the existing CHANGELOG.md header to match its formatting style
+2. Enumerate all commits on the branch: `git log --oneline main..HEAD`
+3. Group changes by theme using conventional headings:
+   - **Added** — new capabilities the user can now use
+   - **Changed** — modifications to existing behavior
+   - **Fixed** — bug fixes
+   - **Removed** — features or code removed
+4. Lead each bullet with what the user can now DO, not what the code does
+   - Good: "Users can now reset passwords via email link"
+   - Bad: "Added resetPassword() method to AuthService"
+5. Cross-check: every commit in the log MUST map to at least one bullet.
+   If a commit is missing, either add a bullet or justify the omission (e.g., pure refactor with no user-visible change).
+6. Create `CHANGELOG.md` if it doesn't exist
+
+**2c. Test audit** with coverage diagram:
+
+Run the full test suite one final time. Report: total tests, passing, failing, new tests added.
+If any tests fail: STOP — fix in worktree before proceeding.
+
+Then produce a code path coverage diagram for every changed source file:
+
+```
+CODE PATH COVERAGE
+[+] src/services/billing.ts
+    ├── processPayment()
+    │   ├── [★★★ TESTED] Happy path + card declined
+    │   └── [GAP] Network timeout — NO TEST
+    ├── refundPayment()
+    │   └── [★★ TESTED] Happy path only
+[+] src/controllers/checkout.ts
+    ├── handleCheckout()
+    │   └── [★ TESTED] Smoke test, no edge cases
+```
+
+Quality ratings:
+- ★★★ — edge cases covered (happy path + error paths + boundary conditions)
+- ★★ — happy path tested
+- ★ — smoke test only (function called, result not deeply verified)
+
+**Coverage gate:**
+- Default minimum: 60% of changed code paths must have at least ★ coverage
+- Target: 80% of changed code paths at ★★ or above
+- If below minimum: WARN and ask user whether to proceed or write more tests
 
 ### Step 3: Push the branch
 
