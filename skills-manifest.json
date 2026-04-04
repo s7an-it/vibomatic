@@ -26,8 +26,10 @@
     "writing-change-set",
     "executing-change-set",
     "review-protocol",
+    "systems-analysis",
     "landing-change-set",
     "verifying-promotion",
+    "bootstrap-extract",
     "framework-test"
   ],
   "corePackForRouting": [
@@ -109,7 +111,7 @@
   ],
   "laneDefinitions": {
     "greenfield": {
-      "skills": ["vision-sync", "domain-expert", "competitor-analysis", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "solution-explorer", "spec-style-sync", "writing-change-set", "executing-change-set", "landing-change-set", "verifying-promotion"],
+      "skills": ["vision-sync", "domain-expert", "competitor-analysis", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "solution-explorer", "spec-style-sync", "writing-change-set", "executing-change-set", "systems-analysis", "landing-change-set", "verifying-promotion"],
       "defaultSkips": []
     },
     "brownfield-conversion": {
@@ -117,11 +119,11 @@
       "defaultSkips": []
     },
     "brownfield-feature": {
-      "skills": ["spec-code-sync", "feature-discovery", "writing-spec", "journey-sync", "writing-technical-design", "solution-explorer", "spec-style-sync", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
+      "skills": ["spec-code-sync", "feature-discovery", "writing-spec", "journey-sync", "writing-technical-design", "solution-explorer", "spec-style-sync", "writing-change-set", "executing-change-set", "review-protocol", "systems-analysis", "landing-change-set", "verifying-promotion"],
       "defaultSkips": ["writing-ux-design", "writing-ui-design"]
     },
     "bugfix": {
-      "skills": ["bugfix-brief", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
+      "skills": ["bugfix-brief", "writing-change-set", "executing-change-set", "review-protocol", "systems-analysis", "landing-change-set", "verifying-promotion"],
       "defaultSkips": ["spec-style-sync"]
     },
     "drift": {
@@ -129,7 +131,7 @@
       "defaultSkips": []
     },
     "refactor": {
-      "skills": ["spec-code-sync", "writing-change-set", "executing-change-set", "review-protocol", "landing-change-set", "verifying-promotion"],
+      "skills": ["spec-code-sync", "writing-change-set", "executing-change-set", "review-protocol", "systems-analysis", "landing-change-set", "verifying-promotion"],
       "defaultSkips": []
     }
   }

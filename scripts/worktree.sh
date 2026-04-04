@@ -126,7 +126,7 @@ PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-build
 
 # Skills that run INSIDE the worktree (implementation + validation)
 # Everything from execution through review happens in the branch
-WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright"
+WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright systems-analysis"
 
 # The squash-merge: transitions FROM worktree TO main
 PROMOTE_SKILL="landing-change-set"

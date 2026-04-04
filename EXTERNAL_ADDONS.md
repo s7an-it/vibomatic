@@ -34,8 +34,10 @@ they attach to the core pipeline.
 - `writing-change-set`
 - `executing-change-set`
 - `review-protocol`
+- `systems-analysis`
 - `landing-change-set`
 - `verifying-promotion`
+- `bootstrap-extract`
 - `framework-test`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)

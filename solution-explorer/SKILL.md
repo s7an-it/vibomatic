@@ -64,6 +64,20 @@ finds something better.
 - All tech decisions follow established project conventions (no new
   dependencies, no new data model patterns, no new architectural layers)
 
+**Bootstrap template check (automatic):**
+
+Before starting exploration, scan `references/bootstraps/*/manifest.md`:
+1. Read each template's Stack section
+2. Compare against the tech design's stack choices
+3. If a template matches (same runtime + framework + database + API pattern):
+   - Load its `decisions.md`
+   - Report: "Bootstrap template '<name>' matches. Paradigm decisions are
+     production-verified. Skipping exploration."
+   - Chain directly to `spec-style-sync`
+4. If no template matches → proceed with exploration
+
+To create templates from real repos: `bootstrap-extract`
+
 **Run** (full or abbreviated) when:
 - The tech design introduces a new external dependency
 - The data model is new or significantly changed
