@@ -30,6 +30,8 @@
     "landing-change-set",
     "verifying-promotion",
     "bootstrap-extract",
+    "cross-model-review",
+    "visual-tracker",
     "framework-test"
   ],
   "corePackForRouting": [

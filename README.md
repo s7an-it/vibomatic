@@ -265,6 +265,8 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `landing-change-set`
 - `verifying-promotion`
 - `bootstrap-extract`
+- `cross-model-review`
+- `visual-tracker`
 - `framework-test`
 
 ## Full Doctrine

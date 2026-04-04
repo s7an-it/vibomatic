@@ -38,6 +38,8 @@ they attach to the core pipeline.
 - `landing-change-set`
 - `verifying-promotion`
 - `bootstrap-extract`
+- `cross-model-review`
+- `visual-tracker`
 - `framework-test`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)

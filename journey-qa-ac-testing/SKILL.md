@@ -107,8 +107,28 @@ Use when a team asks for "verify feature X against spec".
 ### 4) `exploratory`
 
 Run unscripted, risk-guided QA around journey transitions and edge states.
-Record discovered gaps and route them to the right skill (`journey-sync`,
-`spec-ac-sync`, `spec-code-sync`).
+Record discovered gaps and route them to the right skill.
+
+**Exploratory testing patterns** (run through each in the browser):
+
+| Pattern | What to try | Looking for |
+|---------|------------|-------------|
+| **Boundary values** | Min/max lengths, zero, negative, huge numbers | Crashes, truncation, overflow |
+| **Empty states** | Fresh account, no data, cleared filters | Missing empty state UI, errors |
+| **Rapid actions** | Double-click submit, rapid navigation, back/forward | Duplicate submissions, race conditions |
+| **Invalid input** | SQL injection, XSS payloads, Unicode, emoji, RTL text | Security holes, encoding bugs |
+| **Interruption** | Refresh mid-form, close tab mid-upload, network offline | Lost data, stuck states |
+| **Permission edges** | Access URLs directly without auth, tamper with IDs in URL | Auth bypass, IDOR |
+| **Responsive** | Resize to mobile/tablet/desktop breakpoints | Broken layout, unreachable elements |
+| **Accessibility** | Tab through all interactive elements, screen reader flow | Missing focus indicators, broken tab order |
+| **State persistence** | Refresh page, navigate away and back, close and reopen | Lost form data, reset state |
+| **Concurrency** | Open same page in two tabs, edit same resource | Conflicts, stale data |
+
+For each discovered issue, record:
+- What you tried (exact steps)
+- What happened (screenshot)
+- What should have happened (from spec/journey/common sense)
+- Severity: Critical / High / Medium / Low
 
 ---
 
@@ -131,13 +151,37 @@ Validate:
 
 If preflight fails, stop with a concise blocker report.
 
-### Step 3: Execute Scenario Runtime Flow
+### Step 3: Execute Scenario Runtime Flow (Real Browser)
+
+Use a real browser for all testing. Preferred tools in order:
+1. **Playwright MCP** (`browser_navigate`, `browser_click`, `browser_snapshot`, `browser_take_screenshot`) — if available
+2. **Browse tool** (if gstack `/browse` is installed) — persistent headless Chromium
+3. **Manual browser** — instruct user to perform actions, describe what they see
 
 For each scenario:
-- navigate and perform the full user flow
-- verify observable UI/system outcomes
-- capture evidence screenshots for each verified/failed AC
-- use code inspection only for non-UI-testable ACs
+
+**Navigate and interact like a real user:**
+```
+browser_navigate → target_url
+browser_snapshot → capture initial state
+browser_click → interact with elements (buttons, links, forms)
+browser_fill_form → enter test data
+browser_take_screenshot → evidence for each step
+```
+
+**Verify observable outcomes:**
+- Page content matches expected state from journey Given/When/Then
+- Error states render correctly (not raw stack traces)
+- Loading states appear and resolve
+- Empty states show correct messaging
+- Navigation flows match UX design
+
+**Capture evidence for each AC:**
+- Screenshot per AC verification (PASS or FAIL)
+- Console errors captured via `browser_console_messages`
+- Network failures captured via `browser_network_requests`
+
+For non-UI-testable ACs (background jobs, data integrity), use code inspection as fallback.
 
 ### Step 4: Update Feature Specs (Source of Truth)
 
