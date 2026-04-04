@@ -87,18 +87,24 @@ Run the manifest’s final validation commands before promotion.
 
 ### Step 5: Squash merge
 
-Promotion is:
+Promotion uses `scripts/worktree.sh promote` which handles the checkout-and-squash:
 
 ```bash
-git checkout main
-git merge --squash feature-<name>
+scripts/worktree.sh promote <branch-name>
 ```
 
-Then inspect the staged squash diff before commit.
+This:
+1. Verifies the worktree is clean (no uncommitted changes).
+2. Shows the diff stat (files changed).
+3. Switches to the main worktree (`cd` to repo root).
+4. Runs `git merge --squash <branch-name>`.
+5. Stages the squash diff — but does NOT commit (you inspect first).
+
+Then inspect the staged squash diff before committing.
 
 ### Step 6: G6 review
 
-G6 checks:
+G6 checks (run from main, inspecting the staged squash diff):
 
 - squash diff matches manifest file set
 - no unplanned changes
@@ -107,17 +113,17 @@ G6 checks:
 
 If G6 passes:
 
-- commit squash merge
+- commit the squash merge
 - update feature status to `PROMOTED`
 
 If G6 fails:
 
-- do not promote
-- route back to execution or planning depending on the defect
+- `git merge --abort` to unstage
+- route back to the worktree for fixes: `scripts/worktree.sh enter <branch-name>`
 
 ### Step 7: Clean up worktree
 
-After a successful squash-merge and G6 pass:
+After a successful squash-merge commit and G6 pass:
 
 ```bash
 scripts/worktree.sh remove <branch-name>

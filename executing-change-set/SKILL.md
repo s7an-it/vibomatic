@@ -86,11 +86,21 @@ Suggested task sequence:
 
 Implementation code must never land directly on main. Before starting:
 
-1. Run `scripts/worktree.sh preflight` — verifies `.gitignore` has `.worktrees/`, working tree is clean.
-2. If not already in a worktree, create one: `scripts/worktree.sh create <branch-name>` (branch name from the manifest).
-3. `cd` into the worktree path (`.worktrees/<branch-name>`).
+1. Check current location: `scripts/worktree.sh status`
+   - If already in the correct worktree → proceed to Step 1 (chain resume).
+   - If on main → continue to step 2.
+2. Read branch name from the manifest header.
+3. Create or resume the worktree: `scripts/worktree.sh create <branch-name>`
+   - If the worktree already exists (interrupted chain), it resumes idempotently.
+   - If new, it creates the branch, runs project setup, and checks baseline tests.
+4. Enter the worktree: `cd .worktrees/<branch-name>`
 
-See `WORKTREES.md` for the full worktree model.
+Branch naming convention:
+- `feature-<name>` for greenfield / brownfield feature lanes
+- `bugfix-<name>` for bugfix lane
+- `refactor-<name>` for refactor lane
+
+See `WORKTREES.md` for the full lifecycle.
 
 ### Step 1: Read the manifest and confirm branch state
 
