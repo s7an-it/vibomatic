@@ -101,6 +101,36 @@ After the guard, `cd` into `.worktrees/<branch-name>` if not already there.
 
 See `WORKTREES.md` for the full lifecycle.
 
+### Step 0b: Local-First Execution
+
+All implementation targets localhost. No cloud deployment variants.
+
+**Deployment target:** always `localhost` (or `127.0.0.1`).
+
+**Paid dependencies must be mocked:**
+
+| Dependency type | Mock approach |
+|----------------|---------------|
+| Payment (Stripe, PayPal) | Local mock server or test-mode keys |
+| Email (SendGrid, SES) | Console logger or local SMTP (mailhog) |
+| SMS (Twilio) | Console logger |
+| Storage (S3, GCS) | Local filesystem or MinIO |
+| Auth (Auth0, Clerk) | Local JWT issuer or mock middleware |
+| Search (Algolia, Elastic Cloud) | SQLite FTS or in-memory index |
+| AI/ML APIs (OpenAI, etc.) | Recorded fixtures or deterministic stubs |
+| CDN (Cloudflare, Fastly) | Direct serve from localhost |
+
+**Rules:**
+1. The app must start and work on `localhost` with zero external accounts
+2. Mock implementations live in `src/mocks/` or equivalent, toggled by `NODE_ENV=development` or similar
+3. Tests run against mocks — never against live paid services
+4. The mock must be realistic enough to exercise the AC (not just `return true`)
+5. Document which dependencies are mocked in the manifest under "Mocked Dependencies"
+
+**Why:** Prove the feature works before introducing external dependencies.
+External integrations are validated separately in a later integration pass,
+not during initial implementation.
+
 ### Step 1: Read the manifest and confirm branch state
 
 Extract:

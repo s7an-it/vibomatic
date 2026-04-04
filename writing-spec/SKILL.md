@@ -39,6 +39,17 @@ This skill produces DRAFT specs. It defines WHAT we're building and HOW it's exp
 
 **Announce at start:** "I'm using the writing-spec skill to define the feature requirements."
 
+## Design Alternatives
+
+For each key decision in this phase (feature scope, story granularity, AC approach),
+follow the Design Alternatives Protocol (`references/design-alternatives.md`):
+
+1. Identify key decisions — what's in scope vs out, how to split stories, AC specificity level
+2. Generate 5 ranked alternatives with justification and trade-offs
+3. If `--interactive`: present to user, wait for selection
+4. If `--auto`: pick best fit, document reasoning
+5. Log to `docs/specs/decisions/<feature-name>.md`
+
 ## Authoring Modes
 
 Choose one mode before writing:

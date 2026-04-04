@@ -35,6 +35,18 @@ writing-technical-design  → BASELINED (HOW to build it: architecture, data mod
 
 **Announce at start:** "I'm using the writing-ux-design skill to define the user experience."
 
+## Design Alternatives
+
+For each key decision in this phase (navigation model, interaction pattern,
+information hierarchy), follow the Design Alternatives Protocol
+(`references/design-alternatives.md`):
+
+1. Identify key decisions — how users navigate, how interactions feel, what's prominent
+2. Generate 5 ranked alternatives with justification and trade-offs
+3. If `--interactive`: present to user, wait for selection
+4. If `--auto`: pick best fit, document reasoning
+5. Log to `docs/specs/decisions/<feature-name>.md`
+
 ## What UX Design Is (And Is Not)
 
 UX design defines the structure, flow, and behavior of the experience. It determines what screens exist, what states each screen can be in, how users navigate between them, what information matters most, and what happens when things go wrong.
