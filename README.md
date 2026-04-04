@@ -110,7 +110,7 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 | 6. Technical Design | `writing-technical-design` | Architecture, data model, feasibility | G4 |
 | 7. Implementation Planning | `writing-change-set` | Implementation manifest, task graph, AC/test mapping | — |
 | 7b. Execution | `executing-change-set` | Code in worktree, staged diffs, checkpoints | G5 |
-| 8. Promotion | `promoting-change-set` | Squash merge to main + manifest/diff validation | G6 |
+| 8. Promotion | `landing-change-set` | Squash merge to main + manifest/diff validation | G6 |
 | 9. Verification | spec-code-sync + QA + E2E | VERIFIED status | G7 |
 
 ### Feature Spec Lifecycle
@@ -260,7 +260,7 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `writing-change-set`
 - `executing-change-set`
 - `review-protocol`
-- `promoting-change-set`
+- `landing-change-set`
 - `verifying-promotion`
 - `framework-test`
 

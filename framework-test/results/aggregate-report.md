@@ -42,7 +42,7 @@
 | 10 | writing-technical-design | ✅ 21 components | — | bootstrap |
 | 11 | review-protocol | ✅ G4 PASS (5 findings) | — | bootstrap |
 | 12 | writing-change-set | ✅ 41-file manifest + types | — | bootstrap |
-| 13 | promoting-change-set | ⚠️ Simulated (interface) | — | simulated |
+| 13 | landing-change-set | ⚠️ Simulated (interface) | — | simulated |
 | 14 | verifying-promotion | ⚠️ Simulated (interface) | — | simulated |
 | 15 | spec-code-sync | ⚠️ Simulated (S1) | ✅ Real (S3) | simulated + convert |
 | 16 | journey-qa-ac-testing | ⚠️ Simulated (no server) | — | simulated |
@@ -68,7 +68,7 @@
 | 8 | writing-ux-design → writing-ui-design | ✅ | — | Bootstrap |
 | 9 | writing-ui-design → writing-technical-design | ✅ | — | Bootstrap |
 | 10 | writing-technical-design → writing-change-set | ✅ | — | Bootstrap |
-| 11 | writing-change-set → promoting-change-set | ✅ sim | — | Simulated |
+| 11 | writing-change-set → landing-change-set | ✅ sim | — | Simulated |
 
 **S3-only boundaries tested:**
 - Existing specs → new spec (cross-feature dependency)

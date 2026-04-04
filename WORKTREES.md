@@ -9,7 +9,7 @@ make promotion (squash-merge to main) clean.
 | Condition | Worktree? | Why |
 |-----------|-----------|-----|
 | `executing-change-set` | **Always** | Implementation code must never land directly on main |
-| `promoting-change-set` | **Always** | Squash-merge requires a source branch in a worktree |
+| `landing-change-set` | **Always** | Squash-merge requires a source branch in a worktree |
 | `framework-test` autopilot | **Always** | Scenarios must run in isolation |
 | Parallel feature work | **Always** | Each feature gets its own worktree |
 | `writing-change-set` with simulation | Optional | If simulation needs to test file creation |
@@ -31,7 +31,7 @@ make promotion (squash-merge to main) clean.
 
 **The worktree IS the feature branch.** Code, tests, E2E, and review all run
 inside it. The feature must be fully validated before it leaves the worktree.
-Only the squash-merge (`promoting-change-set`) and post-merge verification
+Only the squash-merge (`landing-change-set`) and post-merge verification
 (`verifying-promotion`) run on main.
 
 ## Branch Naming Convention
@@ -58,7 +58,7 @@ The branch name is defined in the `writing-change-set` manifest header.
 4. **Create is idempotent** — `worktree.sh create` on an existing worktree reports it
    and exits 0, enabling chain resume after interruption.
 
-5. **Clean up after promotion** — `promoting-change-set` Step 7 calls `worktree.sh remove`.
+5. **Clean up after promotion** — `landing-change-set` Step 7 calls `worktree.sh remove`.
 
 6. **No orphans** — `worktree.sh cleanup` finds and removes stale worktrees.
 
@@ -121,8 +121,8 @@ call the guard and follow the action.
 - `writing-change-set` → `executing-change-set`: NEED_WORKTREE — creates it
 - `executing-change-set` → `review-protocol`: IN_WORKTREE — review runs in the branch
 - `review-protocol` → `agentic-e2e-playwright`: IN_WORKTREE — E2E runs in the branch
-- All validated → `promoting-change-set`: LEAVE_WORKTREE — squash-merge from main
-- `promoting-change-set` → `verifying-promotion`: STAY_MAIN — worktree removed
+- All validated → `landing-change-set`: LEAVE_WORKTREE — squash-merge from main
+- `landing-change-set` → `verifying-promotion`: STAY_MAIN — worktree removed
 
 The flow is: **main (plan) → worktree (build + test + review) → main (merge + verify)**.
 The feature must be fully validated inside the worktree before it touches main.
@@ -130,11 +130,17 @@ The feature must be fully validated inside the worktree before it touches main.
 ## Lifecycle
 
 ```
-main ─────────────────────────────────────────────────► main
-      │                                          ▲
-      │ worktree.sh create feature-x             │ worktree.sh remove feature-x
-      ▼                                          │
-   .worktrees/feature-x ─── work ─── promote ────┘
+main ──────────────────────────────────────────────────► main
+      │                                           ▲
+      │ worktree.sh create                        │ gh pr merge --squash
+      ▼                                           │
+   .worktrees/feature-x                           │
+      ├── execute (TDD per task)                  │
+      ├── review (G5 in branch)                   │
+      ├── E2E (all tests green)                   │
+      ├── push (git push -u origin)               │
+      └── open PR (gh pr create) ─────────────────┘
+                                        then: worktree.sh remove
 ```
 
 1. **Create** — `executing-change-set` Step 0 calls the guard, which creates the
@@ -148,11 +154,11 @@ main ─────────────────────────
    - `agentic-e2e-playwright` runs E2E tests against the branch
    - All tests must pass before the feature leaves the worktree
 
-4. **Promote** — `promoting-change-set` switches to main, runs `worktree.sh promote`.
-   Squash-merges the branch, stages the diff for G6 review. After G6 pass, commit.
+4. **Land** — `landing-change-set` validates manifest coverage, pushes the branch,
+   opens a PR via `gh pr create`, merges via `gh pr merge --squash`.
 
-5. **Remove** — `promoting-change-set` runs `worktree.sh remove <branch>` after commit.
-   Removes directory and deletes the merged branch.
+5. **Clean up** — `landing-change-set` runs `worktree.sh remove <branch>`.
+   Removes worktree directory and deletes the local branch.
 
 6. **Verify** — `verifying-promotion` runs on main, confirms the merge is clean.
 

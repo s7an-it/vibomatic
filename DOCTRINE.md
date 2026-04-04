@@ -144,7 +144,7 @@ Every state transition requires a review gate.
 | 5 | UI Design | `writing-ui-design` | `docs/specs/ui/<name>.md` + `docs/specs/design-system.md` | Component specs, visual language, responsive behavior | UX-REVIEWED → DESIGNED |
 | 6 | Technical Design | `writing-technical-design` | Updated feature spec: Technical Design section | Architecture, data model, feasibility matrix | DESIGNED → BASELINED |
 | 7 | Change Set Planning | `writing-change-set` + `executing-change-set` | `docs/plans/<date>-<name>/` + branch checkpoints | Implementation manifest, task graph, staged diffs, checkpoint commits | BASELINED → CHANGE-SET-APPROVED |
-| 8 | Promotion | `promoting-change-set` | Actual codebase files | Squash merge + manifest/diff validation | CHANGE-SET-APPROVED → PROMOTED |
+| 8 | Promotion | `landing-change-set` | Actual codebase files | Squash merge + manifest/diff validation | CHANGE-SET-APPROVED → PROMOTED |
 | 9 | Verification | `verifying-promotion` | Updated feature spec: VERIFIED status | Test results, QA status, E2E status | PROMOTED → VERIFIED |
 
 ### Artifact Lifecycle

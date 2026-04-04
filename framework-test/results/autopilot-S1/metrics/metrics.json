@@ -19,7 +19,7 @@
     {"skill": "review-protocol", "skill_number": 11, "tokens_combined": true, "artifacts": 1, "findings": 5, "gate": "PASS"},
     {"skill_group": "skills-10-11", "tokens": 54530, "duration_ms": 433614, "artifacts": 2},
     {"skill": "writing-change-set", "skill_number": 12, "tokens_combined": true, "artifacts": 2, "files_in_changeset": 41},
-    {"skill": "promoting-change-set", "skill_number": 13, "tokens_combined": true, "artifacts": 1, "status": "SIMULATED"},
+    {"skill": "landing-change-set", "skill_number": 13, "tokens_combined": true, "artifacts": 1, "status": "SIMULATED"},
     {"skill": "verifying-promotion", "skill_number": 14, "tokens_combined": true, "artifacts": 1, "status": "SIMULATED"},
     {"skill": "spec-code-sync", "skill_number": 15, "tokens_combined": true, "artifacts": 1, "status": "SIMULATED"},
     {"skill": "journey-qa-ac-testing", "skill_number": 16, "tokens_combined": true, "artifacts": 1, "status": "SIMULATED"},

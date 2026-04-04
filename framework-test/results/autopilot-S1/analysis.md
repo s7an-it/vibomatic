@@ -27,7 +27,7 @@ All 19 vibomatic skills were executed on a greenfield scenario. The pipeline pro
 | 10 | writing-technical-design | REAL | 21 components, 8 tables, 17 APIs |
 | 11 | review-protocol | REAL | G4 PASS, 5 findings |
 | 12 | writing-change-set | REAL | 41-file manifest + TypeScript types |
-| 13 | promoting-change-set | SIMULATED | Interface tested, no codebase |
+| 13 | landing-change-set | SIMULATED | Interface tested, no codebase |
 | 14 | verifying-promotion | SIMULATED | Interface tested |
 | 15 | spec-code-sync | SIMULATED | Annotations format verified |
 | 16 | journey-qa-ac-testing | SIMULATED | No live server |

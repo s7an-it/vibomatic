@@ -114,7 +114,7 @@ Recommended flow:
 8. `writing-ui-design`
 9. `writing-technical-design`
 10. `writing-change-set`
-11. `promoting-change-set`
+11. `landing-change-set`
 12. `verifying-promotion`
 
 This is where vibomatic is already strongest.

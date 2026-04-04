@@ -151,7 +151,7 @@ Each requires a user turn to invoke.
 | 6 | writing-technical-design | "Do tech design" | Maybe (architecture choices) |
 | 7 | review-protocol | "Review it" | No (runs autonomously) |
 | 8 | writing-change-set | "Write the code" | Maybe (scope confirmation) |
-| 9 | promoting-change-set | "Promote it" | No |
+| 9 | landing-change-set | "Promote it" | No |
 | 10 | verifying-promotion | "Verify it" | No |
 | | _Start the server_ | `npm start` | — |
 | 11 | spec-code-sync | "Sync specs to code" | No |
@@ -187,7 +187,7 @@ In practice: **15-25 turns** because skills ask clarifying questions and the use
 ### Could Be Automated But Isn't Yet
 - ⚠️ An "autopilot" mode that chains skills 1-13 automatically
 - ⚠️ Auto-starting the server after writing-change-set
-- ⚠️ Auto-running spec-code-sync after promoting-change-set
+- ⚠️ Auto-running spec-code-sync after landing-change-set
 - ⚠️ Pipeline state tracking ("you're at Phase 4, 5 phases to go")
 
 ---
@@ -238,7 +238,7 @@ AUTOPILOT:
   7. Run writing-technical-design (auto-approve if no feasibility conflicts)
   8. Run review-protocol (auto-pass if no critical/high findings)
   9. Run writing-change-set (all parts)
-  10. Run promoting-change-set
+  10. Run landing-change-set
   11. Start server
   12. Run spec-code-sync
   13. Run journey-qa-ac-testing

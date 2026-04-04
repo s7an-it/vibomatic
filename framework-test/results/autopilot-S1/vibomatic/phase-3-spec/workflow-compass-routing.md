@@ -43,7 +43,7 @@ Feature-discovery validates feature ideas against the existing personas and visi
 | 10 | writing-technical-design   | Phase 6   | Architecture, data model, API contracts |
 | 11 | review-protocol            | Phase 6   | G4 gate: design review before code |
 | 12 | writing-change-set         | Phase 7   | Produce code in worktree from approved design |
-| 13 | promoting-change-set       | Phase 8   | Squash-merge worktree into main |
+| 13 | landing-change-set       | Phase 8   | Squash-merge worktree into main |
 | 14 | verifying-promotion        | Phase 9   | Post-merge verification (tests, QA, spec sync) |
 | 15 | spec-code-sync             | Phase 9   | Annotate specs with RESOLVED/PLANNED/DRIFT status |
 | 16 | journey-qa-ac-testing      | Phase 9   | QA journey flows against live server |

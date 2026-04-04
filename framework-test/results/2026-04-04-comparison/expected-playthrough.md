@@ -109,8 +109,8 @@
 - **Output:** Full code in worktree + `docs/plans/YYYY-MM-DD-trend-learning/manifest.md`
 - **Verify:** (a) `src/config.ts` has DEPLOY_MODE, (b) middleware for mode exists, (c) zero-state recommendations work, (d) unit tests exist
 
-### Skill 13: `promoting-change-set`
-- **Invoke:** `Skill: promoting-change-set`
+### Skill 13: `landing-change-set`
+- **Invoke:** `Skill: landing-change-set`
 - **Input:** Change set in worktree
 - **Expected behavior:** Commits code on feature branch. Deviation check.
 - **Output:** Committed code. Spec status → PROMOTED

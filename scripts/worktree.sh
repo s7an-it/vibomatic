@@ -129,7 +129,7 @@ PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-build
 WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright"
 
 # The squash-merge: transitions FROM worktree TO main
-PROMOTE_SKILL="promoting-change-set"
+PROMOTE_SKILL="landing-change-set"
 
 # Post-merge verification on main
 POST_MERGE_SKILLS="verifying-promotion"
@@ -215,7 +215,7 @@ cmd_guard() {
 
   # --- Promoting: transitions from worktree to main ---
   if [[ "$skill" == "$PROMOTE_SKILL" ]]; then
-    # promoting-change-set does the squash-merge FROM main.
+    # landing-change-set does the squash-merge FROM main.
     # But it first validates the branch, so the branch must exist.
     if $in_worktree; then
       echo "LEAVE_WORKTREE"
@@ -455,17 +455,17 @@ cmd_promote() {
     exit 1
   fi
 
-  echo "=== Promoting Worktree: $branch_name ==="
+  echo "=== Landing: $branch_name ==="
   echo ""
 
   # 1. Check worktree is clean
   if (cd "$wt_path" && ! git diff --quiet HEAD 2>/dev/null); then
-    fail "Worktree has uncommitted changes — commit or discard before promoting"
+    fail "Worktree has uncommitted changes — commit or discard first"
     exit 1
   fi
   ok "Worktree is clean"
 
-  # 2. Show what will be promoted
+  # 2. Show what will be landed
   local commit_count
   commit_count=$(cd "$wt_path" && git rev-list --count main..HEAD 2>/dev/null || echo "?")
   info "$commit_count commit(s) ahead of main"
@@ -474,32 +474,49 @@ cmd_promote() {
   echo "  Files changed:"
   git diff --stat "main...$branch_name" 2>/dev/null | sed 's/^/    /'
 
-  # 3. Switch to main and squash-merge
+  # 3. Push the branch
   echo ""
-  echo "=== Squash Merge ==="
+  echo "=== Push ==="
+  (cd "$wt_path" && git push -u origin "$branch_name" 2>&1) || true
+  ok "Branch pushed to origin/$branch_name"
 
-  # Must be in the main worktree for the merge
-  cd "$REPO_ROOT"
+  # 4. Open PR
+  echo ""
+  echo "=== Pull Request ==="
 
-  if ! git diff --quiet HEAD 2>/dev/null; then
-    fail "Main worktree has uncommitted changes — clean it first"
-    exit 1
+  if ! command -v gh &>/dev/null; then
+    warn "gh CLI not found — create the PR manually"
+    echo "  Branch: $branch_name"
+    echo "  Then: gh pr merge <number> --squash --delete-branch"
+    return 0
   fi
 
-  git merge --squash "$branch_name" 2>&1
-  ok "Squash staged on main"
+  # Check if PR already exists
+  local existing_pr
+  existing_pr=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || true)
+
+  if [[ -n "$existing_pr" ]]; then
+    info "PR #$existing_pr already exists"
+    echo "  View: gh pr view $existing_pr"
+  else
+    echo "  Creating PR..."
+    gh pr create \
+      --head "$branch_name" \
+      --title "$branch_name" \
+      --body "Squash-merge validated branch to main.
+
+Branch: \`$branch_name\`
+Commits: $commit_count
+
+$(git diff --stat "main...$branch_name" 2>/dev/null)" 2>&1 || true
+    ok "PR created"
+  fi
 
   echo ""
-  echo "  Staged diff:"
-  git diff --cached --stat | sed 's/^/    /'
-
-  echo ""
-  info "Squash is staged but NOT committed."
-  info "Review the diff, then commit:"
-  echo "    git commit -m \"Promote $branch_name: <description>\""
-  echo ""
-  info "After committing, remove the worktree:"
-  echo "    scripts/worktree.sh remove $branch_name"
+  info "Next steps:"
+  echo "  1. Review the PR"
+  echo "  2. Merge: gh pr merge --squash --delete-branch"
+  echo "  3. Clean up: scripts/worktree.sh remove $branch_name"
 }
 
 # ============================================================
@@ -769,7 +786,7 @@ Commands:
   preflight          Run safety checks without creating anything
 
 Worktree conditions:
-  ALWAYS:  executing-change-set, promoting-change-set, framework-test autopilot
+  ALWAYS:  executing-change-set, landing-change-set, framework-test autopilot
   NEVER:   spec writing, vision/persona, reviews/audits
   OPTIONAL: writing-change-set (simulation), tech design (prototyping)
 

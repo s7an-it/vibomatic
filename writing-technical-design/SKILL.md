@@ -35,7 +35,7 @@ writing-ui-design         → DESIGNED (HOW it looks: components, visual languag
 writing-technical-design  → BASELINED (HOW to build it: architecture, data model)
 writing-change-set        → implementation manifest + task graph
 executing-change-set      → CHANGE-SET-APPROVED (DO: execute the plan on branch)
-promoting-change-set      → PROMOTED (APPLY: reviewed branch state to codebase)
+landing-change-set      → PROMOTED (APPLY: reviewed branch state to codebase)
 verifying-promotion       → VERIFIED (PROVE: tests pass, QA complete)
 ```
 
