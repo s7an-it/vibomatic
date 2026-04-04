@@ -45,13 +45,34 @@ verifying-promotion       → VERIFIED (PROVE: tests pass, QA complete)
 
 For each key decision in this phase (architecture, data model, API pattern,
 state management), follow the Design Alternatives Protocol
-(`references/design-alternatives.md`):
+(`references/design-alternatives.md`).
 
-1. Identify key decisions — system architecture, storage, API style, auth, caching
-2. Generate 5 ranked alternatives with justification and trade-offs
-3. If `--interactive`: present to user, wait for selection
-4. If `--auto`: pick best fit, document reasoning
-5. Log to `docs/specs/decisions/<feature-name>.md`
+## Adversarial Engineering Review (after tech design is drafted)
+
+P0 challenges the architecture before it's finalized:
+
+**Layer 1 check** — is there an existing library/service that does this?
+Search before building. P0 checks npm, PyPI, crates.io, or equivalent.
+
+**Layer 2 check** — does the design follow established patterns?
+Compare against codebase conventions and bootstrap templates.
+
+**Layer 3 check** — are there hidden assumptions?
+For each tech decision, name the assumption and verify it.
+
+**Mandatory checks:**
+
+| Check | What P0 verifies |
+|-------|-----------------|
+| Scope smell | >8 new files → challenge: is this really one feature? |
+| Search-before-build | Every new dependency: is there a simpler built-in way? |
+| Completeness | Build/deploy pipeline included? Not just app code? |
+| DRY | Any duplicated patterns across the proposed components? |
+| Boring by default | Using well-known patterns unless there's a strong reason not to? |
+| ASCII diagrams | Data flow diagram in code comments for complex interactions? |
+
+For anything that fails: explain why and fix. In auto mode: P0 fixes.
+In interactive mode: present findings with P0's recommended fixes.
 
 ## When To Use
 

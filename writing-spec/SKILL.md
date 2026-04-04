@@ -47,8 +47,33 @@ follow the Design Alternatives Protocol (`references/design-alternatives.md`):
 1. Identify key decisions — what's in scope vs out, how to split stories, AC specificity level
 2. Generate 5 ranked alternatives with justification and trade-offs
 3. If `--interactive`: present to user, wait for selection
-4. If `--auto`: pick best fit, document reasoning
+4. If `--auto`: P0 picks based on research, documents reasoning
 5. Log to `docs/specs/decisions/<feature-name>.md`
+
+## G0: Scope Review (after spec is drafted)
+
+Before moving to UX design, challenge the spec scope. P0 runs a CEO-mode review:
+
+**Choose a scope mode:**
+
+| Mode | When | What P0 does |
+|------|------|-------------|
+| **Expand** | Vision is ambitious, market signals are strong | Push scope up — what's the 10-star version? |
+| **Selective Expand** | Good baseline, a few additions would make it great | Hold scope + cherry-pick 1-2 expansions |
+| **Hold** | Spec is right-sized for the constraints | Bulletproof the spec as-is, find gaps |
+| **Reduce** | Too much for the timeline/team/budget | Surgeon mode — strip to narrowest viable wedge |
+
+In auto mode, P0 picks the mode based on research (market validation, competitor
+landscape, team constraints). In interactive mode, presents the modes with
+P0's recommendation and asks.
+
+**G0 checks:**
+- Is there real demand for this? (P0 searches for validation)
+- Is this the narrowest wedge that tests the hypothesis?
+- Are there free/existing tools that solve part of this?
+- Does the scope match the constraints (timeline, team, budget)?
+
+If G0 changes the scope, update the spec before proceeding.
 
 ## Authoring Modes
 

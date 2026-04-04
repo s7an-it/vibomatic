@@ -39,13 +39,27 @@ writing-technical-design  → BASELINED (HOW to build it: architecture, data mod
 
 For each key decision in this phase (navigation model, interaction pattern,
 information hierarchy), follow the Design Alternatives Protocol
-(`references/design-alternatives.md`):
+(`references/design-alternatives.md`).
 
-1. Identify key decisions — how users navigate, how interactions feel, what's prominent
-2. Generate 5 ranked alternatives with justification and trade-offs
-3. If `--interactive`: present to user, wait for selection
-4. If `--auto`: pick best fit, document reasoning
-5. Log to `docs/specs/decisions/<feature-name>.md`
+## Adversarial Design Review (after UX is drafted)
+
+Before finalizing, P0 runs an adversarial review of the UX design:
+
+**Score each dimension 0-10:**
+
+| Dimension | What to check | Score |
+|-----------|--------------|-------|
+| Empty states | Does every screen have a meaningful zero-state? | /10 |
+| Hierarchy | Is the most important action obvious on every screen? | /10 |
+| Specificity | Are labels, microcopy, and CTAs specific (not generic)? | /10 |
+| Edge cases | Error states, timeouts, permissions, offline — all covered? | /10 |
+| AI-slop detection | Does anything look like generic AI output? Vague cards, filler copy? | /10 |
+| Responsive | Does the flow work on mobile, tablet, desktop? | /10 |
+| Accessibility | Tab order, focus indicators, screen reader flow, contrast? | /10 |
+
+For any dimension under 7: explain what a 10 would look like, then fix it.
+In interactive mode: present scores and ask if user wants to address each.
+In auto mode: P0 fixes anything under 7 automatically.
 
 ## What UX Design Is (And Is Not)
 
