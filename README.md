@@ -261,8 +261,10 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `writing-change-set`
 - `executing-change-set`
 - `review-protocol`
+- `systems-analysis`
 - `landing-change-set`
 - `verifying-promotion`
+- `bootstrap-extract`
 - `framework-test`
 
 ## Full Doctrine

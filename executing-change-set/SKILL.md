@@ -16,7 +16,7 @@ outputs:
     - { path: "(branch checkpoint commits)", artifact: executed-code }
 chain:
   lanes:
-    greenfield: { position: 13, prev: writing-change-set, next: landing-change-set }
+    greenfield: { position: 13, prev: writing-change-set, next: systems-analysis }
     brownfield-feature: { position: 9, prev: writing-change-set, next: review-protocol }
     bugfix: { position: 3, prev: writing-change-set, next: review-protocol }
     refactor: { position: 3, prev: writing-change-set, next: review-protocol }
