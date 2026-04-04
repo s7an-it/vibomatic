@@ -54,9 +54,13 @@ Invoke this skill at every gate in the pipeline:
 
 ## Worktree Context
 
-Review-protocol always runs from the **main worktree**, not from inside a feature worktree. For G5 (post-execution review), read the branch diff via `git diff main...<branch-name>` — do not `cd` into the worktree. For G1-G4 (spec/design reviews), artifacts are already on main. For G6 (promotion review), the squash diff is staged on main.
+Review-protocol runs where the artifact lives:
 
-If the review finds issues requiring fixes at G5/G6, route back to the worktree: `scripts/worktree.sh enter <branch-name>`.
+- **G1-G4** (spec/design reviews): on main — artifacts are on main before any worktree exists.
+- **G5** (post-execution review): **inside the worktree** — the code is there, tests are there, review it there. The feature must be fully validated before leaving the worktree.
+- **G6** (promotion review): on main — reviewing the staged squash diff after `worktree.sh promote`.
+
+If the G5 review finds issues, fix them in the worktree and re-review. The feature does not leave the worktree until it passes.
 
 ## Prerequisites
 

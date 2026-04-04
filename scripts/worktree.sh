@@ -110,21 +110,29 @@ preflight() {
 #
 # Usage: worktree.sh guard --skill <name> --lane <lane> [--branch <name>]
 #
-# Outputs one action and takes it:
+# The worktree IS the feature branch. Everything that touches the feature
+# runs there — code, tests, E2E, review. Only the squash-merge itself
+# and post-merge verification run on main.
+#
+# Outputs one action:
 #   STAY_MAIN      — skill runs on main, already there
 #   NEED_WORKTREE  — skill needs a worktree, creates/enters it
 #   IN_WORKTREE    — skill needs a worktree, already in one
 #   LEAVE_WORKTREE — skill runs on main but we're in a worktree
 # ============================================================
 
-# Skills that MUST run inside a worktree
-WORKTREE_SKILLS="executing-change-set"
+# Skills that run BEFORE the worktree exists (planning phase, on main)
+PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass"
 
-# Skills that run on main but need a worktree to EXIST (to merge from / validate)
-MAIN_NEEDS_WORKTREE="promoting-change-set"
+# Skills that run INSIDE the worktree (implementation + validation)
+# Everything from execution through review happens in the branch
+WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright"
 
-# Skills that run on main with no worktree dependency
-MAIN_AFTER_WORKTREE="verifying-promotion"
+# The squash-merge: transitions FROM worktree TO main
+PROMOTE_SKILL="promoting-change-set"
+
+# Post-merge verification on main
+POST_MERGE_SKILLS="verifying-promotion"
 
 cmd_guard() {
   local skill="" lane="" branch=""
@@ -151,7 +159,7 @@ cmd_guard() {
     current_branch=$(basename "$(echo "$cwd" | sed "s|$WORKTREE_DIR/||" | cut -d/ -f1)")
   fi
 
-  # Lanes that never need worktrees
+  # --- Lanes that never use worktrees ---
   if [[ "$lane" == "drift" || "$lane" == "brownfield-conversion" ]]; then
     if $in_worktree; then
       echo "LEAVE_WORKTREE"
@@ -163,75 +171,38 @@ cmd_guard() {
     return 0
   fi
 
-  # Skills that run on main but need a worktree branch to exist (for squash-merge)
-  local is_main_needs_wt=false
-  for s in $MAIN_NEEDS_WORKTREE; do
-    [[ "$skill" == "$s" ]] && is_main_needs_wt=true
+  # --- Pre-worktree skills (planning, specs, design — always on main) ---
+  local is_pre=false
+  for s in $PRE_WORKTREE_SKILLS; do
+    [[ "$skill" == "$s" ]] && is_pre=true
   done
 
-  if $is_main_needs_wt; then
-    # Must be on main to squash-merge. If in worktree, leave first.
+  if $is_pre; then
     if $in_worktree; then
-      echo "LEAVE_WORKTREE"
-      warn "'$skill' runs on main — switch to repo root before promoting"
-      echo "  cd $REPO_ROOT"
-      return 0
-    fi
-
-    # Verify the worktree/branch exists to merge from
-    local target_branch="${branch:-}"
-    if [[ -z "$target_branch" ]]; then
-      fail "'$skill' needs --branch to know which worktree to promote"
-      return 1
-    fi
-
-    if [[ -d "$WORKTREE_DIR/$target_branch" ]]; then
       echo "STAY_MAIN"
-      ok "On main. Worktree '$target_branch' exists and is ready to promote."
-      echo "  Run: scripts/worktree.sh promote $target_branch"
-    elif git show-ref --verify --quiet "refs/heads/$target_branch" 2>/dev/null; then
-      echo "STAY_MAIN"
-      ok "On main. Branch '$target_branch' exists (no worktree dir — may have been cleaned)."
-    else
-      fail "Branch '$target_branch' not found — nothing to promote"
-      return 1
-    fi
-    return 0
-  fi
-
-  # Skills that run on main after worktree is already removed
-  local is_main_after=false
-  for s in $MAIN_AFTER_WORKTREE; do
-    [[ "$skill" == "$s" ]] && is_main_after=true
-  done
-
-  if $is_main_after; then
-    if $in_worktree; then
-      echo "LEAVE_WORKTREE"
-      warn "'$skill' runs on main — worktree should already be removed"
-      echo "  cd $REPO_ROOT"
+      warn "'$skill' typically runs on main before the worktree is created"
+      echo "  If you're doing delta work in an existing branch, this is fine."
     else
       echo "STAY_MAIN"
     fi
     return 0
   fi
 
-  # Skills that must run in a worktree
-  local needs_worktree=false
+  # --- Worktree skills (execution, testing, review — all in the branch) ---
+  local is_wt=false
   for s in $WORKTREE_SKILLS; do
-    [[ "$skill" == "$s" ]] && needs_worktree=true
+    [[ "$skill" == "$s" ]] && is_wt=true
   done
 
-  if $needs_worktree; then
+  if $is_wt; then
     if $in_worktree; then
       echo "IN_WORKTREE"
-      ok "Already in worktree for '$skill'"
+      ok "In worktree for '$skill'"
       echo "  Branch: $current_branch"
     else
       echo "NEED_WORKTREE"
       if [[ -n "$branch" ]]; then
-        info "'$skill' needs a worktree — creating/entering '$branch'"
-        # Actually create it (idempotent)
+        info "'$skill' needs the worktree — creating/entering '$branch'"
         cmd_create "$branch"
       else
         warn "'$skill' needs a worktree but no --branch specified"
@@ -242,11 +213,44 @@ cmd_guard() {
     return 0
   fi
 
-  # review-protocol: always on main, read branch diffs via git diff
-  if [[ "$skill" == "review-protocol" ]]; then
+  # --- Promoting: transitions from worktree to main ---
+  if [[ "$skill" == "$PROMOTE_SKILL" ]]; then
+    # promoting-change-set does the squash-merge FROM main.
+    # But it first validates the branch, so the branch must exist.
     if $in_worktree; then
       echo "LEAVE_WORKTREE"
-      info "'review-protocol' runs on main — reading branch diff from there"
+      info "'$skill' squash-merges to main — switch to repo root first"
+      echo "  cd $REPO_ROOT"
+      return 0
+    fi
+
+    local target="${branch:-}"
+    if [[ -z "$target" ]]; then
+      fail "'$skill' needs --branch to know which worktree to promote"
+      return 1
+    fi
+
+    if [[ -d "$WORKTREE_DIR/$target" ]] || git show-ref --verify --quiet "refs/heads/$target" 2>/dev/null; then
+      echo "STAY_MAIN"
+      ok "On main. Branch '$target' ready to promote."
+      echo "  Run: scripts/worktree.sh promote $target"
+    else
+      fail "Branch '$target' not found — nothing to promote"
+      return 1
+    fi
+    return 0
+  fi
+
+  # --- Post-merge skills (verification on main, worktree already gone) ---
+  local is_post=false
+  for s in $POST_MERGE_SKILLS; do
+    [[ "$skill" == "$s" ]] && is_post=true
+  done
+
+  if $is_post; then
+    if $in_worktree; then
+      echo "LEAVE_WORKTREE"
+      warn "'$skill' runs on main after merge — worktree should already be removed"
       echo "  cd $REPO_ROOT"
     else
       echo "STAY_MAIN"
@@ -254,14 +258,10 @@ cmd_guard() {
     return 0
   fi
 
-  # All other skills: run on main
+  # --- Unknown skill: default to current location ---
   if $in_worktree; then
-    # If we're in a worktree but this skill doesn't need one,
-    # the user may have navigated here manually. Don't force them out
-    # for pre-execution skills, but warn.
-    echo "STAY_MAIN"
-    warn "'$skill' typically runs on main — you're in a worktree"
-    echo "  This is unusual. If intentional, proceed. Otherwise: cd $REPO_ROOT"
+    echo "IN_WORKTREE"
+    info "Unknown skill '$skill' — staying in current worktree"
   else
     echo "STAY_MAIN"
   fi
