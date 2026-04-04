@@ -48,11 +48,12 @@ Default recommendation:
   9. `writing-ux-design`
   10. `writing-ui-design`
   11. `writing-technical-design`
-  12. `spec-style-sync`
-  13. `writing-change-set`
-  14. `executing-change-set`
-  15. `landing-change-set`
-  16. `verifying-promotion`
+  12. `solution-explorer`
+  13. `spec-style-sync`
+  14. `writing-change-set`
+  15. `executing-change-set`
+  16. `landing-change-set`
+  17. `verifying-promotion`
 - For prompts effectively meaning "build me an app", run this lane end to end automatically unless a real blocker or contradiction appears.
 
 ### Convert Mode

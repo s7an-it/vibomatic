@@ -30,6 +30,7 @@ they attach to the core pipeline.
 - `writing-ux-design`
 - `writing-ui-design`
 - `writing-technical-design`
+- `solution-explorer`
 - `writing-change-set`
 - `executing-change-set`
 - `review-protocol`

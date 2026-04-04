@@ -122,7 +122,7 @@ preflight() {
 # ============================================================
 
 # Skills that run BEFORE the worktree exists (planning phase, on main)
-PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass"
+PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design solution-explorer spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass"
 
 # Skills that run INSIDE the worktree (implementation + validation)
 # Everything from execution through review happens in the branch

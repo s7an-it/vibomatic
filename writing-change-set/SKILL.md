@@ -13,8 +13,8 @@ outputs:
     - { path: "docs/plans/<date>-<name>/manifest.md", artifact: implementation-manifest }
 chain:
   lanes:
-    greenfield: { position: 11, prev: spec-style-sync, next: executing-change-set }
-    brownfield-feature: { position: 7, prev: spec-style-sync, next: executing-change-set }
+    greenfield: { position: 12, prev: spec-style-sync, next: executing-change-set }
+    brownfield-feature: { position: 8, prev: spec-style-sync, next: executing-change-set }
     bugfix: { position: 2, prev: bugfix-brief, next: executing-change-set }
     refactor: { position: 2, prev: spec-code-sync, next: executing-change-set }
   progressive: true

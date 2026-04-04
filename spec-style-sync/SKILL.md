@@ -20,8 +20,8 @@ outputs:
     - { path: "docs/specs/style-contract.md", artifact: style-contract }
 chain:
   lanes:
-    greenfield: { position: 10, prev: writing-technical-design, next: writing-change-set }
-    brownfield-feature: { position: 6, prev: writing-technical-design, next: writing-change-set }
+    greenfield: { position: 11, prev: solution-explorer, next: writing-change-set }
+    brownfield-feature: { position: 7, prev: solution-explorer, next: writing-change-set }
   progressive: true
   self_verify: true
   human_checkpoint: false

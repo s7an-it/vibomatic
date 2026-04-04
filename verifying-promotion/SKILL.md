@@ -11,8 +11,8 @@ outputs:
     - { path: "docs/specs/features/<name>.md", artifact: feature-spec, status: VERIFIED }
 chain:
   lanes:
-    greenfield: { position: 14, prev: landing-change-set, next: null }
-    brownfield-feature: { position: 11, prev: landing-change-set, next: null }
+    greenfield: { position: 15, prev: landing-change-set, next: null }
+    brownfield-feature: { position: 12, prev: landing-change-set, next: null }
     bugfix: { position: 6, prev: landing-change-set, next: null }
     refactor: { position: 6, prev: landing-change-set, next: null }
   progressive: true
