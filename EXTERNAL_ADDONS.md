@@ -9,6 +9,8 @@ they attach to the core pipeline.
 ## Core Pack (always available)
 
 - `vision-sync`
+- `domain-expert`
+- `competitor-analysis`
 - `persona-builder`
 - `journey-sync`
 - `journey-qa-ac-testing`
@@ -22,6 +24,7 @@ they attach to the core pipeline.
 - `repo-conversion`
 - `bugfix-brief`
 - `work-item-sync`
+- `skill-finder`
 - `research`
 - `writing-spec`
 - `writing-ux-design`

@@ -68,6 +68,8 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 ### Core Pack (always available in vibomatic)
 
 - `vision-sync`
+- `domain-expert`
+- `competitor-analysis`
 - `persona-builder`
 - `journey-sync`
 - `journey-qa-ac-testing`
@@ -81,6 +83,7 @@ Skill-name contract is machine-checked in `skills-manifest.json` via `node scrip
 - `repo-conversion`
 - `bugfix-brief`
 - `work-item-sync`
+- `skill-finder`
 - `research`
 - `executing-change-set`
 

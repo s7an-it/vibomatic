@@ -1,6 +1,8 @@
 {
   "includedSkills": [
     "vision-sync",
+    "domain-expert",
+    "competitor-analysis",
     "persona-builder",
     "journey-sync",
     "journey-qa-ac-testing",
@@ -14,6 +16,7 @@
     "repo-conversion",
     "bugfix-brief",
     "work-item-sync",
+    "skill-finder",
     "research",
     "writing-spec",
     "writing-ux-design",
@@ -28,6 +31,8 @@
   ],
   "corePackForRouting": [
     "vision-sync",
+    "domain-expert",
+    "competitor-analysis",
     "persona-builder",
     "journey-sync",
     "journey-qa-ac-testing",
@@ -41,6 +46,7 @@
     "repo-conversion",
     "bugfix-brief",
     "work-item-sync",
+    "skill-finder",
     "research",
     "executing-change-set"
   ],
@@ -82,6 +88,8 @@
   },
   "bootstrapStartSequence": [
     "vision-sync",
+    "domain-expert",
+    "competitor-analysis",
     "persona-builder",
     "feature-discovery",
     "writing-spec",
@@ -98,7 +106,7 @@
   ],
   "laneDefinitions": {
     "greenfield": {
-      "skills": ["vision-sync", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "promoting-change-set", "verifying-promotion"],
+      "skills": ["vision-sync", "domain-expert", "competitor-analysis", "persona-builder", "feature-discovery", "writing-spec", "spec-ac-sync", "journey-sync", "writing-ux-design", "writing-ui-design", "writing-technical-design", "spec-style-sync", "writing-change-set", "executing-change-set", "promoting-change-set", "verifying-promotion"],
       "defaultSkips": []
     },
     "brownfield-conversion": {

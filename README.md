@@ -236,6 +236,8 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 ## Included Skills
 
 - `vision-sync`
+- `domain-expert`
+- `competitor-analysis`
 - `persona-builder`
 - `journey-sync`
 - `journey-qa-ac-testing`
@@ -249,6 +251,7 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - `repo-conversion`
 - `bugfix-brief`
 - `work-item-sync`
+- `skill-finder`
 - `research`
 - `writing-spec`
 - `writing-ux-design`

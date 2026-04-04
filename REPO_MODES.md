@@ -38,19 +38,21 @@ Default recommendation:
   - `docs/marketing/` (when using `feature-marketing-insights`)
 - Default greenfield sequence:
   1. `vision-sync`
-  2. `persona-builder`
-  3. `feature-discovery`
-  4. `writing-spec`
-  5. `spec-ac-sync`
-  6. `journey-sync`
-  7. `writing-ux-design`
-  8. `writing-ui-design`
-  9. `writing-technical-design`
-  10. `spec-style-sync`
-  11. `writing-change-set`
-  12. `executing-change-set`
-  13. `promoting-change-set`
-  14. `verifying-promotion`
+  2. `domain-expert`
+  3. `competitor-analysis`
+  4. `persona-builder`
+  5. `feature-discovery`
+  6. `writing-spec`
+  7. `spec-ac-sync`
+  8. `journey-sync`
+  9. `writing-ux-design`
+  10. `writing-ui-design`
+  11. `writing-technical-design`
+  12. `spec-style-sync`
+  13. `writing-change-set`
+  14. `executing-change-set`
+  15. `promoting-change-set`
+  16. `verifying-promotion`
 - For prompts effectively meaning "build me an app", run this lane end to end automatically unless a real blocker or contradiction appears.
 
 ### Convert Mode
