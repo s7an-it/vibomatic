@@ -97,6 +97,8 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 | Artifact | Skill | Purpose |
 |----------|-------|---------|
 | Vision | `write-vision` | Product direction, boundaries, principles |
+| Domain Profile | `analyze-domain` | Industry, tech stack, domain reference packs |
+| Competitor Analysis | `analyze-competitors` | Competitive landscape, whitespace, differentiation |
 | Personas | `build-personas` | Who uses this (human and system consumers) |
 | Design System | `design-ui` | Visual language: tokens, typography, colors, spacing |
 
@@ -104,38 +106,26 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 
 | Phase | Skill | Produces | Gate |
 |-------|-------|----------|------|
-| 3. Spec | `write-spec` | User stories, ACs, system dependencies, journeys | G1 |
+| 3. Discovery | `validate-feature` | Feature Ship Brief (8 business questions) | — |
+| 3. Spec | `write-spec` | User stories, ACs, system dependencies | G1 |
+| 3b. AC Audit | `audit-ac` | Rewritten/added acceptance criteria | — |
+| 3c. Journeys | `write-journeys` | BDD journey docs (.feature.md) with AC traceability | — |
 | 4. UX Design | `design-ux` | Screen flows, states, interactions | G2 |
 | 5. UI Design | `design-ui` | Component specs, design tokens, visual hierarchy | G3 |
 | 6. Technical Design | `design-tech` | Architecture, data model, feasibility | G4 |
-| 7. Implementation Planning | `plan-changeset` | Implementation manifest, task graph, AC/test mapping | — |
-| 7b. Execution | `execute-changeset` | Code in worktree, staged diffs, checkpoints | G5 |
-| 8. Promotion | `land-changeset` | Squash merge to main + manifest/diff validation | G6 |
-| 9. Verification | sync-spec-code + QA + E2E | VERIFIED status | G7 |
+| 6b. Alternatives | `explore-solutions` | Challenge baseline with alternative paradigms | — |
+| 6c. Code Style | `define-code-style` | Code style contract for the project | — |
+| 7. Plan | `plan-changeset` | Implementation manifest, task graph, AC/test mapping | — |
+| 7b. Execute | `execute-changeset` | Code in worktree, staged diffs, checkpoint commits | G5 |
+| 7c. Correctness | `audit-implementation` | Deep correctness audit before landing | — |
+| 8. Promote | `land-changeset` | Squash merge to main, version bump, PR | G6 |
+| 9. Verify | `verify-promotion` | VERIFIED status (spec-sync + QA + E2E proof) | G7 |
 
 ### Feature Spec Lifecycle
 
 ```
 DRAFT → UX-REVIEWED → DESIGNED → BASELINED → CHANGE-SET-APPROVED → PROMOTED → VERIFIED
 ```
-
-### Supporting Skills
-
-| Skill | Purpose |
-|-------|---------|
-| `validate-feature` | Validate feature ideas against existing product context |
-| `audit-ac` | Ensure acceptance criteria are complete and testable |
-| `sync-spec-code` | Detect drift between specs and code (PLANNED/RESOLVED/DRIFT) |
-| `write-journeys` | BDD journeys with Layer 3 analysis (finds hidden dependencies) |
-| `test-journeys` | Journey-based QA against live environments |
-| `write-e2e` | E2E test authoring (accessibility-first, journey-based) |
-| `analyze-marketing` | Mine feature specs for marketing context |
-| `route-workflow` | Route to the right skill and lane based on project state |
-| `onboard-repo` | Convert an existing repo into vibomatic working mode before full pipeline use |
-| `diagnose-bug` | Root-cause-first planning for bugs and regressions |
-| `sync-work-items` | Project repo-canonical work items to GitHub Issues |
-| `execute-changeset` | Execute the implementation plan directly in the worktree with staged reviews and checkpoints |
-| `review-gate` | Universal review gate (self-review → cross-review → convergence) |
 
 ## Feature Types
 
@@ -151,10 +141,94 @@ All types go through the same pipeline. The type changes the consumer, not the
 rigor. Specifying a Feature automatically reveals every Enabler and Integration
 it depends on (the cascade effect).
 
+## Workflow Lanes
+
+Vibomatic routes work into lanes based on repo state and change type.
+Use `route-workflow` to detect the right lane automatically, or pick one manually.
+
+### Greenfield
+
+Full progressive narrowing pipeline for new products or features in clean repos.
+
+```
+write-vision → analyze-domain → analyze-competitors → build-personas →
+validate-feature → write-spec → audit-ac → write-journeys →
+design-ux → design-ui → design-tech → explore-solutions →
+define-code-style → plan-changeset → execute-changeset →
+audit-implementation → land-changeset → verify-promotion
+```
+
+Use when: starting a new project, adding a major feature to an empty or
+near-empty repo, or the user says "build me an app."
+
+### Brownfield Conversion
+
+Onboard an existing repo into vibomatic before applying other lanes.
+
+```
+onboard-repo → sync-work-items
+```
+
+Use when: the repo has shipped code, docs, tests, or conventions that must be
+inventoried and mapped before vibomatic can govern it. Does not rewrite anything
+— logs findings as work items and routes each to the right lane.
+
+### Brownfield Feature
+
+Extend an existing system with delta specs instead of regenerating the full world.
+Skips UX and UI design by default (override with `--include design-ux,design-ui`).
+
+```
+sync-spec-code → validate-feature → write-spec → write-journeys →
+design-tech → explore-solutions → define-code-style →
+plan-changeset → execute-changeset → review-gate →
+audit-implementation → land-changeset → verify-promotion
+```
+
+Use when: adding a feature to a repo that already has specs, journeys, and
+working code. Starts with drift check to ensure the spec baseline is accurate.
+
+### Bugfix
+
+Root-cause-first correction. Skips code style by default.
+
+```
+diagnose-bug → plan-changeset → execute-changeset →
+review-gate → audit-implementation → land-changeset → verify-promotion
+```
+
+Use when: a work item describes broken behavior, a regression, or a production
+issue. The diagnosis produces a brief with root cause, fix surface, and proof
+plan before any code is touched.
+
+### Drift / Maintenance
+
+Reconcile specs, journeys, and code without shipping new behavior.
+
+```
+sync-spec-code → write-journeys → sync-work-items
+```
+
+Use when: specs have drifted from code (PLANNED items are now implemented,
+code contradicts spec, journeys reference stale behavior). Produces updated
+annotations and work items.
+
+### Refactor
+
+Preserve behavior while making bounded structural changes.
+
+```
+sync-spec-code → plan-changeset → execute-changeset →
+review-gate → audit-implementation → land-changeset → verify-promotion
+```
+
+Use when: renaming, restructuring, extracting, or cleaning up code without
+changing user-facing behavior.
+
 ## The Worktree Model
 
-All phases happen in a single worktree branched from main. Code lives in
-actual files, not markdown documents.
+All implementation phases happen in a single worktree branched from main.
+Code lives in actual files, not markdown documents.
 
 ```
 feature/match-discovery (worktree branch)
@@ -175,6 +249,8 @@ Each phase creates a checkpoint commit on the feature branch. The manifest
 describes what changed, how tasks are grouped, and what validation should
 happen, preserving reviewability. Promotion is `git merge --squash` to main —
 one clean commit with the full context.
+
+Full worktree model: [`WORKTREES.md`](WORKTREES.md)
 
 ## Token Efficiency
 
@@ -203,85 +279,86 @@ npx skills add s7an-it/vibomatic
 
 ## Repository Modes
 
-- **bootstrap** — initialize a project with no established workflow
-- **convert** — adapt to an existing project's conventions
+- **bootstrap** — greenfield, no established workflow. Vibomatic creates the
+  structure from scratch.
+- **convert** — brownfield, existing code and conventions. Vibomatic inventories
+  first, adapts second.
 
-Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
-
-### Default Recommendation
-
-- **Clean repo / greenfield**: use vibomatic directly. Let the repo adopt the
-  vibomatic workflow from day one.
-- **Existing repo / brownfield**: run `onboard-repo` first. Inventory the
-  current truth, map artifacts into vibomatic form, log findings as work items,
-  then route to the right lane.
-
-### Workflow Lanes
-
-- **Greenfield feature lane**: full progressive narrowing pipeline for net-new
-  products or subsystems.
-- **Auto greenfield lane**: full-auto clean-repo path for prompts like
-  "build me an app", with blockers only for real contradictions or missing intent.
-- **Brownfield conversion lane**: establish `project-state.md`, canonical
-  artifact mapping, and work-item inventory before enforcing the full pipeline.
-- **Brownfield feature lane**: extend an existing system using delta specs and
-  journey expansion instead of regenerating the full world.
-- **Bugfix / regression lane**: root-cause-first correction work using
-  `diagnose-bug`, then implementation and verification.
-- **Drift / maintenance lane**: reconcile specs, journeys, and code with
-  `sync-spec-code`, then route the resulting items.
-- **Refactor / chore lane**: preserve behavior while making bounded structural
-  or repo-state changes through implementation planning and execution.
+Mode contract and detection logic: [`REPO_MODES.md`](REPO_MODES.md)
 
 ## Included Skills
 
-- `write-vision`
-- `analyze-domain`
-- `analyze-competitors`
-- `build-personas`
-- `write-journeys`
-- `test-journeys`
-- `validate-feature`
-- `audit-ac`
-- `sync-spec-code`
-- `define-code-style`
-- `write-e2e`
-- `analyze-marketing`
-- `route-workflow`
-- `onboard-repo`
-- `diagnose-bug`
-- `sync-work-items`
-- `discover-skills`
-- `research`
-- `write-spec`
-- `design-ux`
-- `design-ui`
-- `design-tech`
-- `explore-solutions`
-- `plan-changeset`
-- `execute-changeset`
-- `review-gate`
-- `audit-implementation`
-- `land-changeset`
-- `verify-promotion`
-- `extract-bootstrap`
-- `review-cross-model`
-- `track-visuals`
-- `review-security`
-- `manage-learnings`
-- `test-framework`
+### Pipeline (ordered)
+
+| Skill | Action |
+|-------|--------|
+| `write-vision` | Create or refine the product vision |
+| `analyze-domain` | Build domain expertise and reference packs |
+| `analyze-competitors` | Map competitive landscape (runs parallel with analyze-domain) |
+| `build-personas` | Build user personas from vision and challenge libraries |
+| `validate-feature` | Validate a feature idea with 8 business questions |
+| `write-spec` | Write feature spec with user stories and ACs |
+| `audit-ac` | Audit and rewrite acceptance criteria for completeness |
+| `write-journeys` | Generate BDD journey docs with AC traceability |
+| `design-ux` | Define screen flows, state machines, interaction patterns |
+| `design-ui` | Define component specs, design tokens, visual hierarchy |
+| `design-tech` | Define architecture, data model, feasibility matrix |
+| `explore-solutions` | Challenge the chosen approach with alternative paradigms |
+| `define-code-style` | Define or audit the project code style contract |
+| `plan-changeset` | Produce implementation manifest with task graph |
+| `execute-changeset` | Execute the plan in a worktree with TDD and checkpoints |
+| `audit-implementation` | Deep correctness audit before landing |
+| `land-changeset` | Validate, version, PR, squash-merge, clean up |
+| `verify-promotion` | Post-merge verification (spec-sync + QA + E2E) |
+
+### Review
+
+| Skill | Action |
+|-------|--------|
+| `review-gate` | Run the 5-step adversarial review at gates G1-G7 |
+| `review-security` | OWASP Top 10 + STRIDE + supply chain audit |
+| `review-cross-model` | Adversarial review via a second model |
+
+### Sync
+
+| Skill | Action |
+|-------|--------|
+| `sync-spec-code` | Reconcile spec annotations against codebase |
+| `sync-work-items` | Push repo-canonical work items to GitHub Issues |
+
+### Test
+
+| Skill | Action |
+|-------|--------|
+| `test-journeys` | Journey-first QA against a live URL |
+| `write-e2e` | Write E2E test files from journey docs |
+| `test-framework` | Benchmark the vibomatic pipeline itself |
+
+### Utility
+
+| Skill | Action |
+|-------|--------|
+| `route-workflow` | Detect lane and route to the next skill |
+| `diagnose-bug` | Root-cause investigation before any fix |
+| `onboard-repo` | Inventory and map a brownfield repo |
+| `research` | Resolve uncertainty about APIs, libraries, patterns |
+| `discover-skills` | Find and install external skills |
+| `extract-bootstrap` | Extract patterns from a codebase into templates |
+| `track-visuals` | Capture and diff screenshots across breakpoints |
+| `analyze-marketing` | Mine feature specs for marketing angles |
+| `manage-learnings` | Review, search, prune, export project learnings |
 
 ## Full Doctrine
 
-The complete methodology, including the technical argument for progressive
-narrowing, the review protocol specification, the worktree model, the
-promotion process, and token cost analysis:
+The complete methodology — technical argument for progressive narrowing,
+review protocol specification, worktree model, promotion process, token cost
+analysis, and execution model:
 
 [`DOCTRINE.md`](DOCTRINE.md)
 
 ## Skill Pack Comparison
 
-How vibomatic compares to gstack (Garry Tan) and superpowers (Jesse Vincent):
+How vibomatic compares to gstack and superpowers:
 
 [`references/skill-pack-comparison.md`](references/skill-pack-comparison.md)
 

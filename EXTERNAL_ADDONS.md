@@ -1,48 +1,38 @@
 # External Add-On Packs
 
-This repository ships a **core skill pack**. Some routes in `route-workflow`
-support optional external ecosystems.
+This repository ships a **core skill pack** (35 skills). Some routes in
+`route-workflow` support optional external ecosystems.
 
 Use this file as the contract for which external skills are optional and how
 they attach to the core pipeline.
 
 ## Core Pack (always available)
 
-- `write-vision`
-- `analyze-domain`
-- `analyze-competitors`
-- `build-personas`
-- `write-journeys`
-- `test-journeys`
-- `validate-feature`
-- `audit-ac`
-- `sync-spec-code`
-- `define-code-style`
-- `write-e2e`
-- `analyze-marketing`
-- `route-workflow`
-- `onboard-repo`
-- `diagnose-bug`
-- `sync-work-items`
-- `discover-skills`
-- `research`
-- `write-spec`
-- `design-ux`
-- `design-ui`
-- `design-tech`
-- `explore-solutions`
-- `plan-changeset`
-- `execute-changeset`
-- `review-gate`
-- `audit-implementation`
-- `land-changeset`
-- `verify-promotion`
-- `extract-bootstrap`
-- `review-cross-model`
-- `track-visuals`
-- `review-security`
-- `manage-learnings`
-- `test-framework`
+### Pipeline
+
+`write-vision`, `analyze-domain`, `analyze-competitors`, `build-personas`,
+`validate-feature`, `write-spec`, `audit-ac`, `write-journeys`,
+`design-ux`, `design-ui`, `design-tech`, `explore-solutions`,
+`define-code-style`, `plan-changeset`, `execute-changeset`,
+`audit-implementation`, `land-changeset`, `verify-promotion`
+
+### Review
+
+`review-gate`, `review-security`, `review-cross-model`
+
+### Sync
+
+`sync-spec-code`, `sync-work-items`
+
+### Test
+
+`test-journeys`, `write-e2e`, `test-framework`
+
+### Utility
+
+`route-workflow`, `diagnose-bug`, `onboard-repo`, `research`,
+`discover-skills`, `extract-bootstrap`, `track-visuals`,
+`analyze-marketing`, `manage-learnings`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)
 
