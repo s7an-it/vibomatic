@@ -2,7 +2,7 @@
 
 Every key design decision in the pipeline gets 5 ranked alternatives with
 justification and trade-offs. This applies to all design skills:
-`writing-spec`, `writing-ux-design`, `writing-ui-design`, `writing-technical-design`.
+`write-spec`, `design-ux`, `design-ui`, `design-tech`.
 
 ## Session Mode
 
@@ -16,7 +16,7 @@ At the start of a pipeline run, the user selects one mode:
 Both modes generate the same 5 alternatives with the same depth. The only
 difference is who makes the final pick.
 
-The mode is set once (by `workflow-compass` or the first skill invoked) and
+The mode is set once (by `route-workflow` or the first skill invoked) and
 propagates through the chain via the `--interactive` or `--auto` flag.
 
 ## What Counts as a "Key Decision"
@@ -25,10 +25,10 @@ Not every line in a design needs 5 alternatives. Key decisions are:
 
 | Skill | Key decisions |
 |-------|---------------|
-| `writing-spec` | Feature scope (what's in/out), story granularity, AC approach |
-| `writing-ux-design` | Navigation model, interaction pattern, information hierarchy |
-| `writing-ui-design` | Component strategy, layout system, responsive approach |
-| `writing-technical-design` | Architecture, data model, API pattern, state management |
+| `write-spec` | Feature scope (what's in/out), story granularity, AC approach |
+| `design-ux` | Navigation model, interaction pattern, information hierarchy |
+| `design-ui` | Component strategy, layout system, responsive approach |
+| `design-tech` | Architecture, data model, API pattern, state management |
 
 Rule of thumb: if the decision is hard to reverse once implemented, it gets alternatives.
 
@@ -93,7 +93,7 @@ All decisions are logged to `docs/specs/decisions/<feature-name>.md`:
 ## Session Mode: interactive | auto
 
 ## D-1: <decision title>
-**Phase:** writing-spec | writing-ux-design | writing-ui-design | writing-technical-design
+**Phase:** write-spec | design-ux | design-ui | design-tech
 **Decided:** <option chosen>
 **By:** user (interactive) | AI (auto)
 
@@ -106,10 +106,10 @@ All decisions are logged to `docs/specs/decisions/<feature-name>.md`:
 ```
 
 This log is consumed by:
-- `solution-explorer` — to understand what was already decided and why
-- `writing-change-set` — to trace decisions to implementation tasks
-- `review-protocol` — to verify implementation matches decisions
-- `systems-analysis` — to check decisions against actual code behavior
+- `explore-solutions` — to understand what was already decided and why
+- `plan-changeset` — to trace decisions to implementation tasks
+- `review-gate` — to verify implementation matches decisions
+- `audit-implementation` — to check decisions against actual code behavior
 
 ## How to Embed in a Skill
 

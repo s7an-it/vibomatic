@@ -1,7 +1,7 @@
 # Bootstrap Templates
 
 Production-verified project patterns extracted from real repos. When a template
-matches your stack, `solution-explorer` can skip — the paradigm is already proven.
+matches your stack, `explore-solutions` can skip — the paradigm is already proven.
 
 ## Structure
 
@@ -11,7 +11,7 @@ Each template is a directory:
 references/bootstraps/
   nextjs-prisma-trpc/
     manifest.md          — stack, patterns, when to use, who verified
-    decisions.md         — pre-made paradigm decisions (what solution-explorer would produce)
+    decisions.md         — pre-made paradigm decisions (what explore-solutions would produce)
     scaffold.sh          — creates skeleton project (optional)
   express-postgres-rest/
     manifest.md
@@ -50,10 +50,10 @@ references/bootstraps/
 
 ## How Templates Are Created
 
-### From a public repo (via bootstrap-extract skill)
+### From a public repo (via extract-bootstrap skill)
 
 ```
-Use bootstrap-extract to extract patterns from https://github.com/org/repo
+Use extract-bootstrap to extract patterns from https://github.com/org/repo
 ```
 
 The skill analyzes the repo's architecture, dependencies, patterns, and
@@ -65,12 +65,12 @@ Create the directory and files by hand from your own production experience.
 
 ## How Templates Are Used
 
-1. `solution-explorer` checks `references/bootstraps/` for a matching template
+1. `explore-solutions` checks `references/bootstraps/` for a matching template
 2. If a template's "When To Use" matches the current feature's stack/context:
    - Load the template's `decisions.md` as pre-made paradigm decisions
    - Skip exploration (the paradigm is production-verified)
    - The tech design incorporates the template's patterns
-3. If no template matches → solution-explorer runs full exploration
+3. If no template matches → explore-solutions runs full exploration
 
 ## Contributing Templates
 

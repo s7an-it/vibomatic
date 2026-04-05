@@ -122,17 +122,17 @@ preflight() {
 # ============================================================
 
 # Skills that run BEFORE the worktree exists (planning phase, on main)
-PRE_WORKTREE_SKILLS="vision-sync domain-expert competitor-analysis persona-builder feature-discovery writing-spec spec-ac-sync journey-sync writing-ux-design writing-ui-design writing-technical-design solution-explorer spec-style-sync spec-code-sync writing-change-set bugfix-brief repo-conversion work-item-sync skill-finder research feature-marketing-insights journey-qa-ac-testing workflow-compass bootstrap-extract review-learnings security-review visual-tracker framework-test"
+PRE_WORKTREE_SKILLS="write-vision analyze-domain analyze-competitors build-personas validate-feature write-spec audit-ac write-journeys design-ux design-ui design-tech explore-solutions define-code-style sync-spec-code plan-changeset diagnose-bug onboard-repo sync-work-items discover-skills research analyze-marketing test-journeys route-workflow extract-bootstrap manage-learnings review-security track-visuals test-framework"
 
 # Skills that run INSIDE the worktree (implementation + validation)
 # Everything from execution through review happens in the branch
-WORKTREE_SKILLS="executing-change-set review-protocol agentic-e2e-playwright systems-analysis cross-model-review"
+WORKTREE_SKILLS="execute-changeset review-gate write-e2e audit-implementation review-cross-model"
 
 # The squash-merge: transitions FROM worktree TO main
-PROMOTE_SKILL="landing-change-set"
+PROMOTE_SKILL="land-changeset"
 
 # Post-merge verification on main
-POST_MERGE_SKILLS="verifying-promotion"
+POST_MERGE_SKILLS="verify-promotion"
 
 cmd_guard() {
   local skill="" lane="" branch=""
@@ -215,7 +215,7 @@ cmd_guard() {
 
   # --- Promoting: transitions from worktree to main ---
   if [[ "$skill" == "$PROMOTE_SKILL" ]]; then
-    # landing-change-set does the squash-merge FROM main.
+    # land-changeset does the squash-merge FROM main.
     # But it first validates the branch, so the branch must exist.
     if $in_worktree; then
       echo "LEAVE_WORKTREE"
@@ -824,9 +824,9 @@ Commands:
   preflight          Run safety checks without creating anything
 
 Worktree conditions:
-  ALWAYS:  executing-change-set, landing-change-set, framework-test autopilot
+  ALWAYS:  execute-changeset, land-changeset, test-framework autopilot
   NEVER:   spec writing, vision/persona, reviews/audits
-  OPTIONAL: writing-change-set (simulation), tech design (prototyping)
+  OPTIONAL: plan-changeset (simulation), tech design (prototyping)
 
 Branch naming convention:
   feature-<name>     Greenfield / brownfield feature

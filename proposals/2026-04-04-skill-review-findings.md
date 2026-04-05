@@ -7,34 +7,34 @@
 
 ### F1: Most skills lack audit mode (HIGH)
 
-Only 6/28 skills have any audit/standalone-verification behavior: persona-builder, spec-ac-sync, spec-code-sync, spec-style-sync, repo-conversion, agentic-e2e-playwright.
+Only 6/28 skills have any audit/standalone-verification behavior: build-personas, audit-ac, sync-spec-code, define-code-style, onboard-repo, write-e2e.
 
 **Every skill should work as an auditor** of its domain. Examples:
-- `/vision-sync --audit` → checks existing vision.md for completeness, staleness, contradiction with code reality
-- `/journey-sync --audit` → compares existing journeys against current personas, specs, ACs — reports gaps
-- `/writing-ux-design --audit` → reviews existing UX doc against current spec ACs — reports uncovered states
-- `/agentic-e2e-playwright --audit` → reviews existing E2E tests against current journeys — reports coverage gaps
-- `/writing-technical-design --audit` → reviews arch against current code — reports drift
+- `/write-vision --audit` → checks existing vision.md for completeness, staleness, contradiction with code reality
+- `/write-journeys --audit` → compares existing journeys against current personas, specs, ACs — reports gaps
+- `/design-ux --audit` → reviews existing UX doc against current spec ACs — reports uncovered states
+- `/write-e2e --audit` → reviews existing E2E tests against current journeys — reports coverage gaps
+- `/design-tech --audit` → reviews arch against current code — reports drift
 
 **Fix:** Add `## Audit Mode` section to each skill describing how it evaluates existing artifacts.
 
 ### F2: TDD not enforced at the right time (HIGH)
 
-TDD is mentioned in writing-change-set (1 ref) and agentic-e2e-playwright (7 refs) but NOT enforced in executing-change-set where code is actually written. The manifest says "tests before implementation" but the executor doesn't enforce the order.
+TDD is mentioned in plan-changeset (1 ref) and write-e2e (7 refs) but NOT enforced in execute-changeset where code is actually written. The manifest says "tests before implementation" but the executor doesn't enforce the order.
 
-**Fix:** executing-change-set must enforce: for each task group, write test → run (fail) → write code → run (pass) → checkpoint. Red-green-refactor per task.
+**Fix:** execute-changeset must enforce: for each task group, write test → run (fail) → write code → run (pass) → checkpoint. Red-green-refactor per task.
 
 ### F3: BDD not connected to implementation (MEDIUM)
 
-journey-sync produces Gherkin scenarios (48 BDD refs) but these never become executable tests automatically. The connection is: journey → agentic-e2e-playwright → Playwright tests. But there's no enforcement that every journey scenario maps to an E2E test.
+write-journeys produces Gherkin scenarios (48 BDD refs) but these never become executable tests automatically. The connection is: journey → write-e2e → Playwright tests. But there's no enforcement that every journey scenario maps to an E2E test.
 
-**Fix:** Add AC-to-E2E traceability in agentic-e2e-playwright's audit mode. Every journey scenario should map to a test file or be explicitly marked as manual-only.
+**Fix:** Add AC-to-E2E traceability in write-e2e's audit mode. Every journey scenario should map to a test file or be explicitly marked as manual-only.
 
 ### F4: No DESIGN.md artifact defined (HIGH)
 
-vibomatic has `design-system.md` (tokens, colors, typography) produced by writing-ui-design. But there's no `DESIGN.md` (brand, aesthetic, personality, motion principles) like gstack's design-consultation produces. The design-system.md is technical tokens only — it lacks the brand/aesthetic layer.
+vibomatic has `design-system.md` (tokens, colors, typography) produced by design-ui. But there's no `DESIGN.md` (brand, aesthetic, personality, motion principles) like gstack's design-consultation produces. The design-system.md is technical tokens only — it lacks the brand/aesthetic layer.
 
-**Fix:** writing-ui-design should produce or reference a DESIGN.md that covers brand personality, aesthetic direction, motion principles — the layer above tokens. This can be inspired by gstack's DESIGN.md without using paid AI (no Codex, no design binary).
+**Fix:** design-ui should produce or reference a DESIGN.md that covers brand personality, aesthetic direction, motion principles — the layer above tokens. This can be inspired by gstack's DESIGN.md without using paid AI (no Codex, no design binary).
 
 ### F5: Implementation plans have no lifecycle status (MEDIUM)
 
@@ -44,21 +44,21 @@ Plans at `docs/plans/<date>-<name>/manifest.md` are created and executed but hav
 
 ### F6: UX and UI design skills don't connect to each other well (MEDIUM)
 
-writing-ux-design produces screen flows and states. writing-ui-design produces component specs and tokens. But the handoff is weak — UI design should explicitly verify it covers every screen and state from UX design. Currently it just references the UX doc without structured traceability.
+design-ux produces screen flows and states. design-ui produces component specs and tokens. But the handoff is weak — UI design should explicitly verify it covers every screen and state from UX design. Currently it just references the UX doc without structured traceability.
 
-**Fix:** writing-ui-design Step 1 should produce a UX→UI traceability table: for each screen from UX, which components render it. Missing entries = gap.
+**Fix:** design-ui Step 1 should produce a UX→UI traceability table: for each screen from UX, which components render it. Missing entries = gap.
 
-### F7: executing-change-set doesn't load domain-profile or competitor-analysis (LOW)
+### F7: execute-changeset doesn't load domain-profile or analyze-competitors (LOW)
 
-The new domain intelligence (domain-profile.md, competitor-analysis.md) is produced early but not loaded during code generation. executing-change-set loads: manifest, spec, designs, style-contract. Should also load domain conventions for the tech stack.
+The new domain intelligence (domain-profile.md, analyze-competitors.md) is produced early but not loaded during code generation. execute-changeset loads: manifest, spec, designs, style-contract. Should also load domain conventions for the tech stack.
 
-**Fix:** executing-change-set inputs should include domain-profile.md and references/domains/ packs as optional context.
+**Fix:** execute-changeset inputs should include domain-profile.md and references/domains/ packs as optional context.
 
 ### F8: No SDD (Scenario-Driven Development) concept (LOW)
 
 BDD produces scenarios in Gherkin. TDD produces unit tests. But there's no explicit "scenario-driven" phase where scenarios are used to validate implementation decisions BEFORE writing code. This is what the simulation step partially does, but from a file/import perspective, not a user-scenario perspective.
 
-**Fix:** The simulation section in writing-change-set should include a scenario walkthrough: for each journey scenario, trace through the planned task graph and verify the implementation covers it.
+**Fix:** The simulation section in plan-changeset should include a scenario walkthrough: for each journey scenario, trace through the planned task graph and verify the implementation covers it.
 
 ## Fixes to Implement
 
@@ -68,24 +68,24 @@ Add `## Audit Mode` to these skills (the ones that produce reviewable artifacts)
 
 | Skill | Audit does |
 |-------|-----------|
-| vision-sync | Checks vision.md for completeness, staleness, code-reality contradictions |
-| persona-builder | Already has modes 5-6 for gap discovery |
-| feature-discovery | Checks existing briefs against current personas/journeys |
-| writing-spec | Checks spec ACs against vision concepts + zero-state coverage |
-| spec-ac-sync | Already audits (its primary mode) |
-| journey-sync | Compares journeys against current specs/personas, reports missing flows |
-| writing-ux-design | Reviews UX doc against current spec ACs, reports uncovered states |
-| writing-ui-design | Reviews UI doc against UX screens, reports unmapped components |
-| writing-technical-design | Reviews tech design against code reality, reports drift |
-| spec-code-sync | Already audits (its primary mode) |
-| spec-style-sync | Already has audit mode |
-| agentic-e2e-playwright | Reviews E2E coverage against journey scenarios |
-| domain-expert | Re-evaluates domain profile against current codebase |
-| competitor-analysis | Refreshes competitor data, reports market changes |
+| write-vision | Checks vision.md for completeness, staleness, code-reality contradictions |
+| build-personas | Already has modes 5-6 for gap discovery |
+| validate-feature | Checks existing briefs against current personas/journeys |
+| write-spec | Checks spec ACs against vision concepts + zero-state coverage |
+| audit-ac | Already audits (its primary mode) |
+| write-journeys | Compares journeys against current specs/personas, reports missing flows |
+| design-ux | Reviews UX doc against current spec ACs, reports uncovered states |
+| design-ui | Reviews UI doc against UX screens, reports unmapped components |
+| design-tech | Reviews tech design against code reality, reports drift |
+| sync-spec-code | Already audits (its primary mode) |
+| define-code-style | Already has audit mode |
+| write-e2e | Reviews E2E coverage against journey scenarios |
+| analyze-domain | Re-evaluates domain profile against current codebase |
+| analyze-competitors | Refreshes competitor data, reports market changes |
 
-### Fix 2: TDD enforcement in executing-change-set
+### Fix 2: TDD enforcement in execute-changeset
 
-Add to executing-change-set's task execution model:
+Add to execute-changeset's task execution model:
 
 ```markdown
 ### TDD Enforcement
@@ -104,7 +104,7 @@ pure UI components (covered by E2E instead).
 
 ### Fix 3: DESIGN.md artifact
 
-Add to writing-ui-design's process (before component specs):
+Add to design-ui's process (before component specs):
 
 ```markdown
 ### Step 0: Design Foundation (DESIGN.md)
@@ -137,7 +137,7 @@ If DESIGN.md already exists, read it and ensure UI design decisions align.
 
 ### Fix 4: Plan lifecycle status
 
-Add to writing-change-set manifest header:
+Add to plan-changeset manifest header:
 
 ```markdown
 **Status:** DRAFTED
@@ -146,15 +146,15 @@ Add to writing-change-set manifest header:
 Status values: DRAFTED → SIMULATED → EXECUTING → CHECKPOINTED → PROMOTED → VERIFIED
 
 Updated by:
-- writing-change-set → DRAFTED
+- plan-changeset → DRAFTED
 - simulation step → SIMULATED (if all checks pass)
-- executing-change-set → EXECUTING (at start), CHECKPOINTED (all tasks done)
-- landing-change-set → PROMOTED
-- verifying-promotion → VERIFIED
+- execute-changeset → EXECUTING (at start), CHECKPOINTED (all tasks done)
+- land-changeset → PROMOTED
+- verify-promotion → VERIFIED
 
 ### Fix 5: UX→UI traceability table
 
-Add to writing-ui-design Step 1:
+Add to design-ui Step 1:
 
 ```markdown
 ### UX→UI Traceability
@@ -170,9 +170,9 @@ Before designing components, map every screen and state from the UX design:
 Missing entries = design gap. Fill before proceeding to component specs.
 ```
 
-### Fix 6: Domain context in executing-change-set
+### Fix 6: Domain context in execute-changeset
 
-Add to executing-change-set inputs:
+Add to execute-changeset inputs:
 
 ```yaml
 optional:
@@ -182,7 +182,7 @@ optional:
 
 ### Fix 7: Scenario walkthrough in simulation
 
-Add to writing-change-set simulation section:
+Add to plan-changeset simulation section:
 
 ```markdown
 ### Scenario Walkthrough (after file-level checks)

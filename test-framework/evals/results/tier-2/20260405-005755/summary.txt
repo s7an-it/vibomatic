@@ -1,0 +1,5 @@
+Tier 2 Integration Scenarios
+Run: 2026-04-05T00:57:55+03:00
+Passed: 0
+Failed: 0
+Skipped: 4

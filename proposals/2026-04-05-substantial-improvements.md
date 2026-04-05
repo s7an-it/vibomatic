@@ -9,7 +9,7 @@ Not housekeeping. Architectural changes that make the pipeline fundamentally bet
 ### Problem
 
 The greenfield lane has 14 skills before code starts. That's 14 LLM sessions
-producing documents that reference each other. By the time `executing-change-set`
+producing documents that reference each other. By the time `execute-changeset`
 fires, the accumulated context is massive and the early documents (vision, personas)
 are far from attention.
 
@@ -17,34 +17,34 @@ The real question: **does every pre-implementation skill earn its place?**
 
 ### Current pre-implementation chain (14 skills):
 ```
-vision-sync → domain-expert → competitor-analysis → persona-builder →
-feature-discovery → writing-spec → spec-ac-sync → journey-sync →
-writing-ux-design → writing-ui-design → writing-technical-design →
-solution-explorer → spec-style-sync → writing-change-set
+write-vision → analyze-domain → analyze-competitors → build-personas →
+validate-feature → write-spec → audit-ac → write-journeys →
+design-ux → design-ui → design-tech →
+explore-solutions → define-code-style → plan-changeset
 ```
 
 ### Proposed collapsed chain (8 skills):
 
 ```
-vision-sync → domain-expert+competitor-analysis → persona-builder →
-feature-discovery+writing-spec → journey-sync+spec-ac-sync →
-design (UX+UI+DESIGN.md) → writing-technical-design+solution-explorer →
-writing-change-set
+write-vision → analyze-domain+analyze-competitors → build-personas →
+validate-feature+write-spec → write-journeys+audit-ac →
+design (UX+UI+DESIGN.md) → design-tech+explore-solutions →
+plan-changeset
 ```
 
 **What merges:**
-- `domain-expert` + `competitor-analysis` → one skill: "market-research" (they always run together, same inputs, complementary outputs)
-- `feature-discovery` + `writing-spec` → feature-discovery already validates whether to build; writing-spec defines what. Merging means: validate AND spec in one pass, no handoff overhead
-- `journey-sync` + `spec-ac-sync` → journeys exercise ACs, AC audit checks them. Run together, feed each other in one session
-- `writing-ux-design` + `writing-ui-design` + DESIGN.md consultation → one "design" skill that produces UX flows, UI components, and DESIGN.md in one coherent pass
-- `writing-technical-design` + `solution-explorer` → tech design picks the approach, then immediately challenges it with alternatives. Same session, same context, no handoff loss
-- `spec-style-sync` → absorbed into writing-technical-design (it produces a style contract from the same codebase analysis)
+- `analyze-domain` + `analyze-competitors` → one skill: "market-research" (they always run together, same inputs, complementary outputs)
+- `validate-feature` + `write-spec` → validate-feature already validates whether to build; write-spec defines what. Merging means: validate AND spec in one pass, no handoff overhead
+- `write-journeys` + `audit-ac` → journeys exercise ACs, AC audit checks them. Run together, feed each other in one session
+- `design-ux` + `design-ui` + DESIGN.md consultation → one "design" skill that produces UX flows, UI components, and DESIGN.md in one coherent pass
+- `design-tech` + `explore-solutions` → tech design picks the approach, then immediately challenges it with alternatives. Same session, same context, no handoff loss
+- `define-code-style` → absorbed into design-tech (it produces a style contract from the same codebase analysis)
 
 **What this gains:**
 - 14 → 8 pre-implementation skills (43% fewer LLM sessions)
 - Each merged skill has FULL context of both halves (no information loss at handoff)
 - Faster pipeline (fewer context loads, fewer self-verify gates)
-- Finding 7 (spec-ac-sync ordering) solved automatically
+- Finding 7 (audit-ac ordering) solved automatically
 
 **What this risks:**
 - Larger skills are harder to maintain
@@ -61,7 +61,7 @@ writing-change-set
 
 The pipeline is still waterfall. You write a vision, then personas, then specs,
 then design, then tech design, then implement. If implementation reveals the
-spec was wrong, you route back to writing-spec — losing all downstream work.
+spec was wrong, you route back to write-spec — losing all downstream work.
 
 Real product development is iterative. The spec changes while you design. The
 design changes while you implement. The implementation reveals new requirements.
@@ -72,8 +72,8 @@ Instead of routing BACK to an upstream skill (losing all work after it),
 introduce **in-place revision** at any point:
 
 ```
-executing-change-set discovers AC-03 is infeasible
-  → DON'T route back to writing-spec
+execute-changeset discovers AC-03 is infeasible
+  → DON'T route back to write-spec
   → INSTEAD: revise AC-03 in the spec IN PLACE
   → Update the manifest task that depends on AC-03
   → Continue execution
@@ -84,7 +84,7 @@ executing-change-set discovers AC-03 is infeasible
 1. Only the specific AC/story/component that's infeasible gets revised
 2. The revision is logged with justification (not silently changed)
 3. Downstream artifacts that depend on the revised element get flagged for update
-4. The revision is reviewed at the next gate (systems-analysis or review-protocol)
+4. The revision is reviewed at the next gate (audit-implementation or review-gate)
 
 **What this gains:**
 - No more "go back to Phase 2" loops that throw away Phase 3-8 work
@@ -101,23 +101,23 @@ executing-change-set discovers AC-03 is infeasible
 
 ### Problem
 
-Skills run sequentially even when they're independent. `domain-expert` and
-`competitor-analysis` don't depend on each other. `writing-ux-design` and
-`writing-technical-design` don't depend on each other (UX is flows, tech is
+Skills run sequentially even when they're independent. `analyze-domain` and
+`analyze-competitors` don't depend on each other. `design-ux` and
+`design-tech` don't depend on each other (UX is flows, tech is
 architecture). But the progressive chain forces them sequential.
 
 ### Proposed change: Dependency graph with parallel execution
 
 ```
-vision-sync
-  ├── domain-expert ────┐
-  └── competitor-analysis ──┤
-                            └── persona-builder
-                                 └── feature-discovery+writing-spec
-                                      ├── journey-sync+spec-ac-sync
-                                      ├── writing-ux-design ──┐
-                                      └── writing-ui-design ──┤
-                                                              └── writing-technical-design
+write-vision
+  ├── analyze-domain ────┐
+  └── analyze-competitors ──┤
+                            └── build-personas
+                                 └── validate-feature+write-spec
+                                      ├── write-journeys+audit-ac
+                                      ├── design-ux ──┐
+                                      └── design-ui ──┤
+                                                              └── design-tech
 ```
 
 Skills with no data dependency run in parallel (via subagents in worktrees).
@@ -133,8 +133,8 @@ The chain only serializes when there's a real data dependency.
 - More complex worktree management (multiple worktrees simultaneously)
 
 **Recommendation:** Start with the obvious parallel pairs:
-- `domain-expert` + `competitor-analysis` (always parallel, same inputs)
-- `writing-ux-design` + `writing-ui-design` (often parallel, UX doesn't block UI)
+- `analyze-domain` + `analyze-competitors` (always parallel, same inputs)
+- `design-ux` + `design-ui` (often parallel, UX doesn't block UI)
 
 ---
 
@@ -152,7 +152,7 @@ were always living documents.
 When AC-03 changes mid-pipeline, there was no structured record of what it was,
 what it became, why, and which skill made the change. Now there is:
 
-`## Revision Log` in the spec format tracks every AC change. `systems-analysis`
+`## Revision Log` in the spec format tracks every AC change. `audit-implementation`
 verifies code matches the REVISED ACs, not the originals.
 
 ---
@@ -163,7 +163,7 @@ verifies code matches the REVISED ACs, not the originals.
 
 Every skill runs with the same intensity regardless of how confident P0 is.
 A feature with strong demand validation (P0 Q1 score 9/10) gets the same
-solution-explorer depth as a feature with weak validation (Q1 score 3/10).
+explore-solutions depth as a feature with weak validation (Q1 score 3/10).
 
 ### Proposed change: P0 confidence score drives pipeline depth
 
@@ -183,10 +183,10 @@ get LESS (they've already been validated):
 
 | Dimension | Score | Pipeline effect |
 |-----------|-------|----------------|
-| Demand 8+ | solution-explorer Quick mode (sanity check) |
-| Demand <5 | solution-explorer Full mode + extra research |
-| Specificity <5 | Extra persona-builder iteration |
-| Future-fit <5 | domain-expert gets Deep research mode |
+| Demand 8+ | explore-solutions Quick mode (sanity check) |
+| Demand <5 | explore-solutions Full mode + extra research |
+| Specificity <5 | Extra build-personas iteration |
+| Future-fit <5 | analyze-domain gets Deep research mode |
 
 **What this gains:**
 - Pipeline adapts to what's known vs unknown
@@ -208,17 +208,17 @@ already done that thinking.
 
 ```
 User: "I have a spec already. Here's my feature spec. Build it."
-Pipeline: Detects existing spec → skips to writing-technical-design
-          (or writing-change-set if tech design also exists)
+Pipeline: Detects existing spec → skips to design-tech
+          (or plan-changeset if tech design also exists)
 
 User: "I have a tech design. Here's the architecture. Build it."
-Pipeline: Detects existing tech design → skips to writing-change-set
+Pipeline: Detects existing tech design → skips to plan-changeset
 
 User: "I have a manifest. Execute it."
-Pipeline: Detects manifest → skips to executing-change-set
+Pipeline: Detects manifest → skips to execute-changeset
 ```
 
-`workflow-compass` already routes based on what exists. This makes it
+`route-workflow` already routes based on what exists. This makes it
 more aggressive: if the upstream artifact already exists AND is well-formed,
 skip all the skills that would have produced it.
 

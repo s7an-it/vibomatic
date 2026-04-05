@@ -10,7 +10,7 @@ Copyright (c) 2025 Jesse Vincent
 Licensed under the MIT License
 
 The following skills are derived from or based on the superpowers project:
-- writing-change-set/
+- plan-changeset/
 
 ---
 
@@ -19,8 +19,8 @@ Copyright (c) 2024 Pete Petrash
 Licensed under the MIT License
 
 The following skills are derived from or based on the claude-code-setup project:
-- solution-explorer/
-- systems-analysis/
+- explore-solutions/
+- audit-implementation/
 
 The full MIT License text:
 

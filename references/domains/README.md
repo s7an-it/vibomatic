@@ -4,7 +4,7 @@ Domain-specific knowledge that the LLM may lack for a given tech stack or framew
 
 ## What These Are
 
-Markdown files containing conventions, patterns, and version-specific details for frameworks and libraries. They are NOT vibomatic skills — they don't have pipeline positions, chain behavior, or self-verification. They are context packs that `executing-change-set` loads when the tech stack matches.
+Markdown files containing conventions, patterns, and version-specific details for frameworks and libraries. They are NOT vibomatic skills — they don't have pipeline positions, chain behavior, or self-verification. They are context packs that `execute-changeset` loads when the tech stack matches.
 
 ## When to Create One
 
@@ -26,7 +26,7 @@ domains/
 
 ## How They Load
 
-`executing-change-set` checks `package.json` (or equivalent) at the start of execution:
+`execute-changeset` checks `package.json` (or equivalent) at the start of execution:
 
 1. Detect major frameworks and their versions
 2. Check `references/domains/` for a matching pack

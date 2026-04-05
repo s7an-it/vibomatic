@@ -96,22 +96,22 @@ This catches: agents missing own errors (Step 3), agents agreeing too easily
 
 | Artifact | Skill | Purpose |
 |----------|-------|---------|
-| Vision | `vision-sync` | Product direction, boundaries, principles |
-| Personas | `persona-builder` | Who uses this (human and system consumers) |
-| Design System | `writing-ui-design` | Visual language: tokens, typography, colors, spacing |
+| Vision | `write-vision` | Product direction, boundaries, principles |
+| Personas | `build-personas` | Who uses this (human and system consumers) |
+| Design System | `design-ui` | Visual language: tokens, typography, colors, spacing |
 
 ### Per-Feature Pipeline
 
 | Phase | Skill | Produces | Gate |
 |-------|-------|----------|------|
-| 3. Spec | `writing-spec` | User stories, ACs, system dependencies, journeys | G1 |
-| 4. UX Design | `writing-ux-design` | Screen flows, states, interactions | G2 |
-| 5. UI Design | `writing-ui-design` | Component specs, design tokens, visual hierarchy | G3 |
-| 6. Technical Design | `writing-technical-design` | Architecture, data model, feasibility | G4 |
-| 7. Implementation Planning | `writing-change-set` | Implementation manifest, task graph, AC/test mapping | — |
-| 7b. Execution | `executing-change-set` | Code in worktree, staged diffs, checkpoints | G5 |
-| 8. Promotion | `landing-change-set` | Squash merge to main + manifest/diff validation | G6 |
-| 9. Verification | spec-code-sync + QA + E2E | VERIFIED status | G7 |
+| 3. Spec | `write-spec` | User stories, ACs, system dependencies, journeys | G1 |
+| 4. UX Design | `design-ux` | Screen flows, states, interactions | G2 |
+| 5. UI Design | `design-ui` | Component specs, design tokens, visual hierarchy | G3 |
+| 6. Technical Design | `design-tech` | Architecture, data model, feasibility | G4 |
+| 7. Implementation Planning | `plan-changeset` | Implementation manifest, task graph, AC/test mapping | — |
+| 7b. Execution | `execute-changeset` | Code in worktree, staged diffs, checkpoints | G5 |
+| 8. Promotion | `land-changeset` | Squash merge to main + manifest/diff validation | G6 |
+| 9. Verification | sync-spec-code + QA + E2E | VERIFIED status | G7 |
 
 ### Feature Spec Lifecycle
 
@@ -123,19 +123,19 @@ DRAFT → UX-REVIEWED → DESIGNED → BASELINED → CHANGE-SET-APPROVED → PRO
 
 | Skill | Purpose |
 |-------|---------|
-| `feature-discovery` | Validate feature ideas against existing product context |
-| `spec-ac-sync` | Ensure acceptance criteria are complete and testable |
-| `spec-code-sync` | Detect drift between specs and code (PLANNED/RESOLVED/DRIFT) |
-| `journey-sync` | BDD journeys with Layer 3 analysis (finds hidden dependencies) |
-| `journey-qa-ac-testing` | Journey-based QA against live environments |
-| `agentic-e2e-playwright` | E2E test authoring (accessibility-first, journey-based) |
-| `feature-marketing-insights` | Mine feature specs for marketing context |
-| `workflow-compass` | Route to the right skill and lane based on project state |
-| `repo-conversion` | Convert an existing repo into vibomatic working mode before full pipeline use |
-| `bugfix-brief` | Root-cause-first planning for bugs and regressions |
-| `work-item-sync` | Project repo-canonical work items to GitHub Issues |
-| `executing-change-set` | Execute the implementation plan directly in the worktree with staged reviews and checkpoints |
-| `review-protocol` | Universal review gate (self-review → cross-review → convergence) |
+| `validate-feature` | Validate feature ideas against existing product context |
+| `audit-ac` | Ensure acceptance criteria are complete and testable |
+| `sync-spec-code` | Detect drift between specs and code (PLANNED/RESOLVED/DRIFT) |
+| `write-journeys` | BDD journeys with Layer 3 analysis (finds hidden dependencies) |
+| `test-journeys` | Journey-based QA against live environments |
+| `write-e2e` | E2E test authoring (accessibility-first, journey-based) |
+| `analyze-marketing` | Mine feature specs for marketing context |
+| `route-workflow` | Route to the right skill and lane based on project state |
+| `onboard-repo` | Convert an existing repo into vibomatic working mode before full pipeline use |
+| `diagnose-bug` | Root-cause-first planning for bugs and regressions |
+| `sync-work-items` | Project repo-canonical work items to GitHub Issues |
+| `execute-changeset` | Execute the implementation plan directly in the worktree with staged reviews and checkpoints |
+| `review-gate` | Universal review gate (self-review → cross-review → convergence) |
 
 ## Feature Types
 
@@ -212,7 +212,7 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 
 - **Clean repo / greenfield**: use vibomatic directly. Let the repo adopt the
   vibomatic workflow from day one.
-- **Existing repo / brownfield**: run `repo-conversion` first. Inventory the
+- **Existing repo / brownfield**: run `onboard-repo` first. Inventory the
   current truth, map artifacts into vibomatic form, log findings as work items,
   then route to the right lane.
 
@@ -227,49 +227,49 @@ Mode contract: [`REPO_MODES.md`](REPO_MODES.md)
 - **Brownfield feature lane**: extend an existing system using delta specs and
   journey expansion instead of regenerating the full world.
 - **Bugfix / regression lane**: root-cause-first correction work using
-  `bugfix-brief`, then implementation and verification.
+  `diagnose-bug`, then implementation and verification.
 - **Drift / maintenance lane**: reconcile specs, journeys, and code with
-  `spec-code-sync`, then route the resulting items.
+  `sync-spec-code`, then route the resulting items.
 - **Refactor / chore lane**: preserve behavior while making bounded structural
   or repo-state changes through implementation planning and execution.
 
 ## Included Skills
 
-- `vision-sync`
-- `domain-expert`
-- `competitor-analysis`
-- `persona-builder`
-- `journey-sync`
-- `journey-qa-ac-testing`
-- `feature-discovery`
-- `spec-ac-sync`
-- `spec-code-sync`
-- `spec-style-sync`
-- `agentic-e2e-playwright`
-- `feature-marketing-insights`
-- `workflow-compass`
-- `repo-conversion`
-- `bugfix-brief`
-- `work-item-sync`
-- `skill-finder`
+- `write-vision`
+- `analyze-domain`
+- `analyze-competitors`
+- `build-personas`
+- `write-journeys`
+- `test-journeys`
+- `validate-feature`
+- `audit-ac`
+- `sync-spec-code`
+- `define-code-style`
+- `write-e2e`
+- `analyze-marketing`
+- `route-workflow`
+- `onboard-repo`
+- `diagnose-bug`
+- `sync-work-items`
+- `discover-skills`
 - `research`
-- `writing-spec`
-- `writing-ux-design`
-- `writing-ui-design`
-- `writing-technical-design`
-- `solution-explorer`
-- `writing-change-set`
-- `executing-change-set`
-- `review-protocol`
-- `systems-analysis`
-- `landing-change-set`
-- `verifying-promotion`
-- `bootstrap-extract`
-- `cross-model-review`
-- `visual-tracker`
-- `security-review`
-- `review-learnings`
-- `framework-test`
+- `write-spec`
+- `design-ux`
+- `design-ui`
+- `design-tech`
+- `explore-solutions`
+- `plan-changeset`
+- `execute-changeset`
+- `review-gate`
+- `audit-implementation`
+- `land-changeset`
+- `verify-promotion`
+- `extract-bootstrap`
+- `review-cross-model`
+- `track-visuals`
+- `review-security`
+- `manage-learnings`
+- `test-framework`
 
 ## Full Doctrine
 

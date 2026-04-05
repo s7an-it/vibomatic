@@ -104,18 +104,18 @@ Use when:
 
 Recommended flow:
 
-1. `vision-sync`
-2. `persona-builder`
-3. `feature-discovery`
-4. `writing-spec`
-5. `spec-ac-sync`
-6. `journey-sync`
-7. `writing-ux-design`
-8. `writing-ui-design`
-9. `writing-technical-design`
-10. `writing-change-set`
-11. `landing-change-set`
-12. `verifying-promotion`
+1. `write-vision`
+2. `build-personas`
+3. `validate-feature`
+4. `write-spec`
+5. `audit-ac`
+6. `write-journeys`
+7. `design-ux`
+8. `design-ui`
+9. `design-tech`
+10. `plan-changeset`
+11. `land-changeset`
+12. `verify-promotion`
 
 This is where vibomatic is already strongest.
 
@@ -135,7 +135,7 @@ Recommended flow:
 2. identify canonical existing behavior
 3. map existing docs/code/tests to vibomatic artifact types
 4. create or refine foundational vibomatic artifacts from evidence
-5. run `spec-code-sync` to surface drift
+5. run `sync-spec-code` to surface drift
 6. establish the minimum canonical directories and source-of-truth files
 
 Expected outputs:
@@ -154,12 +154,12 @@ Use when:
 Recommended flow:
 
 1. brownfield conversion if not yet done
-2. `spec-code-sync` first
-3. `feature-discovery`
-4. `writing-spec` in delta mode
-5. `journey-sync` in expand mode
-6. `writing-technical-design` only for changed architecture
-7. `writing-change-set`
+2. `sync-spec-code` first
+3. `validate-feature`
+4. `write-spec` in delta mode
+5. `write-journeys` in expand mode
+6. `design-tech` only for changed architecture
+7. `plan-changeset`
 8. selective spec/journey updates
 
 Key principle:
@@ -196,7 +196,7 @@ Use when:
 
 Recommended flow:
 
-1. `spec-code-sync`
+1. `sync-spec-code`
 2. targeted drift report
 3. selective remediation
 4. optional journey/spec refresh
@@ -205,7 +205,7 @@ This should be cheap, repeatable, and routine.
 
 ## What Should Change in the Skill System
 
-### 1. `workflow-compass` should route by repo state and change type
+### 1. `route-workflow` should route by repo state and change type
 
 Today the biggest missing distinction is not just bootstrap vs convert.
 
@@ -215,7 +215,7 @@ It is:
 - correct behavior
 - reconcile behavior
 
-`workflow-compass` should explicitly classify:
+`route-workflow` should explicitly classify:
 - greenfield foundation
 - greenfield feature
 - brownfield conversion
@@ -234,7 +234,7 @@ There should be a clear recommendation:
 
 This is the main product recommendation this proposal argues for.
 
-### 3. `writing-spec` should support explicit modes
+### 3. `write-spec` should support explicit modes
 
 Recommended modes:
 - `new-feature`
@@ -247,7 +247,7 @@ Right now the skill is trying to be universal. That blurs the difference between
 ### 4. Bugfix work should get a first-class skill or route
 
 Recommended addition:
-- `bugfix-brief` or equivalent
+- `diagnose-bug` or equivalent
 
 Minimal structure:
 - observed behavior
@@ -267,7 +267,7 @@ Not:
 
 > Which full canonical document should be regenerated?
 
-This should affect `writing-spec`, `journey-sync`, and `writing-change-set`.
+This should affect `write-spec`, `write-journeys`, and `plan-changeset`.
 
 ## Recommended Product Messaging
 

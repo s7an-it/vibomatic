@@ -1,6 +1,6 @@
 # External Add-On Packs
 
-This repository ships a **core skill pack**. Some routes in `workflow-compass`
+This repository ships a **core skill pack**. Some routes in `route-workflow`
 support optional external ecosystems.
 
 Use this file as the contract for which external skills are optional and how
@@ -8,41 +8,41 @@ they attach to the core pipeline.
 
 ## Core Pack (always available)
 
-- `vision-sync`
-- `domain-expert`
-- `competitor-analysis`
-- `persona-builder`
-- `journey-sync`
-- `journey-qa-ac-testing`
-- `feature-discovery`
-- `spec-ac-sync`
-- `spec-code-sync`
-- `spec-style-sync`
-- `agentic-e2e-playwright`
-- `feature-marketing-insights`
-- `workflow-compass`
-- `repo-conversion`
-- `bugfix-brief`
-- `work-item-sync`
-- `skill-finder`
+- `write-vision`
+- `analyze-domain`
+- `analyze-competitors`
+- `build-personas`
+- `write-journeys`
+- `test-journeys`
+- `validate-feature`
+- `audit-ac`
+- `sync-spec-code`
+- `define-code-style`
+- `write-e2e`
+- `analyze-marketing`
+- `route-workflow`
+- `onboard-repo`
+- `diagnose-bug`
+- `sync-work-items`
+- `discover-skills`
 - `research`
-- `writing-spec`
-- `writing-ux-design`
-- `writing-ui-design`
-- `writing-technical-design`
-- `solution-explorer`
-- `writing-change-set`
-- `executing-change-set`
-- `review-protocol`
-- `systems-analysis`
-- `landing-change-set`
-- `verifying-promotion`
-- `bootstrap-extract`
-- `cross-model-review`
-- `visual-tracker`
-- `security-review`
-- `review-learnings`
-- `framework-test`
+- `write-spec`
+- `design-ux`
+- `design-ui`
+- `design-tech`
+- `explore-solutions`
+- `plan-changeset`
+- `execute-changeset`
+- `review-gate`
+- `audit-implementation`
+- `land-changeset`
+- `verify-promotion`
+- `extract-bootstrap`
+- `review-cross-model`
+- `track-visuals`
+- `review-security`
+- `manage-learnings`
+- `test-framework`
 
 ## Add-On: coreyhaines marketing ecosystem (optional)
 
@@ -62,7 +62,7 @@ Use these only when installed:
 - `onboarding-cro`
 
 Recommended integration point:
-1. Run `feature-marketing-insights` first to generate canonical context from vibomatic mining.
+1. Run `analyze-marketing` first to generate canonical context from vibomatic mining.
 2. If you use coreyhaines `product-marketing-context`, run it as a transformer:
    start from existing `.agents/product-marketing-context.md` and adapt/expand language without dropping vibomatic insight payload.
 3. Keep output path the same: `.agents/product-marketing-context.md`.
@@ -71,7 +71,7 @@ Recommended integration point:
 
 Interop rule:
 - Shared canonical file path: `.agents/product-marketing-context.md`
-- Vibomatic `feature-marketing-insights` runs first and is the source of truth for weighted feature insights and tracker sync (`docs/marketing/feature-mining-tracker.json`).
+- Vibomatic `analyze-marketing` runs first and is the source of truth for weighted feature insights and tracker sync (`docs/marketing/feature-mining-tracker.json`).
 - Coreyhaines `product-marketing-context` is a downstream transformation pass over vibomatic output.
 
 ## Add-On: implementation-planning (optional)

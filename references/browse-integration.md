@@ -31,9 +31,9 @@ browser_evaluate → run JS in page context
 
 | Skill | How |
 |-------|-----|
-| `journey-qa-ac-testing` | Navigate flows, click through scenarios, capture evidence |
-| `visual-tracker` | Screenshot all screens at multiple breakpoints |
-| `agentic-e2e-playwright` | Verify selectors and behavior before writing tests |
+| `test-journeys` | Navigate flows, click through scenarios, capture evidence |
+| `track-visuals` | Screenshot all screens at multiple breakpoints |
+| `write-e2e` | Verify selectors and behavior before writing tests |
 | Post-deploy canary (future) | Periodic screenshots + error watching |
 | Design-review mode (future) | Visual quality audit with before/after |
 

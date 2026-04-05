@@ -35,31 +35,31 @@ Default recommendation:
   - `docs/specs/features/`
   - `docs/specs/personas/`
   - `docs/specs/journeys/`
-  - `docs/marketing/` (when using `feature-marketing-insights`)
+  - `docs/marketing/` (when using `analyze-marketing`)
 - Default greenfield sequence:
-  1. `vision-sync`
-  2. `domain-expert`
-  3. `competitor-analysis`
-  4. `persona-builder`
-  5. `feature-discovery`
-  6. `writing-spec`
-  7. `spec-ac-sync`
-  8. `journey-sync`
-  9. `writing-ux-design`
-  10. `writing-ui-design`
-  11. `writing-technical-design`
-  12. `solution-explorer`
-  13. `spec-style-sync`
-  14. `writing-change-set`
-  15. `executing-change-set`
-  16. `systems-analysis`
-  17. `landing-change-set`
-  18. `verifying-promotion`
+  1. `write-vision`
+  2. `analyze-domain`
+  3. `analyze-competitors`
+  4. `build-personas`
+  5. `validate-feature`
+  6. `write-spec`
+  7. `audit-ac`
+  8. `write-journeys`
+  9. `design-ux`
+  10. `design-ui`
+  11. `design-tech`
+  12. `explore-solutions`
+  13. `define-code-style`
+  14. `plan-changeset`
+  15. `execute-changeset`
+  16. `audit-implementation`
+  17. `land-changeset`
+  18. `verify-promotion`
 - For prompts effectively meaning "build me an app", run this lane end to end automatically unless a real blocker or contradiction appears.
 
 ### Convert Mode
 
-- Start with `repo-conversion` before feature, bugfix, or drift work.
+- Start with `onboard-repo` before feature, bugfix, or drift work.
 - Do not force directory/file renames on first pass.
 - Inventory existing artifacts and map them to expected outputs.
 - Preserve established conventions; add compatibility notes where needed.
@@ -67,13 +67,13 @@ Default recommendation:
 - Finish the map first, then route each item into the right lane.
 
 Suggested brownfield sequence:
-1. `repo-conversion`
-2. `spec-code-sync`
+1. `onboard-repo`
+2. `sync-spec-code`
 3. route by item type:
-   - `writing-spec` in delta mode for feature extension
-   - `bugfix-brief` for bugs and regressions
-   - `spec-code-sync` + selective updates for drift remediation
-   - `work-item-sync` to project repo-canonical items to GitHub Issues
+   - `write-spec` in delta mode for feature extension
+   - `diagnose-bug` for bugs and regressions
+   - `sync-spec-code` + selective updates for drift remediation
+   - `sync-work-items` to project repo-canonical items to GitHub Issues
 
 ## Required Behavior for Every Skill
 

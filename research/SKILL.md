@@ -85,7 +85,7 @@ If standalone: report the finding to the user.
 
 ## Domain Reference Packs
 
-If research reveals that a domain needs persistent reference material (not a one-off finding), suggest creating a domain reference pack at `references/domains/<domain>/`. These are markdown files that executing-change-set loads as context when the tech stack matches.
+If research reveals that a domain needs persistent reference material (not a one-off finding), suggest creating a domain reference pack at `references/domains/<domain>/`. These are markdown files that execute-changeset loads as context when the tech stack matches.
 
 ## Self-Verify
 

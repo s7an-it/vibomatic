@@ -137,15 +137,15 @@ Every state transition requires a review gate.
 
 | # | Phase | Skill | Artifact | Format | State Transition |
 |---|-------|-------|----------|--------|-----------------|
-| 1 | Vision | `vision-sync` | `docs/specs/vision.md` | Single file, 12-section canonical structure | — → ACTIVE |
-| 2 | Personas | `persona-builder` | `docs/specs/personas/P*.md` | One file per persona | — → ACTIVE |
-| 3 | Feature Spec | `writing-spec` | `docs/specs/features/<name>.md` | One file per feature (Feature/Enabler/Integration) | — → DRAFT |
-| 4 | UX Design | `writing-ux-design` | `docs/specs/ux/<name>.md` | Screen flows, states, interactions, information architecture | DRAFT → UX-REVIEWED |
-| 5 | UI Design | `writing-ui-design` | `docs/specs/ui/<name>.md` + `docs/specs/design-system.md` | Component specs, visual language, responsive behavior | UX-REVIEWED → DESIGNED |
-| 6 | Technical Design | `writing-technical-design` | Updated feature spec: Technical Design section | Architecture, data model, feasibility matrix | DESIGNED → BASELINED |
-| 7 | Change Set Planning | `writing-change-set` + `executing-change-set` | `docs/plans/<date>-<name>/` + branch checkpoints | Implementation manifest, task graph, staged diffs, checkpoint commits | BASELINED → CHANGE-SET-APPROVED |
-| 8 | Promotion | `landing-change-set` | Actual codebase files | Squash merge + manifest/diff validation | CHANGE-SET-APPROVED → PROMOTED |
-| 9 | Verification | `verifying-promotion` | Updated feature spec: VERIFIED status | Test results, QA status, E2E status | PROMOTED → VERIFIED |
+| 1 | Vision | `write-vision` | `docs/specs/vision.md` | Single file, 12-section canonical structure | — → ACTIVE |
+| 2 | Personas | `build-personas` | `docs/specs/personas/P*.md` | One file per persona | — → ACTIVE |
+| 3 | Feature Spec | `write-spec` | `docs/specs/features/<name>.md` | One file per feature (Feature/Enabler/Integration) | — → DRAFT |
+| 4 | UX Design | `design-ux` | `docs/specs/ux/<name>.md` | Screen flows, states, interactions, information architecture | DRAFT → UX-REVIEWED |
+| 5 | UI Design | `design-ui` | `docs/specs/ui/<name>.md` + `docs/specs/design-system.md` | Component specs, visual language, responsive behavior | UX-REVIEWED → DESIGNED |
+| 6 | Technical Design | `design-tech` | Updated feature spec: Technical Design section | Architecture, data model, feasibility matrix | DESIGNED → BASELINED |
+| 7 | Change Set Planning | `plan-changeset` + `execute-changeset` | `docs/plans/<date>-<name>/` + branch checkpoints | Implementation manifest, task graph, staged diffs, checkpoint commits | BASELINED → CHANGE-SET-APPROVED |
+| 8 | Promotion | `land-changeset` | Actual codebase files | Squash merge + manifest/diff validation | CHANGE-SET-APPROVED → PROMOTED |
+| 9 | Verification | `verify-promotion` | Updated feature spec: VERIFIED status | Test results, QA status, E2E status | PROMOTED → VERIFIED |
 
 ### Artifact Lifecycle
 
@@ -168,10 +168,10 @@ These are not per-feature — they are created once and evolved:
 
 | Artifact | Skill | Path | Purpose |
 |----------|-------|------|---------|
-| Vision | `vision-sync` | `docs/specs/vision.md` | Product direction, boundaries, principles |
-| Personas | `persona-builder` | `docs/specs/personas/P*.md` | Who uses this product (human and system consumers) |
-| Design System | `writing-ui-design` | `docs/specs/design-system.md` | Visual language: tokens, typography, colors, spacing, motion |
-| Journey Index | `journey-sync` | `docs/specs/journeys/JOURNEY_INDEX.md` | Cross-reference of all journeys |
+| Vision | `write-vision` | `docs/specs/vision.md` | Product direction, boundaries, principles |
+| Personas | `build-personas` | `docs/specs/personas/P*.md` | Who uses this product (human and system consumers) |
+| Design System | `design-ui` | `docs/specs/design-system.md` | Visual language: tokens, typography, colors, spacing, motion |
+| Journey Index | `write-journeys` | `docs/specs/journeys/JOURNEY_INDEX.md` | Cross-reference of all journeys |
 
 ### Per-Feature Artifacts
 
@@ -179,11 +179,11 @@ Each feature produces these artifacts as it moves through the pipeline:
 
 | Artifact | Created at Phase | Path |
 |----------|-----------------|------|
-| Feature Spec | 3 (writing-spec) | `docs/specs/features/<name>.md` |
-| UX Design | 4 (writing-ux-design) | `docs/specs/ux/<name>.md` |
-| UI Design | 5 (writing-ui-design) | `docs/specs/ui/<name>.md` |
-| Journey Doc(s) | 3 (writing-spec triggers journey-sync) | `docs/specs/journeys/J*-<name>.feature.md` |
-| Change Set | 7 (writing-change-set + executing-change-set) | `docs/plans/<date>-<name>/` + branch checkpoints |
+| Feature Spec | 3 (write-spec) | `docs/specs/features/<name>.md` |
+| UX Design | 4 (design-ux) | `docs/specs/ux/<name>.md` |
+| UI Design | 5 (design-ui) | `docs/specs/ui/<name>.md` |
+| Journey Doc(s) | 3 (write-spec triggers write-journeys) | `docs/specs/journeys/J*-<name>.feature.md` |
+| Change Set | 7 (plan-changeset + execute-changeset) | `docs/plans/<date>-<name>/` + branch checkpoints |
 
 ## Feature Types
 
@@ -503,7 +503,7 @@ to the project's specific brand. Not a copy of any framework.
 
 ### The Spec as Codebase Index
 
-In a mature project, the feature spec IS the codebase index. spec-code-sync
+In a mature project, the feature spec IS the codebase index. sync-spec-code
 annotations tell you where everything is:
 
 ```markdown
@@ -526,7 +526,7 @@ Naive approach:     entire codebase every phase (~200-500K tokens)
 ```
 
 The more mature your specs (more RESOLVED annotations with file:line), the
-fewer tokens you spend loading code. spec-code-sync is not just a consistency
+fewer tokens you spend loading code. sync-spec-code is not just a consistency
 tool — it is a cache optimization tool.
 
 ### The Four-Layer Cache Architecture
@@ -778,10 +778,10 @@ agent between phases. Promotion is a squash merge to main.
 ```
 main (frozen at SHA)
   └── worktree: feature-<name>
-        Phase 3: writing-spec             → checkpoint → [G1 Review]
-        Phase 4: writing-ux-design        → checkpoint → [G2 Review]
-        Phase 5: writing-ui-design        → checkpoint → [G3 Review]
-        Phase 6: writing-technical-design → checkpoint → [G4 Review]
+        Phase 3: write-spec             → checkpoint → [G1 Review]
+        Phase 4: design-ux        → checkpoint → [G2 Review]
+        Phase 5: design-ui        → checkpoint → [G3 Review]
+        Phase 6: design-tech → checkpoint → [G4 Review]
         Phase 7: plan + execute on branch → checkpoint per task → [G5 Review]
         Phase 8: squash merge to main = promotion → [G6 Review]
         Phase 9: verify on main           → [G7 Review]
@@ -812,13 +812,13 @@ only what happens after completion changes.
 
 ### Standalone
 
-User invokes a skill directly: `/writing-spec` or `/spec-code-sync`. The skill
+User invokes a skill directly: `/write-spec` or `/sync-spec-code`. The skill
 runs, reports results, and suggests the next step. The user decides whether to
 continue. This is the default mode.
 
 ### Progressive
 
-User invokes with a flag: `/vision-sync --progressive --lane greenfield`. The
+User invokes with a flag: `/write-vision --progressive --lane greenfield`. The
 skill runs, self-verifies its output, and automatically invokes the next skill
 in the lane with the same flags. The chain continues until:
 
@@ -858,7 +858,7 @@ the chain (progressive).
 
 ## Pre-Implementation Simulation
 
-Between `writing-change-set` and `executing-change-set`, a simulation step
+Between `plan-changeset` and `execute-changeset`, a simulation step
 validates the manifest against actual codebase state using a two-layer model:
 
 - **Disk layer** — files that exist now
@@ -869,12 +869,12 @@ and test framework mismatches before any code is written.
 
 ## Code Style Contract
 
-`spec-style-sync` produces `docs/specs/style-contract.md` — a project-level
+`define-code-style` produces `docs/specs/style-contract.md` — a project-level
 artifact that codifies naming conventions, file structure patterns, import style,
 test patterns, and error handling. In brownfield mode it derives from existing
 code; in greenfield from the design system and tech stack.
 
-`executing-change-set` loads the style contract as context during code generation,
+`execute-changeset` loads the style contract as context during code generation,
 ensuring all generated code follows consistent patterns.
 
 ## Domain Reference Packs
@@ -882,5 +882,5 @@ ensuring all generated code follows consistent patterns.
 When a project uses a framework or library version that may exceed the model's
 training data, `references/domains/<framework>/` provides persistent reference
 material (conventions, testing patterns, version-specific gotchas). These are
-markdown files loaded by `executing-change-set` when the tech stack matches.
+markdown files loaded by `execute-changeset` when the tech stack matches.
 They are NOT skills — they don't participate in the pipeline or manifest.

@@ -60,7 +60,7 @@ function assertIncludedSkillPaths(includedSkills) {
 const manifest = JSON.parse(readFile("skills-manifest.json"));
 const readme = readFile("README.md");
 const repoModes = readFile("REPO_MODES.md");
-const workflowCompass = readFile("workflow-compass/SKILL.md");
+const workflowCompass = readFile("route-workflow/SKILL.md");
 const externalAddons = readFile("EXTERNAL_ADDONS.md");
 
 const readmeIncluded = section(readme, "## Included Skills", ["## External Add-Ons"]);
@@ -103,7 +103,7 @@ const bootstrapSequence = extractByRegex(
 compareList("README included skills", readmeCore, manifest.includedSkills);
 compareList("EXTERNAL_ADDONS core pack", externalCore, manifest.includedSkills);
 compareList(
-  "workflow-compass core pack for routing",
+  "route-workflow core pack for routing",
   workflowCore,
   manifest.corePackForRouting
 );
@@ -113,7 +113,7 @@ compareList(
   manifest.externalAddOns["coreyhaines-marketing-pack"]
 );
 compareList(
-  "workflow-compass coreyhaines pack",
+  "route-workflow coreyhaines pack",
   workflowCorey,
   manifest.externalAddOns["coreyhaines-marketing-pack"]
 );
