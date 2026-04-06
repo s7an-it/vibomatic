@@ -1,0 +1,164 @@
+{
+  "skill_name": "test-framework",
+  "tiers": {
+    "tier-1": {
+      "description": "Static validation scripts — no LLM, <10s, free",
+      "scripts": [
+        {
+          "name": "validate-skill-structure",
+          "path": "tier-1/validate-skill-structure.sh",
+          "checks": "Every SKILL.md has name, description, inputs, outputs, chain in frontmatter. Pipeline Continuation section (except route-workflow, test-framework). Audit Mode section for the 11 skills that have it.",
+          "cost": "$0",
+          "duration": "<5s"
+        },
+        {
+          "name": "validate-contracts",
+          "path": "tier-1/validate-contracts.sh",
+          "checks": "Input paths use valid docs/specs/ patterns. Output paths don't conflict across skills. Status transitions are valid lifecycle values.",
+          "cost": "$0",
+          "duration": "<5s"
+        },
+        {
+          "name": "validate-chain-references",
+          "path": "tier-1/validate-chain-references.sh",
+          "checks": "Every chain.lanes.*.next and *.prev references a real skill in includedSkills. Lane skill lists in manifest match chain positions in individual SKILL.md frontmatter.",
+          "cost": "$0",
+          "duration": "<5s"
+        },
+        {
+          "name": "validate-self-verify-sections",
+          "path": "tier-1/validate-self-verify-sections.sh",
+          "checks": "Every skill with self_verify: true has a Self-Verify table with PASS/FAIL column.",
+          "cost": "$0",
+          "duration": "<5s"
+        },
+        {
+          "name": "validate-worktree-safety",
+          "path": "tier-1/validate-worktree-safety.sh",
+          "checks": ".gitignore has .worktrees/, scripts/worktree.sh exists, no orphaned worktrees.",
+          "cost": "$0",
+          "duration": "<5s"
+        }
+      ]
+    },
+    "tier-1.5": {
+      "description": "Skill comprehension and triggering tests — LLM-powered, ~5K tokens each, ~30-60s",
+      "helpers": "test-helpers.sh",
+      "tests": [
+        {
+          "name": "skill-comprehension",
+          "path": "tier-1.5/test-skill-comprehension.sh",
+          "checks": "Asks Claude factual questions about skill rules (chain order, lifecycle states, TDD enforcement, self-verify gating). Verifies answers contain expected patterns.",
+          "skills_tested": ["write-vision", "write-spec", "plan-changeset", "execute-changeset", "validate-feature", "sync-spec-code"],
+          "cost": "~30K tokens total",
+          "duration": "~5min"
+        },
+        {
+          "name": "skill-triggering",
+          "path": "tier-1.5/test-skill-triggering.sh",
+          "checks": "Sends naive user prompts (no skill name mentioned) and verifies correct skill is triggered via stream-json Skill tool invocation. Also checks for premature tool use before skill loading.",
+          "prompts": ["diagnose-bug", "validate-feature", "sync-spec-code", "write-spec", "write-vision", "write-journeys"],
+          "cost": "~30K tokens total",
+          "duration": "~6min"
+        }
+      ]
+    },
+    "tier-2": {
+      "description": "Integration scenarios via claude -p — ~50K tokens each",
+      "runner": "tier-2/run-tier2.sh",
+      "scenarios": [
+        {
+          "name": "write-spec-greenfield",
+          "path": "tier-2/scenarios/write-spec-greenfield.md",
+          "skill_under_test": "write-spec",
+          "assertions": 7,
+          "cost": "~50K tokens",
+          "duration": "~2min"
+        },
+        {
+          "name": "plan-changeset-manifest",
+          "path": "tier-2/scenarios/plan-changeset-manifest.md",
+          "skill_under_test": "plan-changeset",
+          "assertions": 5,
+          "cost": "~50K tokens",
+          "duration": "~3min"
+        },
+        {
+          "name": "validate-feature-validate",
+          "path": "tier-2/scenarios/validate-feature-validate.md",
+          "skill_under_test": "validate-feature",
+          "assertions": 5,
+          "cost": "~50K tokens",
+          "duration": "~2min"
+        },
+        {
+          "name": "write-vision-create",
+          "path": "tier-2/scenarios/write-vision-create.md",
+          "skill_under_test": "write-vision",
+          "assertions": 10,
+          "cost": "~50K tokens",
+          "duration": "~2min"
+        }
+      ]
+    },
+    "tier-3": {
+      "description": "LLM-as-judge scoring — ~20K tokens per judgment",
+      "runner": "tier-3/run-tier3.sh",
+      "judge_prompts": [
+        {
+          "name": "completeness",
+          "path": "tier-3/judge-prompts/completeness.md",
+          "scores": "0-10: does skill output address every input requirement?",
+          "cost": "~20K tokens",
+          "duration": "~1min"
+        },
+        {
+          "name": "consistency",
+          "path": "tier-3/judge-prompts/consistency.md",
+          "scores": "0-10: does output contradict anything from prior phases?",
+          "cost": "~20K tokens",
+          "duration": "~1min"
+        },
+        {
+          "name": "actionability",
+          "path": "tier-3/judge-prompts/actionability.md",
+          "scores": "0-10: can the next skill in the chain use this output?",
+          "cost": "~20K tokens",
+          "duration": "~1min"
+        }
+      ]
+    }
+  },
+  "evals": [
+    {
+      "id": 1,
+      "suite": "pipeline-integrity",
+      "prompt": "Run the pipeline integrity validation on the todo-api example",
+      "expected_output": "All checks pass: vision, personas, feature specs (Feature + Enabler types), journeys with AC cross-references, UX/UI designs, design system, manifest",
+      "assertions": [
+        { "type": "exit_code", "value": 0, "description": "Validation script exits cleanly" },
+        { "type": "output_contains", "value": "0 failed", "description": "Zero failures in output" },
+        { "type": "output_contains", "value": "PASS", "description": "At least one PASS in output" }
+      ]
+    },
+    {
+      "id": 2,
+      "suite": "progressive-narrowing",
+      "prompt": "Generate a health check endpoint 3 times with no svc phases (just a one-line prompt) and 3 times with full pipeline (spec → tech design → code). Measure pairwise diff variance between the 3 outputs in each group.",
+      "expected_output": "Full-pipeline group has lower pairwise diff variance than no-phases group, demonstrating that progressive narrowing reduces implementation variance",
+      "assertions": [
+        { "type": "metric_comparison", "metric": "variance_lines", "condition": "full_pipeline < no_phases", "description": "Full pipeline produces less variance" }
+      ]
+    },
+    {
+      "id": 3,
+      "suite": "review-gate",
+      "prompt": "Take the todo-api feature spec and plant 5 known errors (contradicting AC, nonexistent file reference, ungrounded precondition, compound story, untestable AC). Run single-pass review and full review protocol. Count how many errors each approach finds.",
+      "expected_output": "Full review protocol finds more planted errors than single-pass review",
+      "assertions": [
+        { "type": "metric_comparison", "metric": "errors_found", "condition": "full_protocol >= single_pass", "description": "Protocol finds at least as many errors" },
+        { "type": "metric_threshold", "metric": "full_protocol_errors_found", "condition": ">= 4", "description": "Protocol finds at least 4 of 5 planted errors" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "sources": [
+    {
+      "name": "gstack",
+      "url": "https://github.com/garrytan/gstack",
+      "license": "MIT",
+      "author": "Garry Tan",
+      "blends": [
+        {
+          "sha": "unknown-pre-registry",
+          "date": "2026-04-05",
+          "patterns_taken": [
+            { "external_path": "skills/", "svc_target": "route-workflow/SKILL.md", "pattern": "P0 founder persona and forcing questions" },
+            { "external_path": "skills/", "svc_target": "review-gate/SKILL.md", "pattern": "Adversarial CEO/design/eng review gates" },
+            { "external_path": "skills/", "svc_target": "review-security/SKILL.md", "pattern": "/cso OWASP + STRIDE security audit" },
+            { "external_path": "skills/", "svc_target": "manage-learnings/SKILL.md", "pattern": "/learn institutional memory" },
+            { "external_path": "skills/", "svc_target": "test-journeys/SKILL.md", "pattern": "/browse headless browser integration" },
+            { "external_path": "skills/", "svc_target": "design-ui/SKILL.md", "pattern": "/design-consultation and /design-shotgun" },
+            { "external_path": "skills/", "svc_target": "diagnose-bug/SKILL.md", "pattern": "/investigate root-cause-first debugging" },
+            { "external_path": "skills/", "svc_target": "land-changeset/SKILL.md", "pattern": "/ship version bump and PR workflow" },
+            { "external_path": "skills/", "svc_target": "verify-promotion/SKILL.md", "pattern": "/canary post-deploy monitoring" }
+          ],
+          "patterns_skipped": []
+        }
+      ]
+    },
+    {
+      "name": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "license": "MIT",
+      "author": "Jesse Vincent",
+      "blends": [
+        {
+          "sha": "unknown-pre-registry",
+          "date": "2026-04-05",
+          "patterns_taken": [
+            { "external_path": "skills/", "svc_target": "plan-changeset/SKILL.md", "pattern": "writing-plans task graph approach" },
+            { "external_path": "skills/", "svc_target": "execute-changeset/SKILL.md", "pattern": "Subagent-driven development and TDD execution" }
+          ],
+          "patterns_skipped": []
+        }
+      ]
+    },
+    {
+      "name": "oh-my-claudecode",
+      "url": "https://github.com/yeachan-heo/oh-my-claudecode",
+      "license": "MIT",
+      "author": "Yeachan Heo",
+      "blends": [
+        {
+          "sha": "unknown-pre-registry",
+          "date": "2026-04-05",
+          "patterns_taken": [
+            { "external_path": "agents/", "svc_target": "route-workflow/SKILL.md", "pattern": "Ambiguity gate scoring (weighted dimensions, 20% threshold)" },
+            { "external_path": "agents/", "svc_target": "execute-changeset/SKILL.md", "pattern": "Commit trailers and verified completion loop (3-strike rule)" },
+            { "external_path": "agents/", "svc_target": "review-cross-model/SKILL.md", "pattern": "Tri-model orchestration (Claude + Codex + Gemini)" },
+            { "external_path": "agents/", "svc_target": "manage-learnings/SKILL.md", "pattern": "Learning extraction from debugging (3-question quality gate)" }
+          ],
+          "patterns_skipped": []
+        }
+      ]
+    },
+    {
+      "name": "claude-code-setup",
+      "url": "https://github.com/petekp/claude-code-setup",
+      "license": "MIT",
+      "author": "Pete Petrash",
+      "blends": [
+        {
+          "sha": "unknown-pre-registry",
+          "date": "2026-04-05",
+          "patterns_taken": [
+            { "external_path": "skills/", "svc_target": "explore-solutions/SKILL.md", "pattern": "Solution exploration and paradigm comparison" },
+            { "external_path": "skills/", "svc_target": "audit-implementation/SKILL.md", "pattern": "Systems analysis and correctness audit" }
+          ],
+          "patterns_skipped": []
+        }
+      ]
+    }
+  ]
+}

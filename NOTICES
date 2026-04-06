@@ -1,0 +1,90 @@
+Third-Party Notices
+===================
+
+Serious Vibe Coding is an opinionated blend of patterns from several
+open-source projects in the Claude Code ecosystem. This section credits
+the projects that contributed ideas, patterns, or code.
+
+---
+
+gstack (https://github.com/garrytan/gstack)
+Copyright (c) 2025 Garry Tan
+Licensed under the MIT License
+
+Patterns blended from gstack:
+- P0 founder persona and forcing questions (route-workflow)
+- Adversarial CEO/design/eng review gates (review-gate, design-ux, design-ui, design-tech)
+- /cso security audit pattern (review-security)
+- /learn institutional memory pattern (manage-learnings)
+- /browse headless browser integration (test-journeys, track-visuals, write-e2e)
+- /design-consultation and /design-shotgun patterns (design-ui)
+- /investigate root-cause-first debugging (diagnose-bug)
+- /ship version bump and PR workflow (land-changeset)
+- /canary post-deploy monitoring (verify-promotion)
+
+---
+
+superpowers (https://github.com/obra/superpowers)
+Copyright (c) 2025 Jesse Vincent
+Licensed under the MIT License
+
+Patterns blended from superpowers:
+- plan-changeset/ (derived from writing-plans task graph approach)
+- Subagent-driven development model (execute-changeset parallel dispatch)
+- TDD-first execution discipline (execute-changeset)
+
+---
+
+claude-code-setup (https://github.com/petekp/claude-code-setup)
+Copyright (c) 2024 Pete Petrash
+Licensed under the MIT License
+
+Patterns blended from claude-code-setup:
+- explore-solutions/ (solution exploration and paradigm comparison)
+- audit-implementation/ (systems analysis and correctness audit)
+
+---
+
+Oh My Claude Code (https://github.com/yeachan-heo/oh-my-claudecode)
+Copyright (c) 2025 Yeachan Heo
+Licensed under the MIT License
+
+Patterns referenced:
+- Ambiguity gate scoring (route-workflow weighted dimensions)
+- Commit trailer protocol (execute-changeset structured metadata)
+- Verified completion loop (execute-changeset 3-strike rule)
+- Tri-model orchestration (review-cross-model parallel dispatch)
+- Learning extraction from debugging (manage-learnings quality gate)
+
+---
+
+last30days (https://github.com/mvanhorn/last30days-skill)
+Copyright (c) 2025 mvanhorn
+Licensed under the MIT License
+
+Recommended companion skill for live market research:
+- Live signal grounding for validate-feature business questions (Q1-Q4, Q6)
+- Current competitive intelligence for analyze-competitors (buzz, sentiment)
+
+---
+
+All projects above are licensed under the MIT License. The full MIT License
+text applies to all derived code:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

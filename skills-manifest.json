@@ -1,0 +1,175 @@
+{
+  "includedSkills": [
+    "write-vision",
+    "analyze-domain",
+    "analyze-competitors",
+    "build-personas",
+    "write-journeys",
+    "test-journeys",
+    "validate-feature",
+    "audit-ac",
+    "sync-spec-code",
+    "define-code-style",
+    "write-e2e",
+    "analyze-marketing",
+    "route-workflow",
+    "onboard-repo",
+    "diagnose-bug",
+    "sync-work-items",
+    "discover-skills",
+    "research",
+    "write-spec",
+    "design-ux",
+    "design-ui",
+    "design-tech",
+    "explore-solutions",
+    "plan-changeset",
+    "execute-changeset",
+    "review-gate",
+    "audit-implementation",
+    "land-changeset",
+    "verify-promotion",
+    "extract-bootstrap",
+    "review-cross-model",
+    "track-visuals",
+    "review-security",
+    "manage-learnings",
+    "test-framework",
+    "evolve-framework",
+    "blend-external",
+    "wsl2-audio",
+    "mine-builder",
+    "find-opportunity",
+    "stage-revenue",
+    "create-skill"
+  ],
+  "corePackForRouting": [
+    "write-vision",
+    "analyze-domain",
+    "analyze-competitors",
+    "build-personas",
+    "write-journeys",
+    "test-journeys",
+    "validate-feature",
+    "audit-ac",
+    "sync-spec-code",
+    "define-code-style",
+    "write-e2e",
+    "analyze-marketing",
+    "route-workflow",
+    "onboard-repo",
+    "diagnose-bug",
+    "sync-work-items",
+    "discover-skills",
+    "research",
+    "execute-changeset",
+    "mine-builder",
+    "find-opportunity",
+    "stage-revenue"
+  ],
+  "pipeline": [
+    "write-spec",
+    "design-ux",
+    "design-ui",
+    "design-tech",
+    "explore-solutions",
+    "define-code-style",
+    "plan-changeset",
+    "execute-changeset",
+    "land-changeset",
+    "verify-promotion"
+  ],
+  "globalArtifacts": {
+    "builderProfile": {
+      "path": "~/.claude/builder-profile.md",
+      "scope": "global",
+      "createdBy": "route-workflow",
+      "updatedBy": ["route-workflow", "verify-promotion"],
+      "readBy": ["validate-feature", "write-spec", "design-tech", "plan-changeset", "explore-solutions"],
+      "note": "Persists across all projects. Propagated to downstream skills via P0 persona."
+    },
+    "pipelineDecisionLog": {
+      "path": "docs/logs/pipeline-decisions.jsonl",
+      "scope": "per-project",
+      "createdBy": "route-workflow",
+      "updatedBy": "all-pipeline-skills",
+      "note": "Append-only JSONL. Every skill appends decisions in all modes (standalone, progressive, autorun)."
+    }
+  },
+  "featureStates": [
+    "DRAFT", "UX-REVIEWED", "DESIGNED", "BASELINED",
+    "CHANGE-SET-APPROVED", "PROMOTED", "VERIFIED",
+    "REJECTED", "PIVOTED"
+  ],
+  "reviewGates": {
+    "G1": { "after": "write-spec", "transition": "DRAFT → UX-REVIEWED", "checks": "Stories testable? ACs specific? Layer 3 clean? Dependencies identified?" },
+    "G2": { "after": "design-ux", "transition": "UX-REVIEWED → DESIGNED", "checks": "Flows cover all stories? States complete? Error handling? Accessibility?" },
+    "G3": { "after": "design-ui", "transition": "DESIGNED → BASELINED", "checks": "Design system consistency? Responsive? Dark mode? Component reuse?" },
+    "G4": { "after": "design-tech", "transition": "DESIGNED → BASELINED", "checks": "All ACs feasible? Architecture sound? Risks identified? Trade-offs explicit?" },
+    "G5": { "after": "execute-changeset", "transition": "BASELINED → CHANGE-SET-APPROVED", "checks": "Executed branch diff matches design? Tasks cover ACs? Cross-file consistency? No placeholders? Task checkpoints clean?" },
+    "G6": { "after": "land-changeset", "transition": "CHANGE-SET-APPROVED → PROMOTED", "checks": "Squash diff matches manifest file set? No unplanned changes? Validation clean?" },
+    "G7": { "after": "verify-promotion", "transition": "final", "checks": "Tests pass? QA complete? E2E complete? Spec annotations updated?" }
+  },
+  "externalAddOns": {
+    "coreyhaines-marketing-pack": [
+      "product-marketing-context",
+      "customer-research",
+      "market-competitors",
+      "competitor-alternatives",
+      "copywriting",
+      "page-cro",
+      "launch-strategy",
+      "market-social",
+      "market-ads",
+      "market-emails",
+      "signup-flow-cro",
+      "onboarding-cro"
+    ]
+  },
+  "bootstrapStartSequence": [
+    "write-vision",
+    "analyze-domain",
+    "analyze-competitors",
+    "build-personas",
+    "validate-feature",
+    "write-spec",
+    "audit-ac",
+    "write-journeys",
+    "design-ux",
+    "design-ui",
+    "design-tech",
+    "explore-solutions",
+    "define-code-style",
+    "plan-changeset",
+    "execute-changeset",
+    "audit-implementation",
+    "land-changeset",
+    "verify-promotion"
+  ],
+  "laneDefinitions": {
+    "greenfield": {
+      "skills": ["write-vision", "analyze-domain", "analyze-competitors", "build-personas", "validate-feature", "write-spec", "audit-ac", "write-journeys", "design-ux", "design-ui", "design-tech", "explore-solutions", "define-code-style", "plan-changeset", "execute-changeset", "audit-implementation", "land-changeset", "verify-promotion"],
+      "defaultSkips": []
+    },
+    "brownfield-conversion": {
+      "skills": ["onboard-repo", "sync-work-items"],
+      "defaultSkips": []
+    },
+    "brownfield-feature": {
+      "skills": ["sync-spec-code", "validate-feature", "write-spec", "write-journeys", "design-tech", "explore-solutions", "define-code-style", "plan-changeset", "execute-changeset", "review-gate", "audit-implementation", "land-changeset", "verify-promotion"],
+      "defaultSkips": ["design-ux", "design-ui"]
+    },
+    "bugfix": {
+      "skills": ["diagnose-bug", "plan-changeset", "execute-changeset", "review-gate", "audit-implementation", "land-changeset", "verify-promotion"],
+      "defaultSkips": ["define-code-style"]
+    },
+    "drift": {
+      "skills": ["sync-spec-code", "write-journeys", "sync-work-items"],
+      "defaultSkips": []
+    },
+    "refactor": {
+      "skills": ["sync-spec-code", "plan-changeset", "execute-changeset", "review-gate", "audit-implementation", "land-changeset", "verify-promotion"],
+      "defaultSkips": []
+    }
+  }
+}
